@@ -90,7 +90,7 @@ class LayerRulesTest : FunSpec({
             .filter { it.hasAnnotationWithName("HiltViewModel") }
             .assertTrue { vm ->
                 vm.name.endsWith("ViewModel") &&
-                    vm.hasParentWithName("BaseViewModel") &&
+                    vm.parents().any { it.name.substringBefore("<") == "BaseViewModel" } &&
                     vm.functions().any { it.name == "uiState" && it.hasAnnotationWithName("Composable") }
             }
     }
@@ -190,7 +190,8 @@ class LayerRulesTest : FunSpec({
         scope.classesAndObjects()
             .filter { cls ->
                 cls.parents().any { p ->
-                    p.name.endsWith("Action") || p.name == "UiEffect" || p.name.endsWith("Navigation")
+                    val name = p.name.substringBefore("<") // Konsist parent names include type arguments
+                    name.endsWith("Action") || name == "UiEffect" || name.endsWith("Navigation")
                 }
             }
             .assertFalse { cls -> cls.properties().any { it.type?.text?.contains("->") == true } }

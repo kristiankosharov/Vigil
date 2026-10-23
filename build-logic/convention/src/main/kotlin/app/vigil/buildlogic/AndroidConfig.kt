@@ -19,5 +19,7 @@ internal fun configureAndroid(android: CommonExtension) {
     android.compileOptions.sourceCompatibility = JAVA_VERSION
     android.compileOptions.targetCompatibility = JAVA_VERSION
     android.testOptions.unitTests.all { it.useJUnitPlatform() } // Kotest
+    // android.jar is only stubs in unit tests; Compose (Molecule ViewModel tests) calls Trace and Log.
+    android.testOptions.unitTests.isReturnDefaultValues = true
     android.packaging.resources.excludes += setOf("/META-INF/{AL2.0,LGPL2.1}", "/META-INF/LICENSE*.md")
 }

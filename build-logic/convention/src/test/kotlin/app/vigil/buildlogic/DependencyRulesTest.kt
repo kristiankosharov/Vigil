@@ -21,6 +21,7 @@ class DependencyRulesTest : FunSpec({
             ":feature:home:data:core" to ":common:database",
             ":common:network" to ":common:core",
             ":feature:home:ui" to ":common:testing",
+            ":app" to ":app",
         ).forEach { (from, to) ->
             withClue(from, to) { dependencyRuleViolation(from, to).shouldBeNull() }
         }

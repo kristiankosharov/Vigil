@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_title">Home</string>
+    <string name="home_loading">Loading</string>
+    <string name="home_empty_title">Nothing here yet</string>
+    <string name="home_empty_message">Your entries will appear here.</string>
+</resources>

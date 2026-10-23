@@ -20,7 +20,9 @@ the `:konsist` module exists, its source is the truth).
 - **Turbine** (`test { awaitItem() }`) for every `Flow` assertion.
 - **Molecule** (test only) turns a ViewModel's `@Composable uiState()` into a `Flow`:
   `moleculeFlow(RecompositionMode.Immediate) { viewModel.uiState() }.test { … }`. If a test doesn't see
-  a snapshot write, call `Snapshot.sendApplyNotifications()`.
+  a snapshot write, call `Snapshot.sendApplyNotifications()`. Android unit tests run with
+  `unitTests.isReturnDefaultValues = true` (set by the convention plugin), because Compose calls
+  `android.os.Trace` and `Log`.
 - Coroutines: `Dispatchers.Main` is replaced by the shared Kotest extension in `:common:testing`
   (wraps a `StandardTestDispatcher`). Nothing launched in `init` runs until the scheduler is advanced:
   advance first, then read the latest item.

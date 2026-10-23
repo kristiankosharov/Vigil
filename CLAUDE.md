@@ -80,7 +80,8 @@ Add a `:common:*` module only for genuinely shared infrastructure, never for fea
 ### Dependency rules (strict)
 
 ```
-:app ───────────────► :feature:*:ui, :feature:*:data:core      (feature modules only)
+:app ───────────────► :feature:*:ui, :feature:*:data:core,
+                       :common:ui (AppTheme), :common:network (EnvironmentModule's qualifiers)
 
 :feature:x:ui ──────► :feature:x:domain, :common:ui, :common:core
 :feature:x:domain ──► :feature:x:data:api, :common:core         (+ :feature:y:data:api if needed)

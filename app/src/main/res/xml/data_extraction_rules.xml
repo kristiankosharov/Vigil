@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The DataStore key lives in the Android Keystore and never leaves the device, so encrypted stores
+     and their keyset are useless anywhere else: exclude them from cloud backup and device transfer. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="datastore/" />
+        <exclude domain="sharedpref" path="datastore_keyset_prefs.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="datastore/" />
+        <exclude domain="sharedpref" path="datastore_keyset_prefs.xml" />
+    </device-transfer>
+</data-extraction-rules>

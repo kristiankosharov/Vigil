@@ -45,6 +45,7 @@ fun Project.enforceDependencyRules() {
 
 internal fun dependencyRuleViolation(from: String, to: String): String? {
     if (to == ":common:testing") return null                       // test helpers, any module
+    if (to == from) return null // AGP adds a module's own project (e.g. :app for its test APK)
     val fromFeature = from.featureName() ?: return when {          // :app, :common:*, :konsist
         to == ":app" -> "nothing depends on :app"
         from.startsWith(":common:") && to.featureName() != null -> ":common:* never depends on features"
