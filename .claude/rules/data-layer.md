@@ -14,8 +14,9 @@ Code: `.claude/reference/core-result.md` (AppResult, AppError, wrappers) and
 
 ## `AppResult` and `AppError` (`:common:core`)
 
-- Every repository function returns `AppResult<T>` or `Flow<AppResult<T>>`. Never throw out of a
-  repository; never return a nullable to signal failure.
+- Every repository function that touches the network, Room or DataStore returns `AppResult<T>` or
+  `Flow<AppResult<T>>`. Never throw out of a repository; never return a nullable to signal failure.
+  Only calls on in-memory state that cannot fail (e.g. the app-lock session) return plain values.
 - `AppResult` has `map`, `onSuccess`, `onFailure`, and `Flow<AppResult<T>>.mapResult`.
 - `AppError` is structured by source:
   - `Network`: `NoConnection`, `Timeout`, `Http(code, body: ApiErrorBody?)`, `Serialization`, `Unknown`

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="applock_locked_title">Vigil is locked</string>
+    <string name="applock_locked_message">Enter your PIN to continue.</string>
+    <string name="applock_pin_label">PIN</string>
+    <string name="applock_pin_wrong">Wrong PIN. Try again.</string>
+    <string name="applock_unlock">Unlock</string>
+    <string name="applock_use_biometric">Use biometrics</string>
+    <string name="applock_biometric_title">Unlock Vigil</string>
+    <string name="applock_biometric_use_pin">Use PIN</string>
+
+    <string name="applock_create_title">Create a PIN</string>
+    <string name="applock_create_message">You\'ll use it to unlock Vigil.</string>
+    <string name="applock_confirm_pin_label">Repeat PIN</string>
+    <string name="applock_enable_biometric">Unlock with biometrics</string>
+    <string name="applock_save">Save PIN</string>
+    <!-- Quantity is the maximum length -->
+    <plurals name="applock_error_pin_format">
+        <item quantity="one">Use %1$d to %2$d digit.</item>
+        <item quantity="other">Use %1$d to %2$d digits.</item>
+    </plurals>
+    <string name="applock_error_pin_mismatch">The PINs don\'t match.</string>
+</resources>

@@ -75,11 +75,11 @@ class LayerRulesTest : FunSpec({
             }
     }
 
-    test("feature ui modules expose only *Route composables (and AuthSessionHost)") {
+    test("feature ui modules expose only *Route and *Host composables") {
         val inUi = { path: String -> "/feature/" in path && "/ui/src/main/" in path }
         scope.functions()
             .filter { it.isTopLevel && inUi(it.path) }
-            .assertTrue { it.hasInternalModifier || it.hasPrivateModifier || it.name.endsWith("Route") || it.name == "AuthSessionHost" }
+            .assertTrue { it.hasInternalModifier || it.hasPrivateModifier || it.name.endsWith("Route") || it.name.endsWith("Host") }
         scope.classesAndInterfacesAndObjects()
             .filter { it.isTopLevel && inUi(it.path) }
             .assertTrue { it.hasInternalModifier || it.hasPrivateModifier }

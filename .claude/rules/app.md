@@ -29,6 +29,12 @@ Code: `.claude/reference/app.md`.
   polymorphic `serializersModule`), register every key and add new keys in the same change.
 - `AuthSessionHost` from `:feature:auth:ui` wraps `NavDisplay`; on session expiry, clear the back
   stack and open the login key.
+- **App lock (PIN + biometrics):** `AppLockHost` from `:feature:applock:ui` is the **outermost**
+  layer: `AppLockHost { AuthSessionHost { NavDisplay } }`, so the lock screen covers everything.
+  After login the app opens the create-PIN key, then home. Code and rules:
+  `.claude/reference/app-lock.md`.
+- `MainActivity` is a `FragmentActivity` (BiometricPrompt needs one) and calls
+  `setRecentsScreenshotEnabled(false)` on API 33+, so the recents thumbnail never shows the app.
 
 ## Environment values
 

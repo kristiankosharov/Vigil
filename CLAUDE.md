@@ -111,7 +111,8 @@ Add a `:common:*` module only for genuinely shared infrastructure, never for fea
   entities or DAOs; `AppDatabase` is used only inside `:common:database`.
 - In `domain`, use case interfaces and domain models are public; `*UseCaseImpl`, mappers and Hilt
   modules are `internal`.
-- In `ui`, only the `<Feature>Route` composable is public.
+- In `ui`, only `<Feature>Route` composables and app-wide wrappers named `*Host` (`AuthSessionHost`,
+  `AppLockHost`) are public.
 - `explicitApi()` is on in `data:api` and `domain`.
 
 ### Hilt modules
@@ -180,6 +181,7 @@ Add a `:common:*` module only for genuinely shared infrastructure, never for fea
 | MVI, ViewModel, effects, Compose | `rules/ui-mvi.md` | `skills/new-screen`, `reference/mvi-base.md`, `reference/screen-example.md` |
 | Strings, accessibility | `rules/ui-quality.md` | — |
 | App, navigation, logging setup | `rules/app.md` | `reference/app.md` |
+| App lock (PIN, biometrics) | `rules/app.md` | `reference/app-lock.md` |
 | Build, flavors, R8, detekt, ktlint | `rules/build.md` | `skills/release-check`, `reference/build-logic.md`, `reference/versions.md` |
 | Paging | `rules/data-layer.md`, `rules/ui-mvi.md` | `skills/add-paging-list` |
 | Tests, Konsist | `rules/testing.md` | `reference/tests.md`, `reference/konsist-rules.md` |

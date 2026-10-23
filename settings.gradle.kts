@@ -40,6 +40,11 @@ include(":common:datastore")
 include(":common:ui")
 include(":common:testing")
 
+include(":feature:applock:data:api")
+include(":feature:applock:data:core")
+include(":feature:applock:domain")
+include(":feature:applock:ui")
+
 include(":feature:auth:data:api")
 include(":feature:auth:data:core")
 include(":feature:auth:domain")

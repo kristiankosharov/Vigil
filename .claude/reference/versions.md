@@ -6,7 +6,8 @@ Re-check every version on its official release page before use; always take the 
 - Gradle 9.8.2 (wrapper), Gradle daemon on Java 21 (`gradle/gradle-daemon-jvm.properties`; detekt
   1.23 can't run on Java 25), compile toolchain Java 17.
 - AGP 9.4.1, Kotlin 2.4.21, KSP 2.3.12, compileSdk/targetSdk 37, minSdk 26.
-- Compose BOM 2026.09.00, Navigation 3 1.2.0, Lifecycle 2.11.0, hilt-lifecycle-viewmodel-compose 1.4.0.
+- Compose BOM 2026.09.00, Navigation 3 1.2.0, Lifecycle 2.11.0 (incl. lifecycle-process),
+  hilt-lifecycle-viewmodel-compose 1.4.0, Fragment 1.9.1, Biometric 1.1.0 (1.4 is still alpha).
 - Room 3 3.0.3 (`androidx.room3`, plugin `androidx.room3`), sqlite-bundled 2.7.1, DataStore +
   datastore-tink 1.3.0, Tink 1.24.0, Paging 3.5.3.
 - Hilt 2.60.1, Ktor 3.6.0, kotlinx-serialization 1.12.0, coroutines 1.11.0,

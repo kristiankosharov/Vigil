@@ -45,6 +45,8 @@ android {
 }
 
 dependencies {
+    implementation(projects.feature.applock.ui)
+    implementation(projects.feature.applock.data.core) // Hilt aggregation only; never referenced in code
     implementation(projects.feature.auth.ui)
     implementation(projects.feature.auth.data.core) // Hilt aggregation only; never referenced in code
     implementation(projects.feature.home.ui)
@@ -55,6 +57,7 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.fragment) // MainActivity is a FragmentActivity for BiometricPrompt
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)

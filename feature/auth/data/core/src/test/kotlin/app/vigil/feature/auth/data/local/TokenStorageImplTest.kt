@@ -19,7 +19,11 @@ import kotlinx.coroutines.cancelAndJoin
 class TokenStorageImplTest : FunSpec({
     AeadConfig.register()
 
-    fun newAead(): Aead = KeysetHandle.generateNew(PredefinedAeadParameters.AES256_GCM)
+    fun newAead(): Aead = KeysetHandle.newBuilder()
+        .addEntry(
+            KeysetHandle.generateEntryFromParameters(PredefinedAeadParameters.AES256_GCM).withRandomId().makePrimary(),
+        )
+        .build()
         .getPrimitive(RegistryConfiguration.get(), Aead::class.java)
 
     val tokens = AuthTokens(accessToken = "access", refreshToken = "refresh")

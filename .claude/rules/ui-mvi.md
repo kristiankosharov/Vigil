@@ -51,6 +51,7 @@ Theme and design system; `UiText` + `AppError.toUiText()`; marker interfaces `Ui
   They survive configuration changes.
 - **Process death:** fields the user typed or chose (query, form input, selected tab) use
   `savedStateHandle.saveable { mutableStateOf(...) }`. Reloadable data stays plain `mutableStateOf`.
+  Secrets (PIN, password) are **never** saveable: they would be written to the saved instance state.
 - `@Composable override fun uiState(): XUiState` builds the immutable state from the fields. It must
   be pure: read fields and derive values (`remember(key) { … }` for expensive derivations); no side
   effects, no `LaunchedEffect`, no use case calls.
