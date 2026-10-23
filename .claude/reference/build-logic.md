@@ -1,0 +1,130 @@
+# Build logic: convention plugin code and analysis settings
+
+Rules: `.claude/rules/build.md`. Once `build-logic`, `.editorconfig` and `config/detekt` exist, the
+source files win. `libs` is the usual `VersionCatalogsExtension.named("libs")` helper.
+
+## `vigil.hilt`: Android vs pure Kotlin modules
+
+`ViewModelComponent` and the other Android components live in `hilt-android`, an Android library
+that a pure Kotlin module can't depend on. Pure Kotlin modules get `hilt-core` and can install
+modules only in `SingletonComponent`.
+
+```kotlin
+class HiltConventionPlugin : Plugin<Project> {
+    override fun apply(target: Project) = with(target) {
+        pluginManager.apply("com.google.devtools.ksp")
+        dependencies { "ksp"(libs.findLibrary("hilt-compiler").get()) }
+
+        pluginManager.withPlugin("com.android.base") {          // Android modules
+            pluginManager.apply("com.google.dagger.hilt.android")
+            dependencies { "implementation"(libs.findLibrary("hilt-android").get()) }
+        }
+        pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {  // pure Kotlin modules
+            dependencies { "implementation"(libs.findLibrary("hilt-core").get()) }
+        }
+    }
+}
+```
+
+## Dependency rules check
+
+Called from `vigil.android.application`, `vigil.android.library` and `vigil.jvm.library`.
+Runs while Gradle configures the build, so a forbidden dependency fails every task immediately.
+
+```kotlin
+fun Project.enforceDependencyRules() {
+    val from = path
+    configurations.configureEach {
+        dependencies.withType<ProjectDependency>().configureEach {
+            dependencyRuleViolation(from, to = path)?.let { reason ->
+                throw GradleException("Forbidden dependency $from → $path: $reason (CLAUDE.md, Dependency rules)")
+            }
+        }
+    }
+}
+
+internal fun dependencyRuleViolation(from: String, to: String): String? {
+    if (to == ":common:testing") return null                       // test helpers, any module
+    val fromFeature = from.featureName() ?: return when {          // :app, :common:*, :konsist
+        to == ":app" -> "nothing depends on :app"
+        from.startsWith(":common:") && to.featureName() != null -> ":common:* never depends on features"
+        else -> null
+    }
+    val layer = from.substringAfter(":feature:$fromFeature:")      // ui, domain, data:api, data:core
+    val allowedCommon = when (layer) {
+        "ui" -> setOf(":common:ui", ":common:core")
+        "domain", "data:api" -> setOf(":common:core")
+        else -> setOf(":common:core", ":common:network", ":common:database", ":common:datastore")
+    }
+    val allowedOwn = when (layer) {
+        "ui" -> setOf("domain")
+        "domain", "data:core" -> setOf("data:api")
+        else -> emptySet()
+    }
+    val toFeature = to.featureName()
+    return when (toFeature) {
+        null -> "$layer may use only ${allowedCommon.joinToString()}".takeIf { to !in allowedCommon }
+        fromFeature -> "$layer may use only its own ${allowedOwn.joinToString()}"
+            .takeIf { to.substringAfter(":feature:$toFeature:") !in allowedOwn }
+        else -> "another feature is visible only through its :data:api, from domain or data:core"
+            .takeUnless { layer in setOf("domain", "data:core") && to.endsWith(":data:api") }
+    }
+}
+
+private fun String.featureName(): String? =
+    if (startsWith(":feature:")) removePrefix(":feature:").substringBefore(":") else null
+```
+
+## `vigil.testing`: test logging
+
+Failure messages must reach the console log (and `scripts/check.sh` reads the JUnit XML reports).
+
+```kotlin
+tasks.withType<Test>().configureEach {
+    testLogging {
+        events(TestLogEvent.FAILED)
+        exceptionFormat = TestExceptionFormat.FULL
+    }
+}
+```
+
+## `.editorconfig`
+
+```ini
+root = true
+
+[*.{kt,kts}]
+max_line_length = 120
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+# Composables are PascalCase; without this ktlint rejects every @Composable function name.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+```
+
+## `config/detekt/detekt.yml` (on top of the default config)
+
+Rule names are from detekt 1.23; check them against the installed version.
+
+```yaml
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ['Composable']
+complexity:
+  LongParameterList:
+    ignoreAnnotated: ['Composable']
+style:
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview', 'PreviewLightDark', 'PreviewFontScale']
+  MagicNumber:
+    ignoreAnnotated: ['Preview', 'PreviewLightDark', 'PreviewFontScale']
+potential-bugs:
+  UnsafeCallOnNullableType:          # no !!
+    active: true
+coroutines:
+  GlobalCoroutineUsage:              # no GlobalScope
+    active: true
+  SuspendFunSwallowedCancellation:   # no runCatching in suspend code
+    active: true
+  InjectDispatcher:                  # inject dispatchers, never hardcode Dispatchers.IO
+    active: true
+```
