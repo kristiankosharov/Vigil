@@ -13,11 +13,11 @@ class UiEffectQueue<A : UiAction> {
     val current: UiEffect<A>? get() = effects.firstOrNull()
 
     suspend fun send(effect: UiEffect<A>) = mutex.withLock {
-        effects = effects.add(effect)
+        effects = effects.adding(effect)
     }
 
     suspend fun consume(effect: UiEffect<A>) = mutex.withLock {
-        if (effects.firstOrNull() === effect) effects = effects.removeAt(0)
+        if (effects.firstOrNull() === effect) effects = effects.removingAt(0)
     }
 }
 

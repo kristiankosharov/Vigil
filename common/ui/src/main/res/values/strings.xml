@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_retry">Retry</string>
+
+    <!-- AppError.toUiText() -->
+    <string name="common_error_no_connection">No internet connection. Check your connection and try again.</string>
+    <string name="common_error_timeout">The server took too long to respond. Try again.</string>
+    <string name="common_error_server">Something went wrong on our side. Try again later.</string>
+    <string name="common_error_not_found">This item no longer exists.</string>
+    <string name="common_error_storage">Couldn\'t read or save data on this device.</string>
+    <string name="common_error_unknown">Something went wrong. Try again.</string>
+</resources>

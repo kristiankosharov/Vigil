@@ -31,4 +31,11 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "Vigil"
 
+include(":common:core")
+include(":common:network")
+include(":common:database")
+include(":common:datastore")
+include(":common:ui")
+include(":common:testing")
+
 include(":konsist")
