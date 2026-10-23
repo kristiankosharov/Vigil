@@ -40,10 +40,11 @@ More detail loads only when needed:
 - The versions current when these rules were written are in `.claude/reference/versions.md`.
 - AGP 9 has built-in Kotlin: do **not** apply `org.jetbrains.kotlin.android`. Use **KSP**, never
   kapt. Compose versions come only from the Compose BOM.
-- **Unverified APIs:** the samples for Room 3, Navigation 3, Konsist, Ktor `Auth` token clearing,
-  DataStore 1.3 (`DataStoreFactory` vs `DataStore.Builder`, `AeadSerializer`) and the Compose
-  accessibility-check API were written before these libraries were used here. The first time you
-  implement one, check it against the official docs and update the rule or reference if it differs.
+- **Verified in this project:** Room 3, Navigation 3, Konsist, DataStore 1.3 + `datastore-tink`,
+  Hilt in pure Kotlin modules and the Compose accessibility checks now compile and run here; the
+  real source files are the reference. **Still unverified:** Ktor `Auth` token clearing on logout
+  and Paging 3 with Room 3. The first time you implement one, check it against the official docs
+  and update the rule or reference if it differs.
 
 ---
 
