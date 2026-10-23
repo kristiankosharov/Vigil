@@ -7,8 +7,15 @@ Rules: `.claude/rules/app.md` (layer order), `.claude/rules/datastore.md` (the s
 
 - Locked on every process start and after **30 s or more** in the background (process lifecycle,
   so a rotation is not a trip to the background). Locked only once a PIN exists.
-- PIN: 4–8 digits (`PinRules` in `domain`). Created right after the first login (`CreatePinRoute`),
-  optionally with biometric unlock (BIOMETRIC_STRONG via `BiometricPrompt`).
+- PIN: 4–8 digits (`PinRules` in `domain`). Created right after the first login (`CreatePinRoute`)
+  in two steps, **Enter** → **Repeat** (`CreatePinStep`): a repetition that doesn't match starts again
+  at Enter with an error; Back on Repeat returns to Enter. Biometric unlock (BIOMETRIC_STRONG via
+  `BiometricPrompt`) is offered on the Repeat step.
+- PIN entry uses the app's own **number pad** (`components/PinPad.kt`), never the system keyboard:
+  `PinDots` (filled per digit, outlined up to the minimum; read out only as "PIN, n digits entered",
+  a polite live region) and `PinPad` (72 dp round keys 1–9, 0 and delete with a content
+  description). Screens pass `state.pin + digit` / `state.pin.dropLast(1)` as the input action; a
+  confirm button (Next / Save PIN / Unlock) submits, enabled from the minimum length.
 - Stored as PBKDF2-HMAC-SHA256 (random 16-byte salt, 120 000 iterations) in the encrypted
   `applock_settings.json`; never the PIN itself, never in `savedStateHandle`. Compared in constant
   time (`MessageDigest.isEqual`). A short PIN can't resist offline brute force on its own; the real

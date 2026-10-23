@@ -26,9 +26,11 @@ internal class CreatePinViewModel @Inject constructor(
     isBiometricAvailable: IsBiometricAvailableUseCase,
 ) : BaseViewModel<CreatePinUiState, CreatePinAction, CreatePinNavigation>() {
 
+    private var step by mutableStateOf(CreatePinStep.Enter)
+
     // Never savedStateHandle: the PIN must not be written to the saved instance state.
     private var pin by mutableStateOf("")
-    private var confirmPin by mutableStateOf("")
+    private var repeatedPin by mutableStateOf("")
     private val isBiometricAvailable = isBiometricAvailable()
     private var isBiometricEnabled by mutableStateOf(this.isBiometricAvailable)
     private var error by mutableStateOf<UiText?>(null)
@@ -37,8 +39,8 @@ internal class CreatePinViewModel @Inject constructor(
 
     @Composable
     override fun uiState() = CreatePinUiState(
-        pin = pin,
-        confirmPin = confirmPin,
+        step = step,
+        input = if (step == CreatePinStep.Enter) pin else repeatedPin,
         isBiometricAvailable = isBiometricAvailable,
         isBiometricEnabled = isBiometricEnabled,
         error = error,
@@ -49,8 +51,9 @@ internal class CreatePinViewModel @Inject constructor(
 
     override fun onAction(action: CreatePinAction) {
         when (action) {
-            is CreatePinAction.PinChanged -> action.pin.ifPinInput { pin = it }
-            is CreatePinAction.ConfirmPinChanged -> action.pin.ifPinInput { confirmPin = it }
+            is CreatePinAction.InputChanged -> changeInput(action.input)
+            CreatePinAction.Next -> next()
+            CreatePinAction.Back -> startAgain(error = null)
             is CreatePinAction.BiometricToggled -> isBiometricEnabled = action.enabled && isBiometricAvailable
             CreatePinAction.Submit -> submit()
             is CreatePinAction.EffectConsumed -> consumeEffect(action.effect)
@@ -58,28 +61,39 @@ internal class CreatePinViewModel @Inject constructor(
         }
     }
 
-    private inline fun String.ifPinInput(update: (String) -> Unit) {
-        if (length <= PinRules.MAX_LENGTH && all(Char::isDigit)) {
-            update(this)
-            error = null
+    private fun changeInput(input: String) {
+        if (input.length > PinRules.MAX_LENGTH || !input.all(Char::isDigit)) return
+        if (step == CreatePinStep.Enter) pin = input else repeatedPin = input
+        error = null
+    }
+
+    private fun next() {
+        if (!PinRules.isValid(pin)) {
+            error = UiText.Plural(
+                id = R.plurals.applock_error_pin_format,
+                count = PinRules.MAX_LENGTH,
+                args = listOf(PinRules.MIN_LENGTH, PinRules.MAX_LENGTH),
+            )
+            return
         }
+        repeatedPin = ""
+        error = null
+        step = CreatePinStep.Repeat
+    }
+
+    private fun startAgain(error: UiText?) {
+        step = CreatePinStep.Enter
+        pin = ""
+        repeatedPin = ""
+        this.error = error
     }
 
     private fun submit() {
-        if (saveJob?.isActive == true) return
-        error = when {
-            !PinRules.isValid(pin) ->
-                UiText.Plural(
-                    id = R.plurals.applock_error_pin_format,
-                    count = PinRules.MAX_LENGTH,
-                    args = listOf(PinRules.MIN_LENGTH, PinRules.MAX_LENGTH),
-                )
-
-            pin != confirmPin -> UiText.Resource(R.string.applock_error_pin_mismatch)
-
-            else -> null
+        if (step != CreatePinStep.Repeat || saveJob?.isActive == true) return
+        if (repeatedPin != pin) {
+            startAgain(error = UiText.Resource(R.string.applock_error_pin_mismatch))
+            return
         }
-        if (error != null) return
         saveJob = viewModelScope.launch {
             isSaving = true
             try {

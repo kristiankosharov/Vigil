@@ -4,14 +4,14 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.accessibility.enableAccessibilityChecks
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.vigil.common.ui.theme.AppTheme
 import app.vigil.feature.applock.ui.R
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -76,7 +76,7 @@ class AppLockLayerTest {
     }
 
     @Test
-    fun typingAndUnlockSendActions() {
+    fun padKeysAndUnlockSendActions() {
         val actions = mutableListOf<AppLockAction>()
         composeTestRule.setContent {
             AppTheme(dynamicColor = false) {
@@ -84,10 +84,26 @@ class AppLockLayerTest {
             }
         }
 
-        composeTestRule.onNodeWithText(context.getString(R.string.applock_pin_label)).performTextInput("5")
+        composeTestRule.onNodeWithText("5").performClick()
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.applock_delete_digit)).performClick()
         composeTestRule.onNodeWithText(context.getString(R.string.applock_unlock)).performClick()
 
-        assertTrue(actions.any { it is AppLockAction.PinChanged })
-        assertTrue(AppLockAction.SubmitPin in actions)
+        assertEquals(
+            listOf(AppLockAction.PinChanged("12345"), AppLockAction.PinChanged("123"), AppLockAction.SubmitPin),
+            actions,
+        )
+    }
+
+    @Test
+    fun thePinIsReadOutAsACountOnly() {
+        composeTestRule.setContent {
+            AppTheme(dynamicColor = false) {
+                AppLockLayer(state = state(AppLockStatus.Locked, pin = "1234"), onAction = {}) {}
+            }
+        }
+
+        val progress = context.resources.getQuantityString(R.plurals.applock_pin_progress, 4, 4)
+        composeTestRule.onNodeWithContentDescription(progress).assertIsDisplayed()
+        composeTestRule.onNodeWithText("1234").assertDoesNotExist()
     }
 }

@@ -1,5 +1,6 @@
 package app.vigil.feature.applock.ui.create
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,11 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -26,9 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewFontScale
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -38,7 +35,10 @@ import app.vigil.common.ui.mvi.UiEffectHandler
 import app.vigil.common.ui.text.UiText
 import app.vigil.common.ui.text.asString
 import app.vigil.common.ui.theme.AppTheme
+import app.vigil.feature.applock.domain.model.PinRules
 import app.vigil.feature.applock.ui.R
+import app.vigil.feature.applock.ui.components.PinDots
+import app.vigil.feature.applock.ui.components.PinPad
 
 @Composable
 fun CreatePinRoute(onPinCreated: () -> Unit, modifier: Modifier = Modifier) {
@@ -75,91 +75,71 @@ internal fun CreatePinScreen(
         },
         onNavigationConsumed = { onAction(CreatePinAction.NavigationConsumed(it)) },
     )
+    // Back on the repeat step returns to the first step instead of leaving the screen.
+    BackHandler(enabled = state.step == CreatePinStep.Repeat) { onAction(CreatePinAction.Back) }
 
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        CreatePinForm(
+        CreatePinStepContent(
             state = state,
             onAction = onAction,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()) // 200% font scale on small screens
                 .padding(24.dp),
         )
     }
 }
 
 @Composable
-private fun CreatePinForm(state: CreatePinUiState, onAction: (CreatePinAction) -> Unit, modifier: Modifier = Modifier) {
+private fun CreatePinStepContent(
+    state: CreatePinUiState,
+    onAction: (CreatePinAction) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val isRepeat = state.step == CreatePinStep.Repeat
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = stringResource(R.string.applock_create_title),
+            text = stringResource(if (isRepeat) R.string.applock_repeat_title else R.string.applock_create_title),
             style = MaterialTheme.typography.headlineMedium,
+            textAlign = TextAlign.Center,
             modifier = Modifier.semantics { heading() },
         )
-        Text(text = stringResource(R.string.applock_create_message), style = MaterialTheme.typography.bodyLarge)
-        PinField(
-            value = state.pin,
-            label = stringResource(R.string.applock_pin_label),
-            onValueChange = { onAction(CreatePinAction.PinChanged(it)) },
-            isError = state.error != null,
-            imeAction = ImeAction.Next,
+        Text(
+            text = state.error?.asString()
+                ?: stringResource(if (isRepeat) R.string.applock_repeat_message else R.string.applock_create_message),
+            color = if (state.error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
         )
-        PinField(
-            value = state.confirmPin,
-            label = stringResource(R.string.applock_confirm_pin_label),
-            onValueChange = { onAction(CreatePinAction.ConfirmPinChanged(it)) },
-            isError = state.error != null,
-            imeAction = ImeAction.Done,
+        PinDots(length = state.input.length, isError = state.error != null)
+        PinPad(
+            onDigit = { onAction(CreatePinAction.InputChanged(state.input + it)) },
+            onDelete = { onAction(CreatePinAction.InputChanged(state.input.dropLast(1))) },
+            isDeleteEnabled = state.input.isNotEmpty(),
+            enabled = !state.isSaving,
         )
-        state.error?.let { error ->
-            Text(
-                text = error.asString(),
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
-        if (state.isBiometricAvailable) {
+        if (isRepeat && state.isBiometricAvailable) {
             BiometricSwitch(
                 checked = state.isBiometricEnabled,
                 onCheckedChange = { onAction(CreatePinAction.BiometricToggled(it)) },
             )
         }
         Button(
-            onClick = { onAction(CreatePinAction.Submit) },
-            enabled = !state.isSaving,
+            onClick = { onAction(if (isRepeat) CreatePinAction.Submit else CreatePinAction.Next) },
+            enabled = !state.isSaving && state.input.length >= PinRules.MIN_LENGTH,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(stringResource(R.string.applock_save))
+            Text(stringResource(if (isRepeat) R.string.applock_save else R.string.applock_next))
         }
     }
-}
-
-@Composable
-private fun PinField(
-    value: String,
-    label: String,
-    onValueChange: (String) -> Unit,
-    isError: Boolean,
-    imeAction: ImeAction,
-    modifier: Modifier = Modifier,
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        isError = isError,
-        singleLine = true,
-        visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = imeAction),
-        modifier = modifier.fillMaxWidth(),
-    )
 }
 
 /** The whole row toggles, and reads as one switch to accessibility services. */
@@ -178,9 +158,9 @@ private fun BiometricSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit
     }
 }
 
-private fun previewState(error: UiText?) = CreatePinUiState(
-    pin = "12",
-    confirmPin = "",
+private fun previewState(step: CreatePinStep, error: UiText? = null) = CreatePinUiState(
+    step = step,
+    input = "12",
     isBiometricAvailable = true,
     isBiometricEnabled = true,
     error = error,
@@ -192,18 +172,26 @@ private fun previewState(error: UiText?) = CreatePinUiState(
 @PreviewLightDark
 @PreviewFontScale
 @Composable
-private fun CreatePinScreenPreview() {
+private fun CreatePinEnterPreview() {
     AppTheme(dynamicColor = false) {
-        CreatePinScreen(state = previewState(error = null), onAction = {}, onPinCreated = {})
+        CreatePinScreen(state = previewState(CreatePinStep.Enter), onAction = {}, onPinCreated = {})
     }
 }
 
 @PreviewLightDark
 @Composable
-private fun CreatePinScreenErrorPreview() {
+private fun CreatePinRepeatPreview() {
+    AppTheme(dynamicColor = false) {
+        CreatePinScreen(state = previewState(CreatePinStep.Repeat), onAction = {}, onPinCreated = {})
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun CreatePinMismatchPreview() {
     AppTheme(dynamicColor = false) {
         CreatePinScreen(
-            state = previewState(error = UiText.Resource(R.string.applock_error_pin_mismatch)),
+            state = previewState(CreatePinStep.Enter, UiText.Resource(R.string.applock_error_pin_mismatch)),
             onAction = {},
             onPinCreated = {},
         )

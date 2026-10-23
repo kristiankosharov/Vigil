@@ -2,7 +2,12 @@
 <resources>
     <string name="applock_locked_title">Vigil is locked</string>
     <string name="applock_locked_message">Enter your PIN to continue.</string>
-    <string name="applock_pin_label">PIN</string>
+    <string name="applock_delete_digit">Delete digit</string>
+    <!-- Read out by screen readers for the PIN dots -->
+    <plurals name="applock_pin_progress">
+        <item quantity="one">PIN, %1$d digit entered</item>
+        <item quantity="other">PIN, %1$d digits entered</item>
+    </plurals>
     <string name="applock_pin_wrong">Wrong PIN. Try again.</string>
     <string name="applock_unlock">Unlock</string>
     <string name="applock_use_biometric">Use biometrics</string>
@@ -11,7 +16,9 @@
 
     <string name="applock_create_title">Create a PIN</string>
     <string name="applock_create_message">You\'ll use it to unlock Vigil.</string>
-    <string name="applock_confirm_pin_label">Repeat PIN</string>
+    <string name="applock_repeat_title">Repeat your PIN</string>
+    <string name="applock_repeat_message">Enter the same PIN again.</string>
+    <string name="applock_next">Next</string>
     <string name="applock_enable_biometric">Unlock with biometrics</string>
     <string name="applock_save">Save PIN</string>
     <!-- Quantity is the maximum length -->
@@ -19,5 +26,5 @@
         <item quantity="one">Use %1$d to %2$d digit.</item>
         <item quantity="other">Use %1$d to %2$d digits.</item>
     </plurals>
-    <string name="applock_error_pin_mismatch">The PINs don\'t match.</string>
+    <string name="applock_error_pin_mismatch">The PINs didn\'t match. Start again.</string>
 </resources>

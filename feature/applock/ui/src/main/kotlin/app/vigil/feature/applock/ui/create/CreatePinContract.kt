@@ -7,10 +7,14 @@ import app.vigil.common.ui.mvi.UiNavigation
 import app.vigil.common.ui.mvi.UiState
 import app.vigil.common.ui.text.UiText
 
+/** Enter a PIN, then repeat it; a mismatch starts again at [Enter]. */
+internal enum class CreatePinStep { Enter, Repeat }
+
 @Immutable
 internal data class CreatePinUiState(
-    val pin: String,
-    val confirmPin: String,
+    val step: CreatePinStep,
+    /** The digits of the current step (the PIN on Enter, the repetition on Repeat). */
+    val input: String,
     val isBiometricAvailable: Boolean,
     val isBiometricEnabled: Boolean,
     val error: UiText?,
@@ -20,12 +24,18 @@ internal data class CreatePinUiState(
 ) : UiState
 
 internal sealed interface CreatePinAction : UiAction {
-    data class PinChanged(val pin: String) : CreatePinAction
+    /** The current step's digits changed (number pad). */
+    data class InputChanged(val input: String) : CreatePinAction
 
-    data class ConfirmPinChanged(val pin: String) : CreatePinAction
+    /** Enter → Repeat, once the PIN is valid. */
+    data object Next : CreatePinAction
+
+    /** Repeat → Enter (system Back on the repeat step). */
+    data object Back : CreatePinAction
 
     data class BiometricToggled(val enabled: Boolean) : CreatePinAction
 
+    /** On Repeat: save if both match, otherwise start again. */
     data object Submit : CreatePinAction
 
     class EffectConsumed(val effect: UiEffect<CreatePinAction>) : CreatePinAction

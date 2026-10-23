@@ -5,11 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -19,12 +18,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewFontScale
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -34,6 +31,8 @@ import app.vigil.common.ui.theme.AppTheme
 import app.vigil.feature.applock.domain.model.PinRules
 import app.vigil.feature.applock.ui.R
 import app.vigil.feature.applock.ui.biometric.BiometricPromptHandler
+import app.vigil.feature.applock.ui.components.PinDots
+import app.vigil.feature.applock.ui.components.PinPad
 
 /** Opaque, so nothing of the app shows through. While the state is loading it shows nothing else. */
 @Composable
@@ -63,6 +62,7 @@ internal fun AppLockScreen(state: AppLockUiState, onAction: (AppLockAction) -> U
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
+                    .verticalScroll(rememberScrollState()) // 200% font scale on small screens
                     .padding(24.dp),
             )
         }
@@ -73,7 +73,7 @@ internal fun AppLockScreen(state: AppLockUiState, onAction: (AppLockAction) -> U
 private fun PinEntry(state: AppLockUiState, onAction: (AppLockAction) -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+        verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -83,25 +83,19 @@ private fun PinEntry(state: AppLockUiState, onAction: (AppLockAction) -> Unit, m
             modifier = Modifier.semantics { heading() },
         )
         Text(
-            text = stringResource(R.string.applock_locked_message),
+            text = stringResource(
+                if (state.isPinWrong) R.string.applock_pin_wrong else R.string.applock_locked_message,
+            ),
+            color = if (state.isPinWrong) MaterialTheme.colorScheme.error else Color.Unspecified,
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
         )
-        OutlinedTextField(
-            value = state.pin,
-            onValueChange = { onAction(AppLockAction.PinChanged(it)) },
-            label = { Text(stringResource(R.string.applock_pin_label)) },
-            isError = state.isPinWrong,
-            supportingText = if (state.isPinWrong) {
-                { Text(stringResource(R.string.applock_pin_wrong)) }
-            } else {
-                null
-            },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { onAction(AppLockAction.SubmitPin) }),
-            modifier = Modifier.fillMaxWidth(),
+        PinDots(length = state.pin.length, isError = state.isPinWrong)
+        PinPad(
+            onDigit = { onAction(AppLockAction.PinChanged(state.pin + it)) },
+            onDelete = { onAction(AppLockAction.PinChanged(state.pin.dropLast(1))) },
+            isDeleteEnabled = state.pin.isNotEmpty(),
+            enabled = !state.isChecking,
         )
         Button(
             onClick = { onAction(AppLockAction.SubmitPin) },
