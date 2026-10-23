@@ -45,6 +45,8 @@ android {
 }
 
 dependencies {
+    implementation(projects.feature.auth.ui)
+    implementation(projects.feature.auth.data.core) // Hilt aggregation only; never referenced in code
     implementation(projects.feature.home.ui)
     implementation(projects.feature.home.data.core) // Hilt aggregation only; never referenced in code
 

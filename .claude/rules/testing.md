@@ -26,7 +26,7 @@ the `:konsist` module exists, its source is the truth).
 - Coroutines: `Dispatchers.Main` is replaced by the shared Kotest extension in `:common:testing`
   (wraps a `StandardTestDispatcher`). Nothing launched in `init` runs until the scheduler is advanced:
   advance first, then read the latest item.
-- **Compose UI tests** use `createComposeRule()` in `src/androidTest` (JUnit4; Kotest doesn't run as
+- **Compose UI tests** use `createComposeRule()` (the `junit4.v2` one; the old one is deprecated) in `src/androidTest` (JUnit4; Kotest doesn't run as
   instrumentation). They test stateless `XScreen`s with fixed state, assert that `onAction` /
   navigation callbacks fire, and enable accessibility checks.
 

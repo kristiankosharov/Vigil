@@ -40,6 +40,11 @@ include(":common:datastore")
 include(":common:ui")
 include(":common:testing")
 
+include(":feature:auth:data:api")
+include(":feature:auth:data:core")
+include(":feature:auth:domain")
+include(":feature:auth:ui")
+
 include(":feature:home:data:api")
 include(":feature:home:data:core")
 include(":feature:home:domain")

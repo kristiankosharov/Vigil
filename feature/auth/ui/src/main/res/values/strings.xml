@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_login_title">Welcome to Vigil</string>
+    <string name="auth_login_message">Sign in to continue.</string>
+    <string name="auth_login_button">Log in</string>
+    <string name="auth_login_in_progress">Logging in</string>
+</resources>

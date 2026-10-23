@@ -7,6 +7,7 @@ import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStoreFile
 import androidx.datastore.tink.AeadSerializer
 import com.google.crypto.tink.Aead
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.KSerializer
 
@@ -22,13 +23,22 @@ fun <T> Context.encryptedDataStore(
     defaultValue: T,
     aead: Aead,
     scope: CoroutineScope,
+): DataStore<T> = encryptedDataStore(dataStoreFile(fileName), serializer, defaultValue, aead, scope)
+
+/** [Context.encryptedDataStore] on an explicit file; for JVM tests of a feature's store. */
+fun <T> encryptedDataStore(
+    file: File,
+    serializer: KSerializer<T>,
+    defaultValue: T,
+    aead: Aead,
+    scope: CoroutineScope,
 ): DataStore<T> = DataStoreFactory.create(
     serializer = AeadSerializer(
         aead = aead,
         wrappedSerializer = JsonSerializer(serializer, defaultValue),
-        associatedData = fileName.encodeToByteArray(), // binds the ciphertext to this file
+        associatedData = file.name.encodeToByteArray(), // binds the ciphertext to this file
     ),
     corruptionHandler = ReplaceFileCorruptionHandler { defaultValue },
     scope = scope,
-    produceFile = { dataStoreFile(fileName) },
+    produceFile = { file },
 )
