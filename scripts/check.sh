@@ -10,6 +10,7 @@
 #   scripts/check.sh konsist                # architecture rules
 #   scripts/check.sh tests [:module ...]    # unit tests (all modules, or only the given ones)
 #   scripts/check.sh android [:module ...]  # instrumented tests on a connected device or emulator
+#   scripts/check.sh build                  # compile the dev debug app
 #   scripts/check.sh release                # lint + R8 release build (unsigned without signing env vars)
 #   scripts/check.sh all                    # format, detekt, konsist, tests, release (CI order)
 #
@@ -100,13 +101,12 @@ test_task_for() {
   fi
 }
 
-# Every pure Kotlin module except :konsist (they have no testDebugUnitTest task, so the Android test
-# tasks skip them; Konsist has its own step).
-jvm_test_tasks() {
-  grep -rl --include=build.gradle.kts 'jvm.library' . 2>/dev/null \
-    | grep -v '/build/' | grep -v '^./build-logic/' \
-    | sed -e 's|^\./||' -e 's|/build.gradle.kts$||' -e 's|/|:|g' -e 's|^|:|' -e 's|$|:test|' \
-    | grep -v '^:konsist:'
+# Every module in the build (from its build file), except the root, build-logic and :konsist
+# (Konsist has its own step).
+all_modules() {
+  find . -name build.gradle.kts -not -path '*/build/*' -not -path './build-logic/*' -not -path './build.gradle.kts' \
+    | sed -e 's|^\./||' -e 's|/build.gradle.kts$||' -e 's|/|:|g' -e 's|^|:|' \
+    | grep -v '^:konsist$' | sort
 }
 
 tests() {
@@ -114,8 +114,8 @@ tests() {
   if [[ $# -gt 0 ]]; then
     for m in "$@"; do tasks+=("$(test_task_for "$m")"); done
   else
-    tasks=(testDebugUnitTest testDevDebugUnitTest)
-    while IFS= read -r t; do [[ -n "$t" ]] && tasks+=("$t"); done < <(jvm_test_tasks)
+    tasks=(:build-logic:convention:test)
+    while IFS= read -r m; do [[ -n "$m" ]] && tasks+=("$(test_task_for "$m")"); done < <(all_modules)
   fi
   run tests "${tasks[@]}"
 }
@@ -127,20 +127,21 @@ android() {
     echo "⚠ android: skipped — no device or emulator connected, so instrumented tests did NOT run"
     return
   fi
-  if [[ $# -gt 0 ]]; then
-    for m in "$@"; do
-      if [[ "$m" == ":app" ]]; then
-        tasks+=(":app:connectedDevDebugAndroidTest")
-      elif is_jvm_module "$m"; then
-        echo "  ($m is pure Kotlin: no instrumented tests)"
-      else
-        tasks+=("$m:connectedDebugAndroidTest")
-      fi
-    done
-    [[ ${#tasks[@]} -gt 0 ]] || return
-  else
-    tasks=(connectedDebugAndroidTest :app:connectedDevDebugAndroidTest)
+  local modules=("$@")
+  if [[ ${#modules[@]} -eq 0 ]]; then
+    while IFS= read -r m; do is_jvm_module "$m" || modules+=("$m"); done < <(all_modules)
   fi
+  # ${a[@]+"${a[@]}"}: bash 3.2 (macOS) treats an empty array as unbound under set -u.
+  for m in ${modules[@]+"${modules[@]}"}; do
+    if [[ "$m" == ":app" ]]; then
+      tasks+=(":app:connectedDevDebugAndroidTest")
+    elif is_jvm_module "$m"; then
+      echo "  ($m is pure Kotlin: no instrumented tests)"
+    else
+      tasks+=("$m:connectedDebugAndroidTest")
+    fi
+  done
+  [[ ${#tasks[@]} -gt 0 ]] || return
   run android "${tasks[@]}"
 }
 
@@ -180,6 +181,7 @@ case "$step" in
   konsist) run konsist :konsist:test ;;
   tests)   tests "$@" ;;
   android) android "$@" ;;
+  build)   run build :app:assembleDevDebug ;;
   release) run lint :app:lintProdRelease; run release-build :app:assembleProdRelease ;;
   all)
     format
@@ -190,7 +192,7 @@ case "$step" in
     run release-build :app:assembleProdRelease
     ;;
   *)
-    echo "Unknown step: $step (use format | detekt | konsist | tests [:module ...] | android [:module ...] | release | all)" >&2
+    echo "Unknown step: $step (use format | detekt | konsist | tests [:module ...] | android [:module ...] | build | release | all)" >&2
     exit 2
     ;;
 esac

@@ -152,6 +152,7 @@ Add a `:common:*` module only for genuinely shared infrastructure, never for fea
   - `scripts/check.sh tests :feature:users:ui` — unit tests of the modules you changed
   - `scripts/check.sh android :feature:users:ui` — instrumented tests (Compose UI, Room
     migrations); needs a running emulator, otherwise it says the tests did **not** run
+  - `scripts/check.sh build` — compile the dev debug app
   - `scripts/check.sh detekt`, `scripts/check.sh release`, `scripts/check.sh all` (CI order)
 - **Automatic (hooks in `.claude/settings.json`):** every Kotlin file you edit is formatted with the
   pinned ktlint, and problems it can't fix are reported back to you. If the hook says ktlint is

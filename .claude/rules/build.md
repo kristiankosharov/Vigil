@@ -30,9 +30,9 @@ Flavor/BuildConfig/signing code: `.claude/reference/app.md`. Release procedure:
 - `vigil.room` — Room 3 + KSP + schema directory, **only** for `:common:database`
 - `vigil.feature.ui` — library + compose + hilt + lifecycle/hilt-compose deps + `:common:ui`
 - `vigil.testing` — Kotest, MockK, Turbine, `:common:testing`; test logging with
-  `exceptionFormat = FULL`
+  `exceptionFormat = FULL`. Applied by the three module plugins
 - `vigil.environment` — `dev`/`staging`/`prod` flavors, **only** for `:app`
-- `vigil.detekt` — detekt + Compose rules, every module
+- `vigil.detekt` — detekt + Compose rules; applied by the three module plugins, so every module has it
 
 The three module plugins (`android.application`, `android.library`, `jvm.library`) call
 `enforceDependencyRules()`, which fails the build on a project dependency that breaks the dependency
@@ -71,11 +71,14 @@ accessors (`projects.feature.users.data.api`). All versions live in `gradle/libs
 ## Formatting and static analysis
 
 - **ktlint** (the CLI, version pinned as `ktlint` in `gradle/libs.versions.toml`) is the only
-  formatter. A hook formats every Kotlin file you edit; `scripts/check.sh format` checks all files
-  (first CI step). When you bump the pin, everyone (and CI) installs the same version.
+  formatter, with `ktlint_code_style = android_studio` (`.editorconfig`). A hook formats every
+  Kotlin file you edit; `scripts/check.sh format` checks all files (first CI step). When you bump
+  the pin, everyone (and CI) installs the same version.
 - **detekt** with the Compose rules plugin (`io.nlopez.compose.rules:detekt`) does code analysis,
   applied by `vigil.detekt`. Do **not** add `detekt-formatting`: it bundles its own ktlint version,
   which would disagree with the pinned CLI. Run `scripts/check.sh detekt`.
+- The Gradle daemon runs on Java 21 (`gradle/gradle-daemon-jvm.properties`): detekt 1.23 crashes
+  on Java 25, so don't let the IDE raise it.
 - `.editorconfig` and `config/detekt/detekt.yml` must keep the settings in
   `.claude/reference/build-logic.md`: Composable function names, preview functions, and the rules
   behind `CLAUDE.md`'s "Never" list (`!!`, `GlobalScope`, `runCatching` in suspend code,

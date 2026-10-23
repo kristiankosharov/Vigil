@@ -1,0 +1,29 @@
+# On top of detekt's default config (buildUponDefaultConfig = true). Rule names are from detekt 1.23.
+# Keep the settings below: they back CLAUDE.md's "Never" list and the Compose naming conventions
+# (.claude/reference/build-logic.md).
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ['Composable']
+
+complexity:
+  LongParameterList:
+    ignoreAnnotated: ['Composable']
+
+style:
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview', 'PreviewLightDark', 'PreviewFontScale']
+  MagicNumber:
+    ignoreAnnotated: ['Preview', 'PreviewLightDark', 'PreviewFontScale']
+
+potential-bugs:
+  UnsafeCallOnNullableType: # no !!
+    active: true
+
+coroutines:
+  GlobalCoroutineUsage: # no GlobalScope
+    active: true
+  SuspendFunSwallowedCancellation: # no runCatching in suspend code
+    active: true
+  InjectDispatcher: # inject dispatchers, never hardcode Dispatchers.IO
+    active: true

@@ -1,6 +1,9 @@
 ---
 paths:
-  - "app/**"
+  # Not "app/**": the package is app.vigil, so that glob would match every source file.
+  - "app/src/**"
+  - "app/build.gradle.kts"
+  - "app/*.pro"
 ---
 
 # `:app`: navigation, environment, logging setup

@@ -1,0 +1,28 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{kt,kts}]
+# Android Kotlin style. ktlint's default (ktlint_official) forces extra wrapping, e.g. on every Kotest spec.
+ktlint_code_style = android_studio
+max_line_length = 120
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+# Composables are PascalCase; without this ktlint rejects every @Composable function name.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+
+[**/src/{test,androidTest}/**.kt]
+# Kotest specs read `class XTest : FunSpec({`; class-signature would move the supertype to its own line.
+ktlint_standard_class-signature = disabled
+
+[*.{yml,yaml,json,toml}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
