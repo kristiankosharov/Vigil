@@ -22,6 +22,9 @@ fun AppError.toUiText(): UiText = UiText.Resource(
         is AppError.Local.Unknown,
         -> R.string.common_error_storage
 
+        // Feature screens map these to their own strings first; this is the fallback.
+        is AppError.Auth -> R.string.common_error_auth
+
         is AppError.Unknown -> R.string.common_error_unknown
     },
 )

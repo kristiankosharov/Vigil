@@ -2,6 +2,49 @@
 <resources>
     <string name="auth_login_title">Welcome to Vigil</string>
     <string name="auth_login_message">Sign in to continue.</string>
-    <string name="auth_login_button">Log in</string>
-    <string name="auth_login_in_progress">Logging in</string>
+    <string name="auth_in_progress">Please wait</string>
+
+    <!-- Method selector -->
+    <string name="auth_method_email">Email</string>
+    <string name="auth_method_phone">Phone</string>
+
+    <!-- Email -->
+    <string name="auth_email_label">Email</string>
+    <string name="auth_password_label">Password</string>
+    <string name="auth_sign_in_button">Sign in</string>
+    <string name="auth_sign_up_button">Create account</string>
+    <string name="auth_forgot_password">Forgot password?</string>
+    <string name="auth_switch_to_sign_up">No account? Create one</string>
+    <string name="auth_switch_to_sign_in">Have an account? Sign in</string>
+    <string name="auth_reset_sent">If an account exists for this email, a reset link is on its way.</string>
+
+    <!-- Phone -->
+    <string name="auth_phone_label">Phone number</string>
+    <string name="auth_phone_hint">With the country code, e.g. +359888123456</string>
+    <string name="auth_send_code_button">Send code</string>
+    <string name="auth_code_label">SMS code</string>
+    <string name="auth_code_sent">Enter the code we sent to %1$s.</string>
+    <string name="auth_verify_button">Verify</string>
+    <string name="auth_change_number">Change number</string>
+
+    <!-- OpenID Connect -->
+    <string name="auth_or">or</string>
+    <string name="auth_oidc_button">Continue with %1$s</string>
+
+    <!-- Errors -->
+    <string name="auth_error_email_format">Enter a valid email address.</string>
+    <plurals name="auth_error_password_length">
+        <item quantity="one">The password needs at least %1$d character.</item>
+        <item quantity="other">The password needs at least %1$d characters.</item>
+    </plurals>
+    <string name="auth_error_invalid_credentials">Wrong email or password.</string>
+    <string name="auth_error_account_exists">An account with this email already exists. Sign in instead.</string>
+    <string name="auth_error_weak_password">This password is too weak. Choose a stronger one.</string>
+    <string name="auth_error_phone_format">Enter the number with the country code, e.g. +359888123456.</string>
+    <plurals name="auth_error_code_format">
+        <item quantity="one">Enter the %1$d-digit code.</item>
+        <item quantity="other">Enter the %1$d-digit code.</item>
+    </plurals>
+    <string name="auth_error_invalid_code">This code is wrong or has expired.</string>
+    <string name="auth_error_too_many_requests">Too many attempts. Try again later.</string>
 </resources>

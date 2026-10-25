@@ -36,6 +36,31 @@ sealed interface AppError {
         data class Unknown(override val cause: Throwable?) : Local
     }
 
+    /**
+     * Sign-in failures the UI must tell apart (wrong password vs. invalid code vs. throttled). Raised
+     * by the auth feature's identity provider (Firebase Auth); everything else maps to [Network].
+     */
+    sealed interface Auth : AppError {
+        /** Wrong email or password, or no such account (Firebase doesn't say which). */
+        data class InvalidCredentials(override val cause: Throwable?) : Auth
+
+        data class AccountExists(override val cause: Throwable?) : Auth
+
+        data class WeakPassword(override val cause: Throwable?) : Auth
+
+        data class InvalidPhoneNumber(override val cause: Throwable?) : Auth
+
+        /** A wrong or expired SMS code. */
+        data class InvalidCode(override val cause: Throwable?) : Auth
+
+        data class TooManyRequests(override val cause: Throwable?) : Auth
+
+        /** The user closed the provider's sign-in page (OpenID Connect). Not shown as an error. */
+        data class Cancelled(override val cause: Throwable?) : Auth
+
+        data class Unknown(override val cause: Throwable?) : Auth
+    }
+
     data class Unknown(override val cause: Throwable?) : AppError
 }
 

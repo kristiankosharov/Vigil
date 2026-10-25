@@ -4,14 +4,20 @@ import androidx.compose.ui.test.assertContentDescriptionContains
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.accessibility.enableAccessibilityChecks
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import app.vigil.common.ui.text.UiText
 import app.vigil.common.ui.theme.AppTheme
 import app.vigil.feature.auth.ui.R
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -31,38 +37,99 @@ class LoginScreenTest {
         composeTestRule.enableAccessibilityChecks()
     }
 
-    @Test
-    fun tappingLogInSendsSubmit() {
-        val actions = mutableListOf<LoginAction>()
+    private fun state(
+        method: LoginMethod = LoginMethod.Email,
+        phoneStep: PhoneStep = PhoneStep.EnterNumber,
+        oidcProviders: ImmutableList<OidcProviderItem> = persistentListOf(),
+        error: UiText? = null,
+        isBusy: Boolean = false,
+        navigation: LoginNavigation? = null,
+    ) = LoginUiState(
+        method = method,
+        emailMode = EmailMode.SignIn,
+        email = "",
+        password = "",
+        phoneStep = phoneStep,
+        phoneNumber = "+359888123456",
+        code = "",
+        oidcProviders = oidcProviders,
+        error = error,
+        isBusy = isBusy,
+        effect = null,
+        navigation = navigation,
+    )
+
+    private fun setContent(state: LoginUiState, onAction: (LoginAction) -> Unit = {}, onLoggedIn: () -> Unit = {}) {
         composeTestRule.setContent {
             AppTheme(dynamicColor = false) {
-                LoginScreen(
-                    state = LoginUiState(isLoggingIn = false, effect = null, navigation = null),
-                    onAction = { actions += it },
-                    onLoggedIn = {},
-                )
+                LoginScreen(state = state, onAction = onAction, onLoggedIn = onLoggedIn)
             }
         }
+    }
 
-        composeTestRule.onNodeWithText(context.getString(R.string.auth_login_title)).assertIsDisplayed()
-        composeTestRule.onNodeWithText(context.getString(R.string.auth_login_button)).performClick()
+    private fun text(id: Int) = context.getString(id)
 
-        assertEquals(listOf<LoginAction>(LoginAction.Submit), actions)
+    @Test
+    fun emailFormSendsTypedValuesAndSubmit() {
+        val actions = mutableListOf<LoginAction>()
+        setContent(state(), onAction = { actions += it })
+
+        composeTestRule.onNodeWithText(text(R.string.auth_login_title)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(text(R.string.auth_email_label)).performTextInput("ana@example.com")
+        composeTestRule.onNodeWithText(text(R.string.auth_password_label)).performTextInput("secret1")
+        composeTestRule.onNodeWithText(text(R.string.auth_sign_in_button)).performScrollTo().performClick()
+
+        assertEquals(
+            listOf(
+                LoginAction.EmailChanged("ana@example.com"),
+                LoginAction.PasswordChanged("secret1"),
+                LoginAction.SubmitEmail,
+            ),
+            actions,
+        )
+    }
+
+    @Test
+    fun theErrorIsShown() {
+        setContent(state(error = UiText.Resource(R.string.auth_error_invalid_credentials)))
+
+        composeTestRule.onNodeWithText(text(R.string.auth_error_invalid_credentials)).assertIsDisplayed()
+    }
+
+    @Test
+    fun phoneCodeStepVerifiesAndCanChangeTheNumber() {
+        val actions = mutableListOf<LoginAction>()
+        setContent(state(method = LoginMethod.Phone, phoneStep = PhoneStep.EnterCode), onAction = { actions += it })
+
+        composeTestRule.onNodeWithText(context.getString(R.string.auth_code_sent, "+359888123456")).assertIsDisplayed()
+        composeTestRule.onNodeWithText(text(R.string.auth_verify_button)).performScrollTo().performClick()
+        composeTestRule.onNodeWithText(text(R.string.auth_change_number)).performScrollTo().performClick()
+
+        assertEquals(listOf(LoginAction.VerifyCode, LoginAction.ChangePhoneNumber), actions)
+    }
+
+    @Test
+    fun oidcButtonsAppearOnlyForConfiguredProviders() {
+        val actions = mutableListOf<LoginAction>()
+        setContent(
+            state(oidcProviders = persistentListOf(OidcProviderItem("oidc.company", "Company SSO"))),
+            onAction = { actions += it },
+        )
+
+        composeTestRule.onNodeWithText(context.getString(R.string.auth_oidc_button, "Company SSO"))
+            .performScrollTo()
+            .performClick()
+
+        assertEquals(listOf<LoginAction>(LoginAction.OidcSelected("oidc.company")), actions)
     }
 
     @Test
     fun loggedInNavigationCallsOnLoggedInOnce() {
         var loggedIn = 0
         val actions = mutableListOf<LoginAction>()
-        composeTestRule.setContent {
-            AppTheme(dynamicColor = false) {
-                LoginScreen(
-                    state = LoginUiState(isLoggingIn = false, effect = null, navigation = LoginNavigation.LoggedIn),
-                    onAction = { actions += it },
-                    onLoggedIn = { loggedIn++ },
-                )
-            }
-        }
+        setContent(state(navigation = LoginNavigation.LoggedIn), onAction = {
+            actions += it
+        }, onLoggedIn = { loggedIn++ })
         composeTestRule.waitForIdle()
 
         assertEquals(1, loggedIn)
@@ -70,20 +137,12 @@ class LoginScreenTest {
     }
 
     @Test
-    fun whileLoggingInTheButtonIsDisabledAndShowsProgress() {
-        composeTestRule.setContent {
-            AppTheme(dynamicColor = false) {
-                LoginScreen(
-                    state = LoginUiState(isLoggingIn = true, effect = null, navigation = null),
-                    onAction = {},
-                    onLoggedIn = {},
-                )
-            }
-        }
+    fun whileBusyTheButtonIsDisabledAndShowsProgress() {
+        setContent(state(isBusy = true))
 
-        composeTestRule.onNodeWithText(context.getString(R.string.auth_login_button)).assertDoesNotExist()
-        composeTestRule.onNode(hasClickAction())
+        composeTestRule.onNodeWithText(text(R.string.auth_sign_in_button)).assertDoesNotExist()
+        composeTestRule.onNode(hasClickAction() and hasContentDescription(text(R.string.auth_in_progress)))
             .assertIsNotEnabled()
-            .assertContentDescriptionContains(context.getString(R.string.auth_login_in_progress))
+            .assertContentDescriptionContains(text(R.string.auth_in_progress))
     }
 }
