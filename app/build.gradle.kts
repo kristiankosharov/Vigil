@@ -11,8 +11,9 @@ android {
 
     defaultConfig {
         applicationId = "app.vigil"
-        versionCode = 1
-        versionName = "0.1.0"
+        // The release workflow sets these from the git tag (v1.2.3 → 1.2.3 / 1002003); local builds are 1 / dev.
+        versionCode = providers.environmentVariable("VERSION_CODE").map(String::toInt).orElse(1).get()
+        versionName = providers.environmentVariable("VERSION_NAME").orElse("0.1.0-dev").get()
     }
 
     buildFeatures {

@@ -1,0 +1,51 @@
+name: Set up the build
+description: JDK 17 (compile toolchain) and 21 (Gradle daemon), Gradle with caching, and the pinned ktlint.
+
+inputs:
+  ktlint:
+    description: Install the ktlint CLI pinned in gradle/libs.versions.toml.
+    default: "true"
+  ktlint-sha256:
+    description: SHA-256 of the ktlint binary for the pinned version. Update it together with the pin.
+    # ktlint 1.8.0 (https://github.com/ktlint/ktlint/releases/tag/1.8.0)
+    default: a3fd620207d5c40da6ca789b95e7f823c54e854b7fade7f613e91096a3706d75
+
+runs:
+  using: composite
+  steps:
+    - name: Set up JDK 17 and 21
+      uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+      with:
+        distribution: temurin
+        # 17 compiles the code (convention plugins); 21 runs the Gradle daemon
+        # (gradle/gradle-daemon-jvm.properties) — detekt 1.23 can't run on Java 25.
+        java-version: |
+          17
+          21
+
+    - name: Let Gradle find both JDKs
+      shell: bash
+      run: |
+        mkdir -p ~/.gradle
+        echo "org.gradle.java.installations.fromEnv=JAVA_HOME_17_X64,JAVA_HOME_21_X64" >> ~/.gradle/gradle.properties
+
+    - name: Set up Gradle
+      uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+      with:
+        # Only builds on main write the cache; pull requests read it.
+        cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+    - name: Install ktlint
+      if: inputs.ktlint == 'true'
+      shell: bash
+      env:
+        KTLINT_SHA256: ${{ inputs.ktlint-sha256 }}
+      run: |
+        version=$(sed -n 's/^ktlint *= *"\([^"]*\)".*/\1/p' gradle/libs.versions.toml)
+        dir="$RUNNER_TEMP/ktlint"
+        mkdir -p "$dir"
+        curl -fsSL -o "$dir/ktlint" "https://github.com/ktlint/ktlint/releases/download/$version/ktlint"
+        echo "$KTLINT_SHA256  $dir/ktlint" | sha256sum --check --status ||
+          { echo "::error::ktlint $version does not match the pinned SHA-256; update ktlint-sha256 in .github/actions/setup/action.yml"; exit 1; }
+        chmod +x "$dir/ktlint"
+        echo "$dir" >> "$GITHUB_PATH"

@@ -11,7 +11,7 @@
 #   scripts/check.sh tests [:module ...]    # unit tests (all modules, or only the given ones)
 #   scripts/check.sh android [:module ...]  # instrumented tests on a connected device or emulator
 #   scripts/check.sh build                  # compile the dev debug app
-#   scripts/check.sh release                # lint + R8 release build (unsigned without signing env vars)
+#   scripts/check.sh release                # lint + R8 release APK and AAB (unsigned without signing env vars)
 #   scripts/check.sh all                    # format, detekt, konsist, tests, release (CI order)
 #
 # Exit code is non-zero if any step failed. A skipped step (no device for `android`) says so and
@@ -125,6 +125,7 @@ android() {
   adb=$(command -v adb || echo "${ANDROID_HOME:-$HOME/Library/Android/sdk}/platform-tools/adb")
   if [[ ! -x "$adb" ]] || ! "$adb" devices 2>/dev/null | awk 'NR > 1 && $2 == "device"' | grep -q .; then
     echo "⚠ android: skipped — no device or emulator connected, so instrumented tests did NOT run"
+    [[ -n "${CI:-}" ]] && STATUS=1 # on CI a missing emulator is a failure, never a silent pass
     return
   fi
   local modules=("$@")
@@ -182,14 +183,14 @@ case "$step" in
   tests)   tests "$@" ;;
   android) android "$@" ;;
   build)   run build :app:assembleDevDebug ;;
-  release) run lint :app:lintProdRelease; run release-build :app:assembleProdRelease ;;
+  release) run lint :app:lintProdRelease; run release-build :app:assembleProdRelease :app:bundleProdRelease ;;
   all)
     format
     run detekt detekt
     run konsist :konsist:test
     tests
     run lint :app:lintProdRelease
-    run release-build :app:assembleProdRelease
+    run release-build :app:assembleProdRelease :app:bundleProdRelease
     ;;
   *)
     echo "Unknown step: $step (use format | detekt | konsist | tests [:module ...] | android [:module ...] | build | release | all)" >&2
