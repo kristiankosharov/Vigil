@@ -1,10 +1,16 @@
 package app.vigil.feature.auth.ui.login
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertContentDescriptionContains
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.accessibility.enableAccessibilityChecks
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -69,14 +75,34 @@ class LoginScreenTest {
 
     private fun text(id: Int) = context.getString(id)
 
+    // "Email" is also the method selector's label: match only the text field.
+    private fun field(labelId: Int) = composeTestRule.onNode(hasSetTextAction() and hasText(text(labelId)))
+
     @Test
     fun emailFormSendsTypedValuesAndSubmit() {
         val actions = mutableListOf<LoginAction>()
-        setContent(state(), onAction = { actions += it })
+        // Keeps the typed text like the ViewModel would; a fixed state would reset the fields.
+        composeTestRule.setContent {
+            var current by remember { mutableStateOf(state()) }
+            AppTheme(dynamicColor = false) {
+                LoginScreen(
+                    state = current,
+                    onAction = { action ->
+                        actions += action
+                        current = when (action) {
+                            is LoginAction.EmailChanged -> current.copy(email = action.email)
+                            is LoginAction.PasswordChanged -> current.copy(password = action.password)
+                            else -> current
+                        }
+                    },
+                    onLoggedIn = {},
+                )
+            }
+        }
 
         composeTestRule.onNodeWithText(text(R.string.auth_login_title)).assertIsDisplayed()
-        composeTestRule.onNodeWithText(text(R.string.auth_email_label)).performTextInput("ana@example.com")
-        composeTestRule.onNodeWithText(text(R.string.auth_password_label)).performTextInput("secret1")
+        field(R.string.auth_email_label).performTextInput("ana@example.com")
+        field(R.string.auth_password_label).performTextInput("secret1")
         composeTestRule.onNodeWithText(text(R.string.auth_sign_in_button)).performScrollTo().performClick()
 
         assertEquals(
