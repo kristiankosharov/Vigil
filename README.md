@@ -1,5 +1,7 @@
 # Vigil
 
+[![CI](https://github.com/kristiankosharov/Vigil/actions/workflows/ci.yml/badge.svg)](https://github.com/kristiankosharov/Vigil/actions/workflows/ci.yml)
+
 An Android app built on a strict, tool-enforced architecture: multi-module Clean Architecture with
 MVI, where every convention is checked by the build rather than by memory. It is also set up to be
 developed together with [Claude Code](https://claude.com/claude-code).
@@ -107,6 +109,61 @@ to fix it (failing tests with their messages, compiler/detekt/lint findings). Fu
 | `scripts/check.sh build` | compiles the dev debug app |
 | `scripts/check.sh release` | Android Lint + R8 release build |
 | `scripts/check.sh all` | the CI order: format, detekt, konsist, tests, lint, release |
+
+## CI/CD (GitHub Actions)
+
+| Workflow | Runs on | What it does |
+|---|---|---|
+| [`ci.yml`](.github/workflows/ci.yml) | every pull request and push to `main` | **Checks:** `scripts/check.sh all` (ktlint, detekt, Konsist, unit tests, lint, R8 APK + AAB). **UI tests:** `scripts/check.sh android` on an API 35 emulator, in parallel. Reports are uploaded when a job fails. |
+| [`release.yml`](.github/workflows/release.yml) | a pushed `v*` tag | The full checks, then a **signed** prod APK and AAB, published with the R8 `mapping.txt` as a GitHub Release. |
+| [`dependabot.yml`](.github/dependabot.yml) | weekly | Update PRs for the GitHub Actions and Gradle dependencies. |
+
+Both workflows share [`.github/actions/setup`](.github/actions/setup/action.yml) (JDK 17 + 21, the
+Gradle cache, and the pinned ktlint, checked against its SHA-256). Actions are pinned to commit
+SHAs.
+
+### Branches (git flow)
+
+| Branch | From | Merges into |
+|---|---|---|
+| `main` | — | released code only, every merge tagged `vX.Y.Z` |
+| `develop` | `main` | integration branch |
+| `feature/<name>`, `bugfix/<name>` | `develop` | `develop` |
+| `release/<X.Y.Z>` | `develop` | `main`, then back into `develop` |
+| `hotfix/<X.Y.Z>` | `main` | `main`, then back into `develop` |
+
+CI runs on pull requests into `main` and `develop` and on pushes to `main`, `develop`, `release/*`
+and `hotfix/*`.
+
+### Release signing secrets
+
+Add these under **Settings → Secrets and variables → Actions → New repository secret**. The release
+workflow stops if any is missing, so it can never publish an unsigned build.
+
+| Secret | Value |
+|---|---|
+| `RELEASE_KEYSTORE_BASE64` | the keystore file, Base64-encoded (`base64 -i release.jks \| pbcopy` on macOS) |
+| `RELEASE_KEYSTORE_PASSWORD` | the keystore password |
+| `RELEASE_KEY_ALIAS` | the key alias |
+| `RELEASE_KEY_PASSWORD` | the key password |
+
+### Cutting a release
+
+1. Branch `release/0.1.0` from `develop`; only fixes go in from here.
+2. Open a PR into `main`; merge it when CI is green.
+3. Tag `main` and push the tag. The tag starts the release workflow:
+
+   ```bash
+   git checkout main && git pull && git tag v0.1.0 && git push origin v0.1.0
+   ```
+
+4. Merge `main` back into `develop`.
+
+Tags must be `vMAJOR.MINOR.PATCH`. The version name comes from the tag and the version code is
+derived from it (`v1.2.3` → `1002003`), so it always grows.
+
+The release then appears under **Releases** with `vigil-0.1.0.apk`, `vigil-0.1.0.aab` and
+`vigil-0.1.0-mapping.txt`.
 
 ## Architecture
 

@@ -1,0 +1,99 @@
+name: Release
+
+# Push a version tag to release:  git tag v1.2.3 && git push origin v1.2.3
+# Git flow: tag main after merging release/1.2.3 (or hotfix/1.2.3) into it.
+# Builds a signed prod APK + AAB (after the full checks) and publishes them, with the R8 mapping,
+# as a GitHub Release. Signing comes only from the repository secrets listed in the README.
+on:
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write # create the GitHub Release
+
+jobs:
+  release:
+    name: Signed release
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./.github/actions/setup
+
+      - name: Version from the tag
+        run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "::error::Release tags must look like v1.2.3 (got $GITHUB_REF_NAME)"
+            exit 1
+          fi
+          major=${BASH_REMATCH[1]} minor=${BASH_REMATCH[2]} patch=${BASH_REMATCH[3]}
+          if (( minor > 999 || patch > 999 || major > 2099 )); then
+            echo "::error::Version $GITHUB_REF_NAME doesn't fit the versionCode scheme"
+            exit 1
+          fi
+          # 1.2.3 → 1002003: grows with every version, and re-running a tag gives the same code.
+          echo "VERSION_NAME=$major.$minor.$patch" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$(( major * 1000000 + minor * 1000 + patch ))" >> "$GITHUB_ENV"
+
+      - name: Keystore from secrets
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          # Without these the build would silently produce an unsigned APK, so stop here instead.
+          for name in RELEASE_KEYSTORE_BASE64 RELEASE_KEYSTORE_PASSWORD RELEASE_KEY_ALIAS RELEASE_KEY_PASSWORD; do
+            [[ -n "${!name}" ]] || { echo "::error::Missing repository secret $name"; exit 1; }
+          done
+          echo "$RELEASE_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          echo "RELEASE_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Checks and signed release build
+        env:
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: scripts/check.sh all
+
+      - name: Collect and verify the artifacts
+        run: |
+          mkdir dist
+          cp app/build/outputs/apk/prod/release/app-prod-release.apk "dist/vigil-$VERSION_NAME.apk"
+          cp app/build/outputs/bundle/prodRelease/app-prod-release.aab "dist/vigil-$VERSION_NAME.aab"
+          cp app/build/outputs/mapping/prodRelease/mapping.txt "dist/vigil-$VERSION_NAME-mapping.txt"
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/apksigner"
+          "$apksigner" verify --print-certs "dist/vigil-$VERSION_NAME.apk"
+          # Not -strict: Android upload keys are self-signed, which -strict always rejects.
+          jarsigner -verify "dist/vigil-$VERSION_NAME.aab" | grep -q "^jar verified" ||
+            { echo "::error::The AAB is not signed"; exit 1; }
+
+      - name: Publish the GitHub Release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          name: Vigil ${{ env.VERSION_NAME }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            dist/vigil-${{ env.VERSION_NAME }}.apk
+            dist/vigil-${{ env.VERSION_NAME }}.aab
+            dist/vigil-${{ env.VERSION_NAME }}-mapping.txt
+
+      - name: Remove the keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks"
+
+      - name: Upload logs and reports
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-reports
+          path: |
+            build/check-logs/
+            **/build/reports/
+          retention-days: 7
