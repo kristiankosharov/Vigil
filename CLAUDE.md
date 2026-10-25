@@ -27,7 +27,7 @@ More detail loads only when needed:
 | Paging | Paging 3 with Room + `RemoteMediator` |
 | DI | Hilt (KSP) |
 | Async | Kotlin Coroutines + Flow |
-| Logging | Timber (Android modules only) |
+| Logging / crashes | Timber (Android modules only); Firebase Crashlytics in release, only in `:app` |
 | Testing | Kotest, MockK, Turbine, Molecule (ViewModel state), Compose UI Test, Ktor `MockEngine` |
 | Quality | Konsist (architecture tests), detekt + Compose rules, ktlint CLI (pinned version, the only formatter), Android Lint |
 

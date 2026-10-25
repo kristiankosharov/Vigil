@@ -205,7 +205,7 @@ The full rules are in [`CLAUDE.md`](CLAUDE.md) and `.claude/rules/`.
 | Data | Room 3 with the bundled SQLite driver, DataStore 1.3 + `datastore-tink`, Paging 3 |
 | Network | Ktor 3 (OkHttp engine), kotlinx.serialization, bearer auth |
 | Security | Tink, Android Keystore, `androidx.biometric` |
-| Async / logging | Coroutines + Flow, Timber |
+| Async / logging | Coroutines + Flow, Timber, Firebase Crashlytics (release builds) |
 | Testing | Kotest, MockK, Turbine, Molecule, Compose UI tests, Ktor `MockEngine` |
 | Quality | Konsist, detekt + Compose rules, ktlint, Android Lint |
 

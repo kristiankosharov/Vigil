@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "586090253473",
+    "project_id": "vigil-app-25b0",
+    "storage_bucket": "vigil-app-25b0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:586090253473:android:24745192d0bb067eac34e0",
+        "android_client_info": {
+          "package_name": "app.vigil"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKvAdP_x5NKVBKdLn0K2lUvcJY7N-ACP0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:586090253473:android:678b9f81808eaa0cac34e0",
+        "android_client_info": {
+          "package_name": "app.vigil.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKvAdP_x5NKVBKdLn0K2lUvcJY7N-ACP0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:586090253473:android:4fad315e67fd0479ac34e0",
+        "android_client_info": {
+          "package_name": "app.vigil.staging"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKvAdP_x5NKVBKdLn0K2lUvcJY7N-ACP0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
