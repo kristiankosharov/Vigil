@@ -32,8 +32,8 @@ runs:
     - name: Set up Gradle
       uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
       with:
-        # Only builds on main write the cache; pull requests read it.
-        cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+        # Only builds on main and develop write the cache; every other branch and pull request reads it.
+        cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
 
     - name: Install ktlint
       if: inputs.ktlint == 'true'

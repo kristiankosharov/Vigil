@@ -1,6 +1,7 @@
 name: Release
 
 # Push a version tag to release:  git tag v1.2.3 && git push origin v1.2.3
+# Git flow: tag main after merging release/1.2.3 (or hotfix/1.2.3) into it.
 # Builds a signed prod APK + AAB (after the full checks) and publishes them, with the R8 mapping,
 # as a GitHub Release. Signing comes only from the repository secrets listed in the README.
 on:

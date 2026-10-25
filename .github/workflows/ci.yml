@@ -1,9 +1,12 @@
 name: CI
 
+# Git flow: pull requests into develop (feature/*, bugfix/*) and main (release/*, hotfix/*), and
+# every push to the long-lived and release branches.
 on:
   pull_request:
+    branches: [main, develop]
   push:
-    branches: [main]
+    branches: [main, develop, "release/**", "hotfix/**"]
   workflow_dispatch:
 
 concurrency:

@@ -122,6 +122,19 @@ Both workflows share [`.github/actions/setup`](.github/actions/setup/action.yml)
 Gradle cache, and the pinned ktlint, checked against its SHA-256). Actions are pinned to commit
 SHAs.
 
+### Branches (git flow)
+
+| Branch | From | Merges into |
+|---|---|---|
+| `main` | — | released code only, every merge tagged `vX.Y.Z` |
+| `develop` | `main` | integration branch |
+| `feature/<name>`, `bugfix/<name>` | `develop` | `develop` |
+| `release/<X.Y.Z>` | `develop` | `main`, then back into `develop` |
+| `hotfix/<X.Y.Z>` | `main` | `main`, then back into `develop` |
+
+CI runs on pull requests into `main` and `develop` and on pushes to `main`, `develop`, `release/*`
+and `hotfix/*`.
+
 ### Release signing secrets
 
 Add these under **Settings → Secrets and variables → Actions → New repository secret**. The release
@@ -136,12 +149,18 @@ workflow stops if any is missing, so it can never publish an unsigned build.
 
 ### Cutting a release
 
-Tags must be `vMAJOR.MINOR.PATCH`. The version name comes from the tag and the version code is
-derived from it (`v1.2.3` → `1002003`), so it always grows:
+1. Branch `release/0.1.0` from `develop`; only fixes go in from here.
+2. Open a PR into `main`; merge it when CI is green.
+3. Tag `main` and push the tag. The tag starts the release workflow:
 
-```bash
-git tag v0.1.0 && git push origin v0.1.0
-```
+   ```bash
+   git checkout main && git pull && git tag v0.1.0 && git push origin v0.1.0
+   ```
+
+4. Merge `main` back into `develop`.
+
+Tags must be `vMAJOR.MINOR.PATCH`. The version name comes from the tag and the version code is
+derived from it (`v1.2.3` → `1002003`), so it always grows.
 
 The release then appears under **Releases** with `vigil-0.1.0.apk`, `vigil-0.1.0.aab` and
 `vigil-0.1.0-mapping.txt`.
