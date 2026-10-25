@@ -52,6 +52,12 @@ Code: `.claude/reference/app.md`.
   release only a `ReleaseTree` that drops everything below `Log.WARN` and sends the rest to
   **Firebase Crashlytics**: every message as a breadcrumb, errors with a throwable as non-fatals.
 
+- Always tag explicitly (`Timber.tag(TAG)`, `private const val TAG = "…"`): R8 renames classes, so
+  automatic tags are unreadable in release.
+- Pass the throwable first (`Timber.e(e, "…")`), never `e.message` in the text; use format arguments
+  (`Timber.d("Loaded %d users", count)`), not string templates.
+- Timber is used only in Android modules; `domain`, `data:api` and `:common:core` don't log.
+
 ## Firebase (Crashlytics)
 
 - Project `vigil-app-25b0`; `app/google-services.json` holds all three flavors' apps
@@ -61,8 +67,3 @@ Code: `.claude/reference/app.md`.
   never call Firebase; they log with Timber and `ReleaseTree` forwards.
 - Crash collection is off in debug builds and on in release (`manifestPlaceholders`
   `crashlyticsEnabled`); the R8 mapping is uploaded to Crashlytics only from CI (`CI` env var).
-- Always tag explicitly (`Timber.tag(TAG)`, `private const val TAG = "…"`): R8 renames classes, so
-  automatic tags are unreadable in release.
-- Pass the throwable first (`Timber.e(e, "…")`), never `e.message` in the text; use format arguments
-  (`Timber.d("Loaded %d users", count)`), not string templates.
-- Timber is used only in Android modules; `domain`, `data:api` and `:common:core` don't log.
