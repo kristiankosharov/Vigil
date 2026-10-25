@@ -49,8 +49,18 @@ Code: `.claude/reference/app.md`.
 ## Logging setup (Timber)
 
 - Trees are planted **once** in `Application.onCreate`: `Timber.DebugTree()` in debug only; in
-  release only a `ReleaseTree` that drops everything below `Log.WARN` and forwards warnings and errors
-  to the crash reporter once one is added.
+  release only a `ReleaseTree` that drops everything below `Log.WARN` and sends the rest to
+  **Firebase Crashlytics**: every message as a breadcrumb, errors with a throwable as non-fatals.
+
+## Firebase (Crashlytics)
+
+- Project `vigil-app-25b0`; `app/google-services.json` holds all three flavors' apps
+  (`app.vigil`, `app.vigil.staging`, `app.vigil.dev`). It's committed: it identifies the app, it
+  isn't a secret. A new flavor or application ID needs a new app in that project and a fresh file.
+- Firebase is used only in `:app` (Google Services + Crashlytics plugins, Firebase BOM). Features
+  never call Firebase; they log with Timber and `ReleaseTree` forwards.
+- Crash collection is off in debug builds and on in release (`manifestPlaceholders`
+  `crashlyticsEnabled`); the R8 mapping is uploaded to Crashlytics only from CI (`CI` env var).
 - Always tag explicitly (`Timber.tag(TAG)`, `private const val TAG = "…"`): R8 renames classes, so
   automatic tags are unreadable in release.
 - Pass the throwable first (`Timber.e(e, "…")`), never `e.message` in the text; use format arguments
