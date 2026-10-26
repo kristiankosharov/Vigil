@@ -4,13 +4,19 @@ import android.app.Application
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 import timber.log.Timber
 
 @HiltAndroidApp
 class App : Application() {
+    /** Contributed by features with `@IntoSet` (e.g. auth's tracker of the resumed activity). */
+    @Inject
+    lateinit var activityCallbacks: Set<@JvmSuppressWildcards ActivityLifecycleCallbacks>
+
     override fun onCreate() {
-        super.onCreate()
+        super.onCreate() // Hilt injects here
         Timber.plant(if (BuildConfig.DEBUG) Timber.DebugTree() else ReleaseTree())
+        activityCallbacks.forEach(::registerActivityLifecycleCallbacks)
     }
 }
 

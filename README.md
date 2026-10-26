@@ -36,11 +36,16 @@ next.
 
 | Feature | Status |
 |---|---|
-| **Login** (`:feature:auth`) | Placeholder screen; login always succeeds until the backend exists. Bearer-token plumbing (encrypted token store, refresh, session expiry → back to login) is real. |
+| **Login** (`:feature:auth`) | Working with **Firebase Auth**: email + password (sign in, create account, password reset) and phone number with an SMS code (auto-verification included). OpenID Connect is structured (repository, use case, SSO buttons) but has no provider yet: see `TODO(oidc)`. Bearer-token plumbing for the future backend (encrypted token store, refresh, session expiry → back to login) is in place; exchanging the Firebase ID token for backend tokens is a `TODO(auth)`. |
 | **App lock** (`:feature:applock`) | Working. PIN with a custom number pad (create + repeat), biometric unlock, locks on start and after 30 s in the background, covers the whole app. |
 | **Home** (`:feature:home`) | Placeholder screen reading entries from Room (empty for now). |
 
-Open items are marked in the code as `TODO(auth)`, `TODO(home)`, `TODO(applock)` and `TODO(env)`.
+Open items are marked in the code as `TODO(auth)`, `TODO(oidc)`, `TODO(home)`, `TODO(applock)` and `TODO(env)`.
+
+**Firebase Auth setup:** the Email/Password and Phone providers are enabled in the Firebase project
+`vigil-app-25b0`. Phone sign-in needs the app's SHA-1/SHA-256 registered in Firebase (each
+developer's debug key and the release key) and, for real SMS, the Blaze plan; test numbers
+(Authentication → Sign-in method → Phone) work without either.
 
 ## Requirements
 
@@ -206,6 +211,7 @@ The full rules are in [`CLAUDE.md`](CLAUDE.md) and `.claude/rules/`.
 | Network | Ktor 3 (OkHttp engine), kotlinx.serialization, bearer auth |
 | Security | Tink, Android Keystore, `androidx.biometric` |
 | Async / logging | Coroutines + Flow, Timber, Firebase Crashlytics (release builds) |
+| Sign-in | Firebase Auth (email/password, phone; OpenID Connect prepared) |
 | Testing | Kotest, MockK, Turbine, Molecule, Compose UI tests, Ktor `MockEngine` |
 | Quality | Konsist, detekt + Compose rules, ktlint, Android Lint |
 

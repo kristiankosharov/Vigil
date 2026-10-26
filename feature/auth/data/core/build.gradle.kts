@@ -13,4 +13,10 @@ dependencies {
     implementation(projects.common.core)
     implementation(projects.common.network)
     implementation(projects.common.datastore)
+
+    // Firebase Auth: the only Firebase use outside :app (rules/app.md, Firebase).
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.kotlinx.coroutines.play.services) // Task.await()
+    implementation(libs.timber)
 }

@@ -132,7 +132,9 @@ naming:
     ignoreAnnotated: ['Composable']
 complexity:
   LongParameterList:
-    ignoreAnnotated: ['Composable']
+    ignoreAnnotated: ['Composable', 'Inject'] # Hilt constructors list one use case per action
+  CyclomaticComplexMethod:
+    ignoreSimpleWhenEntries: true # onAction's exhaustive `when` over every action
 style:
   UnusedPrivateMember:
     ignoreAnnotated: ['Preview', 'PreviewLightDark', 'PreviewFontScale']

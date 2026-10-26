@@ -21,6 +21,8 @@ Code: `.claude/reference/core-result.md` (AppResult, AppError, wrappers) and
 - `AppError` is structured by source:
   - `Network`: `NoConnection`, `Timeout`, `Http(code, body: ApiErrorBody?)`, `Serialization`, `Unknown`
   - `Local`: `NotFound`, `Constraint`, `Database`, `Storage` (DataStore I/O), `Unknown`
+  - `Auth`: sign-in failures the UI tells apart (`rules/network-auth.md`); only `:feature:auth`
+    raises them, through its `safeFirebaseCall`
   - top-level `Unknown`
 - Add feature-specific error subtypes only if the UI must react to them differently.
 - Paging errors carry an `AppError` inside `AppErrorException(val error: AppError) : Exception()`

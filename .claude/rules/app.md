@@ -63,7 +63,11 @@ Code: `.claude/reference/app.md`.
 - Project `vigil-app-25b0`; `app/google-services.json` holds all three flavors' apps
   (`app.vigil`, `app.vigil.staging`, `app.vigil.dev`). It's committed: it identifies the app, it
   isn't a secret. A new flavor or application ID needs a new app in that project and a fresh file.
-- Firebase is used only in `:app` (Google Services + Crashlytics plugins, Firebase BOM). Features
-  never call Firebase; they log with Timber and `ReleaseTree` forwards.
+- Firebase is used only in `:app` (Google Services + Crashlytics plugins, Firebase BOM), with one
+  exception: **Firebase Auth** lives in `:feature:auth:data:core` (see `rules/network-auth.md`).
+  Other features never call Firebase; they log with Timber and `ReleaseTree` forwards.
+- `App` registers every `Application.ActivityLifecycleCallbacks` that features contribute with
+  `@IntoSet` (declared with `@Multibinds` in `ActivityCallbacksModule`). Auth uses it to track the
+  resumed activity, which phone verification and OpenID Connect need.
 - Crash collection is off in debug builds and on in release (`manifestPlaceholders`
   `crashlyticsEnabled`); the R8 mapping is uploaded to Crashlytics only from CI (`CI` env var).
