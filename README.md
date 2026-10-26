@@ -53,6 +53,9 @@ developer's debug key and the release key) and, for real SMS, the Blaze plan; te
 in [`docs/design/README.md`](docs/design/README.md). The theme and shared components are in
 `:common:ui` (`theme/` and `designsystem/`).
 
+**Security:** how the PIN, the tokens and the documents are encrypted (key hierarchy, envelope
+encryption, what erases what) is in [`docs/security/encryption.md`](docs/security/encryption.md).
+
 ## Requirements
 
 | Tool | Version | Notes |
