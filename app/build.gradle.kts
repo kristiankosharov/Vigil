@@ -63,8 +63,8 @@ dependencies {
     implementation(projects.feature.applock.data.core) // Hilt aggregation only; never referenced in code
     implementation(projects.feature.auth.ui)
     implementation(projects.feature.auth.data.core) // Hilt aggregation only; never referenced in code
-    implementation(projects.feature.home.ui)
-    implementation(projects.feature.home.data.core) // Hilt aggregation only; never referenced in code
+    implementation(projects.feature.documents.ui)
+    implementation(projects.feature.documents.data.core) // Hilt aggregation only; never referenced in code
     implementation(projects.feature.settings.ui)
     implementation(projects.feature.settings.data.core) // Hilt aggregation only; never referenced in code
 

@@ -60,6 +60,8 @@ internal class AppLockRepositoryImpl @Inject constructor(
 
     override fun unlockWithBiometric() = session.unlock()
 
+    override fun lockNow() = session.lock()
+
     override fun onAppBackgrounded() = session.onBackgrounded()
 
     override fun onAppForegrounded() = session.onForegrounded()

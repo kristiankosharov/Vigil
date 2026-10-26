@@ -20,7 +20,10 @@ class RoomConventionPlugin : Plugin<Project> {
             "implementation"(libs.library("androidx-room3-runtime"))
             "implementation"(libs.library("androidx-sqlite-bundled"))
             "ksp"(libs.library("androidx-room3-compiler"))
+            // MigrationTestHelper tests (instrumented); the exported schemas are their assets.
             "androidTestImplementation"(libs.library("androidx-room3-testing"))
+            "androidTestImplementation"(libs.library("androidx-test-runner"))
+            "androidTestImplementation"(libs.library("androidx-test-ext-junit"))
         }
     }
 }

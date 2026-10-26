@@ -38,10 +38,10 @@ next.
 |---|---|
 | **Login** (`:feature:auth`) | Working with **Firebase Auth**: email + password (sign in, create account, password reset) and phone number with an SMS code (auto-verification included). OpenID Connect is structured (repository, use case, SSO buttons) but has no provider yet: see `TODO(oidc)`. Bearer-token plumbing for the future backend (encrypted token store, refresh, session expiry → back to login) is in place; exchanging the Firebase ID token for backend tokens is a `TODO(auth)`. |
 | **App lock** (`:feature:applock`) | Working. 6-digit PIN with a custom number pad, onboarding (create → confirm → enable fingerprint), unlock with PIN or fingerprint, locks on start and after 30 s in the background, covers the whole app. |
-| **Home** (`:feature:home`) | Placeholder screen reading entries from Room (empty for now). |
-| **Settings** (`:feature:settings`) | Working. Appearance: light, dark or the device setting, stored in an encrypted DataStore and applied to the whole app (the security screens stay dark). Opened from the icon on Home. |
+| **Documents** (`:feature:documents`) | Documents tab (bottom navigation): on-device search, filters (All / To sign / Signed / Drafts), status icons, lock-now. Stored in Room; empty until the scan flow exists (`TODO(documents)`). |
+| **Settings** (`:feature:settings`) | Working. Appearance: light, dark or the device setting, stored in an encrypted DataStore and applied to the whole app (the security screens stay dark). Opened from the Account tab. |
 
-Open items are marked in the code as `TODO(auth)`, `TODO(oidc)`, `TODO(home)`, `TODO(applock)`
+Open items are marked in the code as `TODO(auth)`, `TODO(oidc)`, `TODO(documents)`, `TODO(account)`, `TODO(reminders)`, `TODO(applock)`
 and `TODO(env)`.
 
 **Firebase Auth setup:** the Email/Password and Phone providers are enabled in the Firebase project
@@ -218,9 +218,9 @@ flowchart TD
         applockCore["data:core"] --> applockApi
     end
 
-    subgraph home [":feature:home"]
-        homeUi["ui"] --> homeDomain["domain"] --> homeApi["data:api"]
-        homeCore["data:core"] --> homeApi
+    subgraph documents [":feature:documents"]
+        documentsUi["ui"] --> documentsDomain["domain"] --> documentsApi["data:api"]
+        documentsCore["data:core"] --> documentsApi
     end
 
     subgraph settings [":feature:settings"]
@@ -237,12 +237,13 @@ flowchart TD
         testing["testing"]
     end
 
-    app --> authUi & applockUi & homeUi & settingsUi
-    app -.-> authCore & applockCore & homeCore & settingsCore
+    app --> authUi & applockUi & documentsUi & settingsUi
+    app -.-> authCore & applockCore & documentsCore & settingsCore
     app --> commonUi & network
     authCore --> network & datastore
     applockCore --> datastore
-    homeCore --> database
+    documentsCore --> database
+    documentsDomain --> applockApi
     settingsCore --> datastore
 ```
 

@@ -136,8 +136,8 @@ AppLockHost {
             ...,
             entryProvider = entryProvider {
                 entry<LoginKey> { LoginRoute(onLoggedIn = { backStack.replaceAllWith(CreatePinKey) }) }
-                entry<CreatePinKey> { CreatePinRoute(onPinCreated = { backStack.replaceAllWith(HomeKey) }) }
-                entry<HomeKey> { HomeRoute() }
+                entry<CreatePinKey> { CreatePinRoute(onPinCreated = { backStack.replaceAllWith(MainKey) }) }
+                entry<MainKey> { MainTabs(…) }
             },
         )
     }

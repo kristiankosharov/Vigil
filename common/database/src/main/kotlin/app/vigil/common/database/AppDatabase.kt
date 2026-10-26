@@ -1,9 +1,11 @@
 package app.vigil.common.database
 
+import androidx.room3.AutoMigration
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
-import app.vigil.common.database.home.HomeEntryDao
-import app.vigil.common.database.home.HomeEntryEntity
+import app.vigil.common.database.documents.DocumentDao
+import app.vigil.common.database.documents.DocumentEntity
+import app.vigil.common.database.migrations.DropHomeEntry
 
 /**
  * The app's only database. One package per feature; one version number for the whole database.
@@ -11,9 +13,10 @@ import app.vigil.common.database.home.HomeEntryEntity
  * plus its MigrationTestHelper test (skills/add-room-entity).
  */
 @Database(
-    entities = [HomeEntryEntity::class],
-    version = 1,
+    entities = [DocumentEntity::class],
+    version = 2,
+    autoMigrations = [AutoMigration(from = 1, to = 2, spec = DropHomeEntry::class)],
 )
 internal abstract class AppDatabase : RoomDatabase() {
-    abstract fun homeEntryDao(): HomeEntryDao
+    abstract fun documentDao(): DocumentDao
 }

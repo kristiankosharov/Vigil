@@ -13,7 +13,6 @@ import app.vigil.feature.applock.ui.create.CreatePinRoute
 import app.vigil.feature.applock.ui.lock.AppLockHost
 import app.vigil.feature.auth.ui.login.LoginRoute
 import app.vigil.feature.auth.ui.session.AuthSessionHost
-import app.vigil.feature.home.ui.HomeRoute
 import app.vigil.feature.settings.ui.appearance.AppearanceRoute
 
 /**
@@ -22,7 +21,7 @@ import app.vigil.feature.settings.ui.appearance.AppearanceRoute
  */
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier) {
-    // TODO(auth): start at HomeKey when a session already exists.
+    // TODO(auth): start at MainKey when a session already exists.
     val backStack = rememberNavBackStack(LoginKey)
     AppLockHost {
         AuthSessionHost(onSessionExpired = { backStack.replaceAllWith(LoginKey) }) {
@@ -38,12 +37,18 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                     entry<LoginKey> { LoginRoute(onLoggedIn = { backStack.replaceAllWith(CreatePinKey) }) }
                     entry<CreatePinKey> {
                         CreatePinRoute(
-                            onPinCreated = { backStack.replaceAllWith(HomeKey) },
+                            onPinCreated = { backStack.replaceAllWith(MainKey) },
                             // TODO(auth): sign out here, so going back really ends the session.
                             onBackToSignIn = { backStack.replaceAllWith(LoginKey) },
                         )
                     }
-                    entry<HomeKey> { HomeRoute(onOpenAppearance = { backStack.add(AppearanceKey) }) }
+                    entry<MainKey> {
+                        MainTabs(
+                            // TODO(documents): open the document (2.1a signed, 2.1b draft, 3.3 sign) once those exist.
+                            onOpenDocument = {},
+                            onOpenAppearance = { backStack.add(AppearanceKey) },
+                        )
+                    }
                     entry<AppearanceKey> { AppearanceRoute(onBack = { backStack.removeLastOrNull() }) }
                 },
             )
@@ -51,7 +56,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
     }
 }
 
-/** Opens [key] as the only destination (e.g. Home after login, Login after session expiry). */
+/** Opens [key] as the only destination (e.g. the main tabs after login, Login after session expiry). */
 private fun NavBackStack<NavKey>.replaceAllWith(key: NavKey) {
     add(key)
     removeAll { it != key }

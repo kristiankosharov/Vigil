@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Vigil</string>
+
+    <!-- Main navigation tabs -->
+    <string name="tab_documents">Documents</string>
+    <string name="tab_account">Account</string>
 </resources>

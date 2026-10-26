@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="documents_title">Documents</string>
+    <string name="documents_search">Search documents</string>
+    <string name="documents_search_hint">Search title, party or text</string>
+    <string name="documents_close_search">Close search</string>
+    <string name="documents_clear_search">Clear search</string>
+    <string name="documents_lock_now">Lock wallet now</string>
+    <string name="documents_loading">Loading documents</string>
+    <string name="documents_security_banner">Encrypted on this device · locks when you leave the app</string>
+
+    <string name="documents_filter_all">All</string>
+    <string name="documents_filter_to_sign">To sign</string>
+    <string name="documents_filter_signed">Signed</string>
+    <string name="documents_filter_drafts">Drafts</string>
+
+    <!-- Read out for the status icon on a document's thumbnail -->
+    <string name="documents_status_to_sign">To sign</string>
+    <string name="documents_status_signed">Signed</string>
+    <string name="documents_status_draft">Draft</string>
+
+    <plurals name="documents_pages">
+        <item quantity="one">%1$d page</item>
+        <item quantity="other">%1$d pages</item>
+    </plurals>
+    <string name="documents_scanned_today">Scanned today</string>
+    <!-- Page count and date: "4 pages · Scanned today" -->
+    <string name="documents_meta">%1$s · %2$s</string>
+
+    <string name="documents_empty_title">No documents yet</string>
+    <string name="documents_empty_message">Documents you scan are encrypted and kept on this device.</string>
+    <string name="documents_empty_filter_title">Nothing here yet</string>
+    <string name="documents_empty_filter_message">Documents with this status appear here.</string>
+    <!-- %1$s is the search query -->
+    <string name="documents_no_match_title">No documents match “%1$s”</string>
+    <string name="documents_no_match_message">Search looks at titles, parties and text found in your scans. It runs on this device only.</string>
+</resources>

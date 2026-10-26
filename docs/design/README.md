@@ -139,13 +139,14 @@ design are vector drawables in `:common:ui` (`common_ic_*`).
 
 Build these in the feature that owns them (`:feature:documents:ui`, `:feature:reminders:ui`, `:app`).
 
-- **Document list item.** Card (`surfaceContainerLowest`, 1 dp `surfaceContainerHighest` border,
+- **Document list item** (in code: `:feature:documents:ui` `DocumentCard`). Card (`surfaceContainerLowest`, 1 dp `surfaceContainerHighest` border,
   16 dp corners) with a 44×56 dp thumbnail, title (`titleSmall`) and meta line (`bodySmall`). No
   text badge: **status is a 22 dp icon in a colored circle on the thumbnail's bottom-right
   corner**, with a 2 dp ring in the card color, and the status name as its content description.
   Pressed: state layer. Disabled: 38% opacity, meta "Processing…". Failed: error border, meta
   "Signing failed · retry" in `error`, still tappable.
-- **Bottom navigation.** Three tabs (Documents, Reminders, Account), `surfaceContainerLowest`,
+- **Bottom navigation** (in code: `:app` `navigation/MainTabs.kt`; Reminders and its badge come
+  with that feature). Three tabs (Documents, Reminders, Account), `surfaceContainerLowest`,
   indicator `primaryContainer` / icon `onPrimaryContainer`. Reminders shows an unread count badge
   in `error`.
 - **Scan FAB.** Extended FAB in `primary` with the scan icon, "Scan document". No disabled state.

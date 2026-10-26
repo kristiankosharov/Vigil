@@ -69,6 +69,20 @@ class AppLockRepositoryImplTest : FunSpec({
         }
     }
 
+    test("lockNow locks an unlocked session") {
+        withRepository(File(tempdir(), "applock_settings.json"), aead) { repository, session ->
+            repository.createPin("123456", biometricEnabled = false)
+            session.isLocked.value shouldBe false
+
+            repository.lockNow()
+
+            repository.observeLockState().test {
+                awaitItem() shouldBe AppResult.Success(AppLockStateData(isLocked = true, isBiometricEnabled = false))
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+    }
+
     test("biometric unlock is offered only when enabled and available") {
         withRepository(File(tempdir(), "applock_settings.json"), aead, biometricAvailable = false) { repository, _ ->
             repository.createPin("1234", biometricEnabled = true)

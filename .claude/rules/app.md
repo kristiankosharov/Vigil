@@ -31,10 +31,19 @@ Code: `.claude/reference/app.md`.
   stack and open the login key.
 - **App lock (PIN + biometrics):** `AppLockHost` from `:feature:applock:ui` is the **outermost**
   layer: `AppLockHost { AuthSessionHost { NavDisplay } }`, so the lock screen covers everything.
-  After login the app opens the create-PIN key, then home. Code and rules:
+  After login the app opens the create-PIN key, then `MainKey`. Code and rules:
   `.claude/reference/app-lock.md`.
 - `MainActivity` is a `FragmentActivity` (BiometricPrompt needs one) and calls
   `setRecentsScreenshotEnabled(false)` on API 33+, so the recents thumbnail never shows the app.
+
+## Main tabs
+
+- `MainKey` shows `MainTabs` (`navigation/MainTabs.kt`): a Material 3 `NavigationBar` and one tab
+  per feature `XRoute` (Documents, Account; Reminders comes with its feature). The selected tab is
+  `rememberSaveable`, each tab's state is kept in a `SaveableStateHolder`, and Back on another tab
+  returns to the first. Tabs apply only the top/horizontal insets; the bar handles the bottom.
+- Destinations opened from a tab (`AppearanceKey`, …) are pushed on the app back stack and cover
+  the whole screen, bar included.
 
 ## Environment values
 
