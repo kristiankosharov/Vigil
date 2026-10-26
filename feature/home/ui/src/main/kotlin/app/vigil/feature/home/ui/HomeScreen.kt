@@ -9,6 +9,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -20,7 +22,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -29,20 +33,31 @@ import androidx.compose.ui.tooling.preview.PreviewFontScale
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import app.vigil.common.ui.R as CommonR
 import app.vigil.common.ui.mvi.UiEffectHandler
 import app.vigil.common.ui.theme.AppTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun HomeRoute(modifier: Modifier = Modifier) {
+fun HomeRoute(onOpenAppearance: () -> Unit, modifier: Modifier = Modifier) {
     val viewModel: HomeViewModel = hiltViewModel()
-    HomeScreen(state = viewModel.uiState(), onAction = viewModel::onAction, modifier = modifier)
+    HomeScreen(
+        state = viewModel.uiState(),
+        onAction = viewModel::onAction,
+        onOpenAppearance = onOpenAppearance,
+        modifier = modifier,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun HomeScreen(state: HomeUiState, onAction: (HomeAction) -> Unit, modifier: Modifier = Modifier) {
+internal fun HomeScreen(
+    state: HomeUiState,
+    onAction: (HomeAction) -> Unit,
+    onOpenAppearance: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val snackbarHostState = remember { SnackbarHostState() }
 
     UiEffectHandler(
@@ -58,6 +73,14 @@ internal fun HomeScreen(state: HomeUiState, onAction: (HomeAction) -> Unit, modi
             TopAppBar(
                 title = {
                     Text(stringResource(R.string.home_title), modifier = Modifier.semantics { heading() })
+                },
+                actions = {
+                    IconButton(onClick = onOpenAppearance) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(CommonR.drawable.common_ic_appearance),
+                            contentDescription = stringResource(R.string.home_open_appearance),
+                        )
+                    }
                 },
             )
         },
@@ -116,7 +139,11 @@ private fun HomeEntries(entries: ImmutableList<HomeEntryItem>, modifier: Modifie
 @Composable
 private fun HomeScreenEmptyPreview() {
     AppTheme(dynamicColor = false) {
-        HomeScreen(state = HomeUiState(isLoading = false, entries = persistentListOf(), effect = null), onAction = {})
+        HomeScreen(
+            state = HomeUiState(isLoading = false, entries = persistentListOf(), effect = null),
+            onAction = {},
+            onOpenAppearance = {},
+        )
     }
 }
 
@@ -126,6 +153,10 @@ private fun HomeScreenEmptyPreview() {
 private fun HomeScreenEntriesPreview() {
     val entries = persistentListOf(HomeEntryItem("1", "First entry"), HomeEntryItem("2", "Second entry"))
     AppTheme(dynamicColor = false) {
-        HomeScreen(state = HomeUiState(isLoading = false, entries = entries, effect = null), onAction = {})
+        HomeScreen(
+            state = HomeUiState(isLoading = false, entries = entries, effect = null),
+            onAction = {},
+            onOpenAppearance = {},
+        )
     }
 }

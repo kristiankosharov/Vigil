@@ -14,6 +14,7 @@ import app.vigil.feature.applock.ui.lock.AppLockHost
 import app.vigil.feature.auth.ui.login.LoginRoute
 import app.vigil.feature.auth.ui.session.AuthSessionHost
 import app.vigil.feature.home.ui.HomeRoute
+import app.vigil.feature.settings.ui.appearance.AppearanceRoute
 
 /**
  * The app's whole navigation: the back stack and one entry per destination. AppLockHost is the
@@ -42,7 +43,8 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                             onBackToSignIn = { backStack.replaceAllWith(LoginKey) },
                         )
                     }
-                    entry<HomeKey> { HomeRoute() }
+                    entry<HomeKey> { HomeRoute(onOpenAppearance = { backStack.add(AppearanceKey) }) }
+                    entry<AppearanceKey> { AppearanceRoute(onBack = { backStack.removeLastOrNull() }) }
                 },
             )
         }

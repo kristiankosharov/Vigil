@@ -65,6 +65,8 @@ dependencies {
     implementation(projects.feature.auth.data.core) // Hilt aggregation only; never referenced in code
     implementation(projects.feature.home.ui)
     implementation(projects.feature.home.data.core) // Hilt aggregation only; never referenced in code
+    implementation(projects.feature.settings.ui)
+    implementation(projects.feature.settings.data.core) // Hilt aggregation only; never referenced in code
 
     implementation(projects.common.ui) // AppTheme
     implementation(projects.common.network) // @BaseUrl / @IsDebugBuild, provided by EnvironmentModule

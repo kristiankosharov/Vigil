@@ -13,8 +13,9 @@ import app.vigil.common.ui.R
 /**
  * The security screens (PIN, fingerprint, unlock, scanner) always use the dark scheme, so they read
  * as a separate, protected space (docs/design/README.md). While any of them is shown, the system bar
- * icons are light so they stay visible; when the last one goes, they follow the system theme again.
- * Several can be composed at once (the lock screen over onboarding), so the window counts them.
+ * icons are light so they stay visible; when the last one goes, they follow the app's theme again
+ * ([AppSystemBars]), or the system theme if nothing set one. Several can be composed at once (the
+ * lock screen over onboarding), so the window counts them.
  */
 @Composable
 fun SecurityTheme(content: @Composable () -> Unit) {
@@ -23,17 +24,48 @@ fun SecurityTheme(content: @Composable () -> Unit) {
     val systemDark = isSystemInDarkTheme()
     if (window != null && !view.isInEditMode) {
         DisposableEffect(window, view, systemDark) {
-            window.changeSecurityScreens(view, delta = 1, systemDark = systemDark)
-            onDispose { window.changeSecurityScreens(view, delta = -1, systemDark = systemDark) }
+            window.changeSecurityScreens(delta = 1)
+            window.updateSystemBars(view, systemDark)
+            onDispose {
+                window.changeSecurityScreens(delta = -1)
+                window.updateSystemBars(view, systemDark)
+            }
         }
     }
     AppTheme(darkTheme = true, content = content)
 }
 
-private fun Window.changeSecurityScreens(view: View, delta: Int, systemDark: Boolean) {
+/**
+ * Tells the window whether the app is in its dark theme, so the system bar icons stay readable when
+ * the user picks light or dark against the system setting. Call it once, next to the app's
+ * top-level [AppTheme]; security screens still win while they are shown.
+ */
+@Composable
+fun AppSystemBars(darkTheme: Boolean) {
+    val window = LocalActivity.current?.window
+    val view = LocalView.current
+    val systemDark = isSystemInDarkTheme()
+    if (window != null && !view.isInEditMode) {
+        DisposableEffect(window, view, darkTheme, systemDark) {
+            window.decorView.setTag(R.id.common_app_dark_theme, darkTheme)
+            window.updateSystemBars(view, systemDark)
+            onDispose {
+                window.decorView.setTag(R.id.common_app_dark_theme, null)
+                window.updateSystemBars(view, systemDark)
+            }
+        }
+    }
+}
+
+private fun Window.changeSecurityScreens(delta: Int) {
     val count = ((decorView.getTag(R.id.common_security_screens) as? Int) ?: 0) + delta
     decorView.setTag(R.id.common_security_screens, count)
-    val lightBars = count <= 0 && !systemDark
+}
+
+private fun Window.updateSystemBars(view: View, systemDark: Boolean) {
+    val securityScreens = (decorView.getTag(R.id.common_security_screens) as? Int) ?: 0
+    val appDark = (decorView.getTag(R.id.common_app_dark_theme) as? Boolean) ?: systemDark
+    val lightBars = securityScreens <= 0 && !appDark
     WindowCompat.getInsetsController(this, view).apply {
         isAppearanceLightStatusBars = lightBars
         isAppearanceLightNavigationBars = lightBars
