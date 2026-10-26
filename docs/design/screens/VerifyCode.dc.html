@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verify code</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#415F91}a:hover{color:#284777}
+button,input{font-family:inherit}
+input:focus{outline:none}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #F9F9FF; color: #191C20; font-family: Manrope, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">  <header style="display: flex; align-items: center; gap: 8px; padding: 12px 12px; background: #FFFFFF; border-bottom: 1px solid #E2E2E9">
+    <a href="SignInPhone.dc.html" aria-label="Back to phone sign-in" style="width: 44px; height: 44px; border-radius: 22px; color: #191C20; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0"><span style="font-size: 16px; font-weight: 700">Verify your number</span></span>
+    
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 20px; padding: 28px 24px 0">
+    <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #44474E">Enter the code we sent to <b style="color: #191C20">+359 888 123 456</b>.</p>
+    <div role="group" aria-label="SMS code" style="display: flex; gap: 8px">
+      <sc-for list="{{cells}}" as="c" hint-placeholder-count="6">
+        <span style="{{c.style}}">{{c.v}}</span>
+      </sc-for>
+    </div>
+    <sc-if value="{{wrong}}" hint-placeholder-val="{{ false }}">
+      <span style="margin-top: -8px; font-size: 13px; color: #BA1A1A">This code is wrong or has expired.</span>
+    </sc-if>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+      <sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+        <button type="button" onClick="{{k.press}}" aria-label="{{k.aria}}" style="{{k.style}}">{{k.label}}</button>
+      </sc-for>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <a href="SignInPhone.dc.html" style="min-height: 44px; display: flex; align-items: center; text-decoration: none; font-size: 14px; font-weight: 700">Change number</a>
+      <span style="font-size: 13px; color: #44474E">Resend in 0:42</span>
+    </div>
+  </div>
+  <div style="padding: 14px 20px 28px; background: #FFFFFF; border-top: 1px solid #E2E2E9; display: flex; flex-direction: column; gap: 8px">
+    <sc-if value="{{complete}}" hint-placeholder-val="{{ false }}"><a href="CreatePin.dc.html" style="height: 56px; border-radius: 16px; background: #415F91; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-size: 16px; font-weight: 700">Verify</a></sc-if><sc-if value="{{incomplete}}" hint-placeholder-val="{{ true }}"><span aria-disabled="true" style="height: 56px; border-radius: 16px; background: rgba(25, 28, 32, 0.12); color: rgba(25, 28, 32, 0.38); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700">Verify</span></sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { code: '481' };
+  }
+  renderVals() {
+    const code = this.state.code;
+    const wrong = code === '000000';
+    const cells = [0, 1, 2, 3, 4, 5].map((i) => ({
+      v: code[i] || '',
+      style: 'flex: 1; height: 56px; box-sizing: border-box; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; background: #FFFFFF; ' +
+        (wrong ? 'border: 2px solid #BA1A1A' : i === code.length ? 'border: 2px solid #415F91' : 'border: 1px solid #74777F')
+    }));
+    const add = (d) => () => this.setState({ code: (code.length >= 6 ? '' : code) + d });
+    const keyStyle = 'height: 52px; border-radius: 14px; border: none; background: #EDEDF4; color: #191C20; font-size: 22px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center';
+    const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => ({ label: d, aria: d, press: add(d), style: keyStyle }))
+      .concat([
+        { label: '', aria: 'Empty', press: () => {}, style: keyStyle + '; visibility: hidden' },
+        { label: '0', aria: '0', press: add('0'), style: keyStyle },
+        { label: '\u232B', aria: 'Delete last digit', press: () => this.setState({ code: code.slice(0, -1) }), style: keyStyle + '; background: transparent' }
+      ]);
+    return { cells, keys, wrong, complete: code.length === 6 && !wrong, incomplete: code.length < 6 || wrong };
+  }
+}
+</script>
+</body>
+</html>
