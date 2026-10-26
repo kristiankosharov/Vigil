@@ -6,17 +6,21 @@
 <title>Vigil · Design</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root { --bg: #F9F9FF; --ink: #191C20; --muted: #44474E; --line: #E2E2E9; --link: #415F91; }
-  @media (prefers-color-scheme: dark) { :root { --bg: #111318; --ink: #E2E2E9; --muted: #C4C6D0; --line: #33353A; --link: #AAC7FF; } }
+  :root { --bg: #F9F9FF; --ink: #191C20; --muted: #44474E; --line: #E2E2E9; --link: #415F91; --chip: #FFFFFF; --sel: #2E3036; --onsel: #F0F0F7; }
+  :root[data-dark] { --bg: #111318; --ink: #E2E2E9; --muted: #C4C6D0; --line: #33353A; --link: #AAC7FF; --chip: #1D2024; --sel: #E2E2E9; --onsel: #2E3036; }
   body { margin: 0; padding: 32px 16px 64px; background: var(--bg); color: var(--ink); font-family: Manrope, system-ui, sans-serif; }
   main { max-width: 1400px; margin: 0 auto; }
+  header { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: flex-end; justify-content: space-between; margin-bottom: 32px; }
   h1 { margin: 0 0 6px; font-size: 28px; font-weight: 800; }
-  p.lead { margin: 0 0 32px; color: var(--muted); max-width: 70ch; line-height: 1.5; }
+  p.lead { margin: 0; color: var(--muted); max-width: 70ch; line-height: 1.5; }
+  .toggle { display: flex; gap: 6px; flex-wrap: wrap; }
+  .toggle button { height: 40px; padding: 0 16px; border-radius: 20px; border: 1px solid var(--line); background: var(--chip); color: var(--ink); font: 600 14px Manrope, system-ui, sans-serif; cursor: pointer; }
+  .toggle button[aria-pressed="true"] { background: var(--sel); color: var(--onsel); border-color: var(--sel); }
   h2 { margin: 0 0 16px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 18px; font-weight: 800; }
   section { margin-bottom: 32px; }
   .row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
   .card { margin: 0; display: flex; flex-direction: column; gap: 8px; }
-  .frame { overflow: hidden; border-radius: 14px; border: 1px solid var(--line); background: #fff; }
+  .frame { overflow: hidden; border-radius: 14px; border: 1px solid var(--line); }
   .frame iframe { border: 0; transform-origin: 0 0; display: block; }
   figcaption a { color: var(--link); font-size: 13px; font-weight: 700; text-decoration: none; }
   figcaption a:hover { text-decoration: underline; }
@@ -24,8 +28,17 @@
 </head>
 <body>
 <main>
-  <h1>Vigil · Design</h1>
-  <p class="lead">Every screen as an interactive mock-up, grouped by flow, plus the component state sheets. Click a title to open a screen full size; links inside the screens move between them. Colors, type and component rules are in <a href="../README.md" style="color: var(--link)">docs/design/README.md</a>.</p>
+  <header>
+    <div>
+      <h1>Vigil · Design</h1>
+      <p class="lead">Every screen as an interactive mock-up, grouped by flow, plus the theme and component sheets. Click a title to open a screen full size; links inside the screens move between them. The theme choice applies to every screen, like the Appearance setting in the app (security screens stay dark). Rules are in <a href="../README.md" style="color: var(--link)">docs/design/README.md</a>.</p>
+    </div>
+    <div class="toggle" role="group" aria-label="Theme">
+      <button type="button" data-theme="system">Device setting</button>
+      <button type="button" data-theme="light">Light</button>
+      <button type="button" data-theme="dark">Dark</button>
+    </div>
+  </header>
     <section>
       <h2>1 · Security — onboarding &amp; unlock</h2>
       <div class="row">
@@ -152,6 +165,12 @@
         </div>
         <figcaption><a href="SignOut.dc.html">2.3f · Sign out</a></figcaption>
       </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="Appearance.dc.html" title="2.3g · Appearance" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="Appearance.dc.html">2.3g · Appearance</a></figcaption>
+      </figure>
       </div>
     </section>
     <section>
@@ -184,8 +203,14 @@
       </div>
     </section>
     <section>
-      <h2>4 · Components &amp; states</h2>
+      <h2>4 · Theme, components &amp; states</h2>
       <div class="row">
+      <figure class="card">
+        <div class="frame" style="width: 520px; height: 750px">
+          <iframe src="Theme.dc.html" title="4.0 · Theme" loading="lazy" style="width: 1040px; height: 1500px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="Theme.dc.html">4.0 · Theme</a></figcaption>
+      </figure>
       <figure class="card">
         <div class="frame" style="width: 520px; height: 380px">
           <iframe src="CompButtons.dc.html" title="4.1 · Buttons &amp; FAB" loading="lazy" style="width: 1040px; height: 760px; transform: scale(0.5)"></iframe>
@@ -219,5 +244,28 @@
       </div>
     </section>
 </main>
+<script>
+  (function () {
+    var KEY = 'vigil-theme'; // shared with dc-runtime.js
+    function chosen() { try { return localStorage.getItem(KEY) || 'system'; } catch (e) { return 'system'; } }
+    function apply() {
+      var t = chosen();
+      var dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.toggleAttribute('data-dark', dark);
+      document.querySelectorAll('.toggle button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.theme === t)); });
+    }
+    document.querySelectorAll('.toggle button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        try { localStorage.setItem(KEY, b.dataset.theme); } catch (e) {}
+        apply();
+        // The screens listen for the storage event; reload them too in case it doesn't fire.
+        document.querySelectorAll('iframe').forEach(function (f) { f.src = f.getAttribute('src'); });
+      });
+    });
+    window.addEventListener('storage', function (e) { if (e.key === KEY) apply(); });
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', apply);
+    apply();
+  })();
+</script>
 </body>
 </html>

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Appearance</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#415F91}a:hover{color:#284777}
+button,input{font-family:inherit}
+input:focus{outline:none}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #F9F9FF; color: #191C20; font-family: Manrope, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">  <header style="display: flex; align-items: center; gap: 8px; padding: 12px 12px; background: #FFFFFF; border-bottom: 1px solid #E2E2E9">
+    <a href="Account.dc.html" aria-label="Back to account" style="width: 44px; height: 44px; border-radius: 22px; color: #191C20; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0"><span style="font-size: 16px; font-weight: 700">Appearance</span></span>
+    
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; padding: 20px 20px 0">
+    <p style="margin: 0; font-size: 14px; line-height: 1.45; color: #44474E">Choose how Vigil looks on this device.</p>
+    <div role="radiogroup" aria-label="Theme" style="border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9; overflow: hidden">
+      <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+        <button type="button" role="radio" aria-checked="{{o.checked}}" onClick="{{o.pick}}" style="width: 100%; min-height: 64px; padding: 10px 16px; border: none; border-bottom: 1px solid #EDEDF4; background: #FFFFFF; display: flex; align-items: center; gap: 14px; text-align: left; cursor: pointer; color: #191C20">
+          <span style="{{o.dot}}"></span>
+          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">{{o.label}}</span><span style="font-size: 12px; color: #44474E">{{o.hint}}</span></span>
+          <span style="{{o.preview}}"><span style="{{o.previewBar}}"></span><span style="{{o.previewCard}}"></span></span>
+        </button>
+      </sc-for>
+    </div>
+    <div style="display: flex; gap: 10px; padding: 12px 14px; border-radius: 12px; background: #D6E3FF; color: #284777; font-size: 13px; line-height: 1.4">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+      <span>The PIN, unlock and scanner screens always stay dark, so they read as a protected space.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // In docs/design/screens the prototype keeps the choice for every screen; elsewhere it starts at "system".
+    this.state = { v: typeof window.vigilTheme === 'function' ? window.vigilTheme() : 'system' };
+  }
+  renderVals() {
+    const v = this.state.v;
+    const opts = [
+      ['system', 'Use device setting', 'Light or dark, following your phone', ['#F9F9FF', '#111318']],
+      ['light', 'Light', 'Light surfaces, dark text', ['#F9F9FF', '#F9F9FF']],
+      ['dark', 'Dark', 'Dark surfaces, light text', ['#111318', '#111318']]
+    ].map(([id, label, hint, bg]) => ({
+      label, hint,
+      checked: v === id ? 'true' : 'false',
+      pick: () => {
+        this.setState({ v: id });
+        if (typeof window.vigilSetTheme === 'function') window.vigilSetTheme(id);
+      },
+      dot: 'width: 20px; height: 20px; box-sizing: border-box; border-radius: 10px; flex-shrink: 0; ' +
+        (v === id ? 'border: 6px solid #415F91' : 'border: 2px solid #44474E'),
+      preview: 'position: relative; width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; overflow: hidden; border: 1px solid #C4C6D0; ' +
+        'background: linear-gradient(135deg, ' + bg[0] + ' 50%, ' + bg[1] + ' 50%)',
+      previewBar: 'position: absolute; left: 6px; right: 6px; top: 7px; height: 6px; border-radius: 3px; background: #415F91',
+      previewCard: 'position: absolute; left: 6px; right: 14px; top: 18px; height: 16px; border-radius: 4px; background: ' + (bg[0] === '#111318' && bg[1] === '#111318' ? '#282A2F' : '#E2E2E9')
+    }));
+    return { opts };
+  }
+}
+</script>
+</body>
+</html>

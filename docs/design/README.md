@@ -47,7 +47,14 @@ every device. Screens read colors only from `MaterialTheme.colorScheme`, never h
 | `surfaceContainerHighest` | `#E2E2E9` | `#33353A` | Card borders |
 | `inverseSurface` / `inverseOnSurface` | `#2E3036` / `#F0F0F7` | `#E2E2E9` / `#2E3036` | Selected filter chips |
 
-**Light and dark.** Everyday screens follow the system theme. The security screens (create and
+The **Theme** board (`screens/Theme.dc.html`) shows every role side by side in light and dark,
+with the type scale, shapes and states.
+
+**Light and dark.** Everyday screens use the theme chosen on the **Appearance** screen (in the app:
+Home → the half-circle icon; in the design: Account → Appearance, 2.3g): *Use device setting* (the
+default), *Light* or *Dark*. `AppThemeHost`
+(`:feature:settings:ui`) wraps the whole app, applies the choice through `AppTheme`, and tells
+`AppSystemBars` so the system bar icons match. The security screens (create and
 confirm PIN, fingerprint setup, unlock, change PIN) and the camera scanner always use the **dark**
 scheme through `SecurityTheme { }`, which also makes the system bar icons light, so they read as a
 separate, protected space.
@@ -178,6 +185,7 @@ Numbers match the screen titles in [`screens/index.html`](screens/index.html).
 | 2.3d | Email & password | Change email (link confirmation), change password with strength meter |
 | 2.3e | Phone number | New number + 6-digit SMS code |
 | 2.3f | Sign out | Dialog; optional "Also delete all documents from this device" |
+| 2.3g | Appearance | Appearance row: Use device setting / Light / Dark, with a preview of each; note that security screens stay dark |
 
 The fingerprint switch and "Require PIN to sign: Always on" have no screens of their own.
 
@@ -190,10 +198,10 @@ The fingerprint switch and "Require PIN to sign: Always on" have no screens of t
 | 3.2a | Reminder added | Explains the reminder AI created from a date in the document; notify options; notification preview |
 | 3.3 | Sign digitally | No hand-drawn signature: signer certificate, SHA-256 fingerprint, key in the device keystore, timestamp; consent checkbox; sign with PIN or fingerprint |
 
-### 4 · Components and states
+### 4 · Theme, components and states
 
-State sheets for buttons, inputs, security components and lists, plus the status-indicator
-options that led to the thumbnail corner icon.
+The Theme board (4.0), state sheets for buttons, inputs, security components and lists, plus the
+status-indicator options that led to the thumbnail corner icon.
 
 ## Viewing the screens
 
@@ -208,8 +216,17 @@ folder and open <http://localhost:8765>:
 ```bash
 python3 -m http.server 8765 --directory docs/design/screens
 ```
- Screens are 390×844 (component sheets 1040 wide). Fonts load
-from Google Fonts; without a network they fall back to the system font.
+
+Screens are 390×844 (component sheets 1040 wide). Fonts load from Google Fonts; without a network
+they fall back to the system font.
+
+**Light and dark.** The screens are written in the light scheme; `dc-runtime.js` swaps each light
+role color for its dark one when the theme is dark. Pick the theme with the toggle at the top of
+`index.html` or on the Appearance screen (2.3g): the choice is shared by every screen (browser
+`localStorage`, key `vigil-theme`), and *Device setting* follows the system. Add `?theme=dark` or
+`?theme=light` to a screen's URL to force one. The security screens and the Theme board are never
+remapped. A new color in a screen needs its dark value in the tables at the top of
+`dc-runtime.js`, or it stays the same in both themes.
 
 These files are the design, not app code: they are not built or shipped. When a screen changes,
 update its file here and this README together.
