@@ -1,5 +1,9 @@
 package app.vigil.feature.documents.ui
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.accessibility.enableAccessibilityChecks
@@ -100,7 +104,20 @@ class DocumentsScreenTest {
 
     @Test
     fun searchSendsTheQueryAndCloses() {
-        show(state(isSearching = true))
+        // The query is hoisted like in the ViewModel; a fixed "" would make the field resync and send "".
+        composeTestRule.setContent {
+            var state by remember { mutableStateOf(state(isSearching = true)) }
+            AppTheme(dynamicColor = false) {
+                DocumentsScreen(
+                    state = state,
+                    onAction = {
+                        actions += it
+                        if (it is DocumentsAction.QueryChanged) state = state.copy(query = it.query)
+                    },
+                    onOpenDocument = {},
+                )
+            }
+        }
 
         composeTestRule.onNodeWithContentDescription(
             context.getString(R.string.documents_search),
