@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Account</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#415F91}a:hover{color:#284777}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #F9F9FF; color: #191C20; font-family: Manrope, system-ui, sans-serif; overflow: hidden">
+  <header style="padding: 20px 20px 16px">
+    <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em">Account</h1>
+  </header>
+
+  <div style="display: flex; align-items: center; gap: 14px; margin: 0 20px 20px; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9">
+    <span style="width: 52px; height: 52px; flex-shrink: 0; border-radius: 26px; background: #415F91; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800">YN</span>
+    <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+      <span style="font-size: 16px; font-weight: 700">[Your name]</span>
+      <span style="font-size: 13px; color: #44474E">name@example.com</span>
+      <span style="font-size: 13px; color: #44474E">+[country] ••• ••• 123</span>
+    </span>
+    <a href="EditProfile.dc.html" aria-label="Edit profile" style="width: 44px; height: 44px; border-radius: 22px; background: #EDEDF4; color: #44474E; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>
+    </a>
+  </div>
+
+  <h2 style="margin: 0 20px 8px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #44474E">Security</h2>
+  <div style="margin: 0 20px 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9; overflow: hidden">
+    <a href="ChangePin.dc.html" style="display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 16px; text-decoration: none; color: #191C20; border-bottom: 1px solid #EDEDF4">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 12h.01M11 12h.01M15 12h.01"/></svg>
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 600">Change PIN</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#74777F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
+    <div style="display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 16px; border-bottom: 1px solid #EDEDF4">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 11v3a8 8 0 0 1-1.5 4.7"/><path d="M8.5 9.5A3.5 3.5 0 0 1 15.5 11v2a11 11 0 0 1-.8 4"/><path d="M5.5 15.5A12 12 0 0 0 6 12a6 6 0 0 1 10.6-3.8"/><path d="M4 9.5A8.5 8.5 0 0 1 19 7"/></svg>
+      <label for="bio" style="flex-grow: 1; font-size: 15px; font-weight: 600">Unlock with fingerprint</label>
+      <button id="bio" type="button" role="switch" aria-checked="{{bioChecked}}" onClick="{{toggleBio}}" style="{{trackStyle}}"><span style="{{knobStyle}}"></span></button>
+    </div>
+    <a href="AutoLock.dc.html" style="text-decoration: none; color: #191C20; display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 16px; border-bottom: 1px solid #EDEDF4">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 600">Auto-lock</span>
+      <span style="font-size: 14px; color: #44474E">After 1 minute</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#74777F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
+    <div style="display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 16px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 600">Require PIN to sign</span>
+      <span style="padding: 4px 10px; border-radius: 999px; background: #DCFAE6; color: #085D3A; font-size: 12px; font-weight: 700">Always on</span>
+    </div>
+  </div>
+
+  <h2 style="margin: 0 20px 8px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #44474E">Sign-in methods</h2>
+  <div style="margin: 0 20px 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9; overflow: hidden">
+    <a href="EmailPassword.dc.html" style="text-decoration: none; color: #191C20; display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 16px; border-bottom: 1px solid #EDEDF4">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 600">Email &amp; password</span>
+      <span style="font-size: 13px; font-weight: 700; color: #085D3A">Connected</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#74777F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
+    <a href="PhoneNumber.dc.html" style="text-decoration: none; color: #191C20; display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 16px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 600">Phone number</span>
+      <span style="font-size: 13px; font-weight: 700; color: #085D3A">Verified</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#74777F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
+  </div>
+
+  <a href="SignOut.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; margin: 0 20px; border-radius: 14px; border: 1px solid #FFDAD6; background: #FFFFFF; color: #BA1A1A; text-decoration: none; font-size: 15px; font-weight: 700">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/></svg>
+    Sign out
+  </a>
+
+  <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: #FFFFFF; border-top: 1px solid #E2E2E9; display: flex; align-items: center">
+    <a href="Documents.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #44474E; font-size: 12px; font-weight: 600">
+      <span style="width: 64px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg></span>
+      Documents
+    </a>
+    <a href="Reminders.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #44474E; font-size: 12px; font-weight: 600">
+      <span style="width: 64px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
+      Reminders
+    </a>
+    <a href="Account.dc.html" aria-current="page" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #191C20; font-size: 12px; font-weight: 700">
+      <span style="width: 64px; height: 32px; border-radius: 16px; background: #D6E3FF; color: #284777; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+      Account
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { bio: true };
+  }
+  renderVals() {
+    const on = this.state.bio;
+    return {
+      bioChecked: on ? 'true' : 'false',
+      toggleBio: () => this.setState({ bio: !on }),
+      trackStyle: 'position: relative; width: 52px; height: 32px; flex-shrink: 0; border-radius: 16px; cursor: pointer; padding: 0; ' +
+        (on ? 'background: #415F91; border: 2px solid #415F91' : 'background: #E2E2E9; border: 2px solid #74777F'),
+      knobStyle: 'position: absolute; top: 50%; transform: translateY(-50%); border-radius: 50%; ' +
+        (on ? 'left: 22px; width: 24px; height: 24px; background: #FFFFFF' : 'left: 4px; width: 16px; height: 16px; background: #74777F')
+    };
+  }
+}
+</script>
+</body>
+</html>

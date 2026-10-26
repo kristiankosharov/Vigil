@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign document</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#415F91}a:hover{color:#284777}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #E2E2E9; color: #191C20; font-family: Manrope, system-ui, sans-serif; overflow: hidden">
+  <header style="display: flex; align-items: center; gap: 8px; padding: 12px 12px; background: #FFFFFF; border-bottom: 1px solid #E2E2E9">
+    <a href="Documents.dc.html" aria-label="Back to documents" style="width: 44px; height: 44px; border-radius: 22px; color: #191C20; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+    </a>
+    <span style="display: flex; flex-direction: column; flex-grow: 1">
+      <span style="font-size: 16px; font-weight: 700">Rental agreement</span>
+      <span style="font-size: 12px; color: #44474E">4 pages · 1 signature needed</span>
+    </span>
+  </header>
+
+  <div style="margin: 16px 28px 0; height: 236px; background: #FFFFFF; border-radius: 4px; box-shadow: 0 2px 10px rgba(16, 24, 40, 0.12); box-sizing: border-box; padding: 20px 22px; display: flex; flex-direction: column; gap: 9px">
+    <span style="height: 6px; width: 100%; background: #E2E2E9; border-radius: 2px"></span>
+    <span style="height: 6px; width: 94%; background: #E2E2E9; border-radius: 2px"></span>
+    <span style="height: 6px; width: 97%; background: #E2E2E9; border-radius: 2px"></span>
+    <span style="height: 6px; width: 62%; background: #E2E2E9; border-radius: 2px"></span>
+    <span style="height: 6px; width: 88%; background: #E2E2E9; border-radius: 2px; margin-top: 6px"></span>
+    <span style="flex-grow: 1"></span>
+    <div style="display: flex; gap: 16px; align-items: flex-end">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+        <span style="height: 40px; border-bottom: 1px solid #74777F"></span>
+        <span style="font-size: 10px; color: #44474E">Landlord</span>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+        <span style="height: 40px; box-sizing: border-box; border-radius: 6px; border: 2px dashed #415F91; background: #D6E3FF; display: flex; align-items: center; justify-content: center; gap: 6px; color: #284777; font-size: 10px; font-weight: 800; text-align: center; line-height: 1.2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+          Digital signature
+        </span>
+        <span style="font-size: 10px; color: #44474E">Tenant · you</span>
+      </div>
+    </div>
+  </div>
+
+  <section aria-label="Digital signature" style="position: absolute; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-radius: 24px 24px 0 0; box-shadow: 0 -6px 24px rgba(16, 24, 40, 0.12); padding: 12px 20px 28px; display: flex; flex-direction: column; gap: 14px">
+    <span aria-hidden="true" style="align-self: center; width: 36px; height: 4px; border-radius: 2px; background: #C4C6D0"></span>
+    <h2 style="margin: 0; font-size: 18px; font-weight: 800">Sign digitally</h2>
+
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; background: #F3F3FA; border: 1px solid #E2E2E9">
+      <span style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 20px; background: #415F91; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800">YN</span>
+      <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+        <span style="font-size: 15px; font-weight: 700">[Your name]</span>
+        <span style="font-size: 12px; color: #44474E">Certificate by [Certificate authority] · valid until [date]</span>
+      </span>
+    </div>
+
+    <dl style="margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: 13px">
+      <div style="display: flex; justify-content: space-between; gap: 12px">
+        <dt style="color: #44474E">Document</dt>
+        <dd style="margin: 0; font-weight: 700">Rental agreement · 4 pages</dd>
+      </div>
+      <div style="display: flex; justify-content: space-between; gap: 12px">
+        <dt style="color: #44474E">Fingerprint (SHA-256)</dt>
+        <dd style="margin: 0; font-weight: 700; font-family: ui-monospace, Menlo, monospace">[hash, first/last 4]</dd>
+      </div>
+      <div style="display: flex; justify-content: space-between; gap: 12px">
+        <dt style="color: #44474E">Signing key</dt>
+        <dd style="margin: 0; font-weight: 700">Stored in device keystore</dd>
+      </div>
+      <div style="display: flex; justify-content: space-between; gap: 12px">
+        <dt style="color: #44474E">Timestamp</dt>
+        <dd style="margin: 0; font-weight: 700">Added when you sign</dd>
+      </div>
+    </dl>
+
+    <label style="display: flex; align-items: flex-start; gap: 12px; min-height: 44px; font-size: 14px; line-height: 1.4; cursor: pointer">
+      <input type="checkbox" checked="{{agreed}}" onChange="{{toggle}}" style="width: 20px; height: 20px; margin: 1px 0 0; accent-color: #415F91; flex-shrink: 0">
+      I've read all 4 pages and agree to sign this document
+    </label>
+
+    <sc-if value="{{agreed}}" hint-placeholder-val="{{ true }}">
+      <a href="Main.dc.html" style="height: 56px; border-radius: 16px; background: #415F91; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-size: 16px; font-weight: 700">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 11v3a8 8 0 0 1-1.5 4.7"/><path d="M8.5 9.5A3.5 3.5 0 0 1 15.5 11v2a11 11 0 0 1-.8 4"/><path d="M5.5 15.5A12 12 0 0 0 6 12a6 6 0 0 1 10.6-3.8"/><path d="M4 9.5A8.5 8.5 0 0 1 19 7"/></svg>
+        Sign with PIN or fingerprint
+      </a>
+    </sc-if>
+    <sc-if value="{{notAgreed}}" hint-placeholder-val="{{ false }}">
+      <span aria-disabled="true" style="height: 56px; border-radius: 16px; background: #E2E2E9; color: #74777F; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700">Sign with PIN or fingerprint</span>
+    </sc-if>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { agreed: true };
+  }
+  renderVals() {
+    const agreed = this.state.agreed;
+    return {
+      agreed,
+      notAgreed: !agreed,
+      toggle: () => this.setState({ agreed: !agreed })
+    };
+  }
+}
+</script>
+</body>
+</html>

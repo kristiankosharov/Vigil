@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documents</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#415F91}a:hover{color:#284777}
+button{font-family:inherit}
+input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #F9F9FF; color: #191C20; font-family: Manrope, system-ui, sans-serif; overflow: hidden">
+  <sc-if value="{{notSearching}}" hint-placeholder-val="{{ true }}">
+  <header style="display: flex; align-items: center; gap: 8px; padding: 20px 12px 8px 20px">
+    <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; flex-grow: 1">Documents</h1>
+    <button type="button" onClick="{{openSearch}}" aria-label="Search documents" style="border: none; background: transparent; cursor: pointer; width: 44px; height: 44px; border-radius: 22px; color: #191C20; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    </button>
+    <a href="Main.dc.html" aria-label="Lock wallet now" style="width: 44px; height: 44px; border-radius: 22px; color: #191C20; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    </a>
+  </header>
+  </sc-if>
+  <sc-if value="{{searching}}" hint-placeholder-val="{{ false }}">
+  <header style="display: flex; align-items: center; gap: 4px; padding: 16px 12px 12px 8px">
+    <button type="button" onClick="{{closeSearch}}" aria-label="Close search" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: transparent; color: #191C20; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
+    <label style="flex-grow: 1; height: 48px; border-radius: 24px; background: #EDEDF4; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 16px; color: #44474E">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input type="search" aria-label="Search documents" placeholder="Search title, party or text" value="{{query}}" onInput="{{onInput}}" style="flex-grow: 1; min-width: 0; border: none; background: transparent; font-family: inherit; font-size: 15px; color: #191C20; outline: none">
+      <sc-if value="{{hasQuery}}" hint-placeholder-val="{{ true }}">
+        <button type="button" onClick="{{clear}}" aria-label="Clear search" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: transparent; color: #44474E; display: flex; align-items: center; justify-content: center; cursor: pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </sc-if>
+    </label>
+  </header>
+  </sc-if>
+
+  <sc-if value="{{notSearching}}" hint-placeholder-val="{{ true }}">
+  <div style="display: flex; align-items: center; gap: 8px; margin: 0 20px 16px; padding: 10px 12px; border-radius: 12px; background: #D6E3FF; color: #284777; font-size: 13px; font-weight: 600">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+    Encrypted on this device · auto-locks after 1 min
+  </div>
+  </sc-if>
+
+  <div style="display: flex; gap: 8px; padding: 0 20px 16px; overflow-x: auto">
+    <sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+      <button type="button" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+    </sc-for>
+  </div>
+
+  <ul style="list-style: none; margin: 0; padding: 0 20px; display: flex; flex-direction: column; gap: 10px">
+    <sc-for list="{{docs}}" as="d" hint-placeholder-count="5">
+      <li>
+        <a href="{{d.href}}" style="display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9; text-decoration: none; color: #191C20">
+          <span style="position: relative; width: 44px; height: 56px; flex-shrink: 0; border-radius: 6px; background: #EDEDF4; border: 1px solid #E2E2E9; display: flex; align-items: center; justify-content: center; color: #44474E">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+            <span role="img" aria-label="{{d.status}}" title="{{d.status}}" style="{{d.cornerStyle}}">
+              <sc-if value="{{d.isSign}}" hint-placeholder-val="{{ true }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></sc-if>
+              <sc-if value="{{d.isSigned}}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></sc-if>
+              <sc-if value="{{d.isDraft}}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 12h.01M12 12h.01M18 12h.01"/></svg></sc-if>
+            </span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+            <span style="font-size: 15px; font-weight: 700">{{d.title}}</span>
+            <span style="font-size: 13px; color: #44474E">{{d.meta}}</span>
+          </span>
+        </a>
+      </li>
+    </sc-for>
+  </ul>
+  <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+    <div style="margin: 0 20px; padding: 28px 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center">
+      <span style="font-size: 15px; font-weight: 700">{{emptyTitle}}</span>
+      <span style="font-size: 13px; color: #44474E">Search looks at titles, parties and text found in your scans. It runs on this device only.</span>
+    </div>
+  </sc-if>
+
+  <a href="Scan.dc.html" style="position: absolute; right: 20px; bottom: 100px; height: 56px; padding: 0 20px 0 16px; border-radius: 16px; background: #415F91; color: #FFFFFF; display: flex; align-items: center; gap: 10px; text-decoration: none; font-size: 15px; font-weight: 700; box-shadow: 0 6px 16px rgba(16, 24, 40, 0.18)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M8 12h8"/></svg>
+    Scan document
+  </a>
+
+  <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: #FFFFFF; border-top: 1px solid #E2E2E9; display: flex; align-items: center">
+    <a href="Documents.dc.html" aria-current="page" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #191C20; font-size: 12px; font-weight: 700">
+      <span style="width: 64px; height: 32px; border-radius: 16px; background: #D6E3FF; color: #284777; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg></span>
+      Documents
+    </a>
+    <a href="Reminders.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #44474E; font-size: 12px; font-weight: 600">
+      <span style="position: relative; width: 64px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span style="position: absolute; top: 0; left: 36px; min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box; border-radius: 8px; background: #BA1A1A; color: #FFFFFF; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center">2</span></span>
+      Reminders
+    </a>
+    <a href="Account.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #44474E; font-size: 12px; font-weight: 600">
+      <span style="width: 64px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+      Account
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { filter: 'all', searching: false, query: '' };
+  }
+  renderVals() {
+    const { filter, searching, query } = this.state;
+    const q = searching ? query.trim().toLowerCase() : '';
+    const chipDefs = [
+      { id: 'all', label: 'All' },
+      { id: 'pending', label: 'To sign' },
+      { id: 'signed', label: 'Signed' },
+      { id: 'draft', label: 'Drafts' }
+    ];
+    const chips = chipDefs.map((c) => ({
+      label: c.label,
+      pick: () => this.setState({ filter: c.id }),
+      style: 'flex-shrink: 0; height: 36px; padding: 0 16px; border-radius: 18px; font-size: 14px; font-weight: 600; cursor: pointer; ' +
+        (c.id === filter ? 'background: #191C20; color: #FFFFFF; border: 1px solid #191C20' : 'background: #FFFFFF; color: #44474E; border: 1px solid #C4C6D0')
+    }));
+    const corner = {
+      pending: { text: 'To sign', c: '#B54708' },
+      signed: { text: 'Signed', c: '#067647' },
+      draft: { text: 'Draft', c: '#74777F' }
+    };
+    const all = [
+      { title: 'Rental agreement', meta: '4 pages · Scanned today', status: 'pending', href: 'Sign.dc.html', words: 'landlord rent lease' },
+      { title: 'Employment contract', meta: '6 pages · 12 Oct 2026', status: 'signed', href: 'DocSigned.dc.html', words: 'employer salary rent allowance' },
+      { title: 'Car insurance policy', meta: '3 pages · 2 Oct 2026', status: 'signed', href: 'DocSigned.dc.html', words: 'vehicle insurer' },
+      { title: 'NDA – [Company]', meta: '2 pages · 28 Sep 2026', status: 'pending', href: 'Sign.dc.html', words: 'non-disclosure confidential' },
+      { title: 'Passport copy', meta: '1 page · 14 Sep 2026', status: 'draft', href: 'DocDraft.dc.html', words: 'id identity' }
+    ];
+    const docs = all
+      .filter((d) => filter === 'all' || d.status === filter)
+      .filter((d) => !q || (d.title + ' ' + d.words).toLowerCase().includes(q))
+      .map((d) => ({
+        ...d,
+        status: corner[d.status].text,
+        isSign: d.status === 'pending',
+        isSigned: d.status === 'signed',
+        isDraft: d.status === 'draft',
+        cornerStyle: 'position: absolute; right: -7px; bottom: -7px; width: 22px; height: 22px; box-sizing: border-box; border-radius: 11px; border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center; background: ' + corner[d.status].c
+      }));
+    return {
+      chips,
+      docs,
+      searching,
+      notSearching: !searching,
+      query,
+      hasQuery: query.length > 0,
+      openSearch: () => this.setState({ searching: true }),
+      closeSearch: () => this.setState({ searching: false, query: '' }),
+      onInput: (e) => this.setState({ query: e.target.value }),
+      clear: () => this.setState({ query: '' }),
+      empty: docs.length === 0,
+      emptyTitle: q ? 'No documents match \u201c' + query.trim() + '\u201d' : 'No documents here yet'
+    };
+  }
+}
+</script>
+</body>
+</html>

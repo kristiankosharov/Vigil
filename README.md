@@ -4,7 +4,7 @@
 
 An Android app built on a strict, tool-enforced architecture: multi-module Clean Architecture with
 MVI, where every convention is checked by the build rather than by memory. It is also set up to be
-developed together with [Claude Code](https://claude.com/claude-code).
+developed together with Claude Code.
 
 <!-- TODO: one or two sentences on what Vigil does for its users. -->
 
@@ -40,12 +40,17 @@ next.
 | **App lock** (`:feature:applock`) | Working. PIN with a custom number pad (create + repeat), biometric unlock, locks on start and after 30 s in the background, covers the whole app. |
 | **Home** (`:feature:home`) | Placeholder screen reading entries from Room (empty for now). |
 
-Open items are marked in the code as `TODO(auth)`, `TODO(oidc)`, `TODO(home)`, `TODO(applock)` and `TODO(env)`.
+Open items are marked in the code as `TODO(auth)`, `TODO(oidc)`, `TODO(home)`, `TODO(applock)`,
+`TODO(env)` and `TODO(design)`.
 
 **Firebase Auth setup:** the Email/Password and Phone providers are enabled in the Firebase project
 `vigil-app-25b0`. Phone sign-in needs the app's SHA-1/SHA-256 registered in Firebase (each
 developer's debug key and the release key) and, for real SMS, the Blaze plan; test numbers
 (Authentication → Sign-in method → Phone) work without either.
+
+**Design:** the design system (colors, type, states, components) and every screen flow are described
+in [`docs/design/README.md`](docs/design/README.md). The theme and shared components are in
+`:common:ui` (`theme/` and `designsystem/`).
 
 ## Requirements
 
@@ -58,7 +63,7 @@ developer's debug key and the release key) and, for real SMS, the Blaze plan; te
 | Device or emulator | Android 8.0 (API 26)+ | For running the app and the instrumented tests. |
 | [ktlint](https://github.com/ktlint/ktlint/releases) | **1.8.0** exactly | The only formatter. The version is pinned in `gradle/libs.versions.toml`; a different version is reported as an error. Homebrew may ship an older one, so install it from the GitHub release if needed. |
 | `jq` | any | Used by the Claude Code hooks (built into macOS 15+). |
-| [Claude Code](https://claude.com/claude-code) | — | Optional. |
+| Claude Code | — | Optional. |
 
 Gradle 9.8.2 comes with the wrapper; you don't need to install it.
 

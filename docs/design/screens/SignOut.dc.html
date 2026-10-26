@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign out</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#415F91}a:hover{color:#284777}
+button,input{font-family:inherit}
+input:focus{outline:none}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #F9F9FF; color: #191C20; font-family: Manrope, system-ui, sans-serif; overflow: hidden">
+  <div aria-hidden="true" style="padding: 20px; display: flex; flex-direction: column; gap: 14px">
+    <span style="font-size: 26px; font-weight: 800">Account</span>
+    <span style="height: 84px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9"></span>
+    <span style="height: 224px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9"></span>
+    <span style="height: 112px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9"></span>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.32)"></div>
+
+  <section role="alertdialog" aria-labelledby="so-title" style="position: absolute; left: 28px; right: 28px; top: 232px; padding: 24px; border-radius: 28px; background: #EDEDF4; display: flex; flex-direction: column; gap: 16px">
+    <span style="align-self: center; color: #BA1A1A"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/></svg></span>
+    <h2 id="so-title" style="margin: 0; text-align: center; font-size: 22px; font-weight: 700">Sign out of this device?</h2>
+    <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #44474E">Your documents stay encrypted on this phone. To open them again you'll sign in with email or phone and create your PIN.</p>
+    <label style="display: flex; align-items: flex-start; gap: 12px; font-size: 14px; line-height: 1.4; cursor: pointer">
+      <input type="checkbox" checked="{{wipe}}" onChange="{{toggleWipe}}" style="width: 20px; height: 20px; margin: 1px 0 0; accent-color: #BA1A1A; flex-shrink: 0">
+      Also delete all documents from this device
+    </label>
+    <div style="display: flex; justify-content: flex-end; gap: 8px">
+      <a href="Account.dc.html" style="height: 40px; padding: 0 16px; border-radius: 20px; display: flex; align-items: center; text-decoration: none; font-size: 14px; font-weight: 700">Cancel</a>
+      <a href="Main.dc.html" style="height: 40px; padding: 0 16px; border-radius: 20px; display: flex; align-items: center; text-decoration: none; font-size: 14px; font-weight: 700; color: #BA1A1A">{{confirmLabel}}</a>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { wipe: false };
+  }
+  renderVals() {
+    const wipe = this.state.wipe;
+    return {
+      wipe,
+      toggleWipe: () => this.setState({ wipe: !wipe }),
+      confirmLabel: wipe ? 'Sign out & delete' : 'Sign out'
+    };
+  }
+}
+</script>
+</body>
+</html>

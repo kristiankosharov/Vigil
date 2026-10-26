@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confirm your PIN</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#AAC7FF}a:hover{color:#D6E3FF}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #111318; color: #E2E2E9; font-family: Manrope, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 16px 32px 40px; overflow: hidden">
+  <div style="align-self: stretch; display: flex; align-items: center; gap: 12px; margin: 0 -20px">
+    <a href="CreatePin.dc.html" aria-label="Back to create PIN" style="width: 44px; height: 44px; border-radius: 22px; color: #E2E2E9; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+    </a>
+    <div aria-label="Step 2 of 3" style="flex-grow: 1; display: flex; gap: 6px; padding-right: 20px">
+      <span style="flex: 1; height: 4px; border-radius: 2px; background: #AAC7FF"></span>
+      <span style="flex: 1; height: 4px; border-radius: 2px; background: #AAC7FF"></span>
+      <span style="flex: 1; height: 4px; border-radius: 2px; background: #33353A"></span>
+    </div>
+  </div>
+
+  <p style="margin: 40px 0 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #AAC7FF">Step 2 of 3</p>
+  <h1 style="margin: 10px 0 8px; font-size: 24px; font-weight: 700; letter-spacing: -0.01em">Confirm your PIN</h1>
+  <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #C4C6D0; text-align: center">Enter the same 6 digits again.</p>
+
+  <div aria-label="PIN entry" style="display: flex; gap: 16px; margin: 36px 0 12px">
+    <sc-for list="{{dots}}" as="dot" hint-placeholder-count="6">
+      <span style="{{dot.style}}"></span>
+    </sc-for>
+  </div>
+  <p role="status" style="{{messageStyle}}">{{message}}</p>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 28px; margin-top: 28px">
+    <sc-for list="{{keys}}" as="k" hint-placeholder-count="9">
+      <button type="button" onClick="{{k.press}}" style="width: 76px; height: 76px; border-radius: 38px; border: none; background: #282A2F; color: #E2E2E9; font-size: 28px; font-weight: 600; cursor: pointer">{{k.label}}</button>
+    </sc-for>
+    <span></span>
+    <button type="button" onClick="{{pressZero}}" style="width: 76px; height: 76px; border-radius: 38px; border: none; background: #282A2F; color: #E2E2E9; font-size: 28px; font-weight: 600; cursor: pointer">0</button>
+    <button type="button" onClick="{{backspace}}" aria-label="Delete last digit" style="width: 76px; height: 76px; border-radius: 38px; border: none; background: transparent; color: #E2E2E9; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9.5l-5 5M12 9.5l5 5"/></svg>
+    </button>
+  </div>
+
+  <div style="flex-grow: 1"></div>
+  <sc-if value="{{complete}}" hint-placeholder-val="{{ true }}">
+    <a href="EnableBiometric.dc.html" style="align-self: stretch; height: 56px; border-radius: 16px; background: #AAC7FF; color: #0A305F; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 16px; font-weight: 700">Continue</a>
+  </sc-if>
+  <sc-if value="{{incomplete}}" hint-placeholder-val="{{ false }}">
+    <span aria-disabled="true" style="align-self: stretch; height: 56px; border-radius: 16px; background: #282A2F; color: #8E9099; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700">Continue</span>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mismatch":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { len: 6 };
+  }
+  add() {
+    this.setState({ len: Math.min(6, this.state.len + 1) });
+  }
+  renderVals() {
+    const len = this.state.len;
+    const mismatch = this.props.mismatch ?? false;
+    const full = len === 6;
+    const dotOn = full && mismatch ? '#FFB4AB' : (full ? '#75E0A7' : '#AAC7FF');
+    const dots = [0, 1, 2, 3, 4, 5].map((i) => ({
+      style: 'width: 14px; height: 14px; border-radius: 7px; box-sizing: border-box; ' +
+        (i < len ? 'background: ' + dotOn + '; border: 2px solid ' + dotOn : 'background: transparent; border: 2px solid #8E9099')
+    }));
+    const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((label) => ({ label, press: () => this.add() }));
+    let message = '';
+    let color = '#C4C6D0';
+    if (full && mismatch) { message = 'PINs don’t match. Try again.'; color = '#FFB4AB'; }
+    else if (full) { message = 'PINs match'; color = '#75E0A7'; }
+    return {
+      dots,
+      keys,
+      message,
+      messageStyle: 'margin: 0; height: 20px; font-size: 13px; font-weight: 700; color: ' + color,
+      complete: full && !mismatch,
+      incomplete: !full || mismatch,
+      pressZero: () => this.add(),
+      backspace: () => this.setState({ len: Math.max(0, len - 1) })
+    };
+  }
+}
+</script>
+</body>
+</html>

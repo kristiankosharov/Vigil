@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reminder from scan</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#415F91}a:hover{color:#284777}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #F9F9FF; color: #191C20; font-family: Manrope, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+  <header style="display: flex; align-items: center; gap: 8px; padding: 12px 12px; background: #FFFFFF; border-bottom: 1px solid #E2E2E9">
+    <a href="Review.dc.html" aria-label="Back to review" style="width: 44px; height: 44px; border-radius: 22px; color: #191C20; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+    </a>
+    <span style="flex-grow: 1; font-size: 16px; font-weight: 700">Reminder</span>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; padding: 16px 20px 0">
+    <div style="display: flex; gap: 12px; padding: 14px; border-radius: 16px; background: #D6E3FF; color: #284777">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><path d="M12 9l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg>
+      <p style="margin: 0; font-size: 14px; line-height: 1.45; font-weight: 600">AI found an end date on page 2 of this document and set up a reminder so it doesn't slip by.</p>
+    </div>
+
+    <div style="padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9; display: flex; align-items: center; gap: 14px">
+      <span style="width: 56px; height: 60px; flex-shrink: 0; border-radius: 12px; background: #FEF0C7; color: #93370D; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px">
+        <span style="font-size: 11px; font-weight: 700; text-transform: uppercase">[Mon]</span>
+        <span style="font-size: 20px; font-weight: 800; line-height: 1">[DD]</span>
+      </span>
+      <span style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+        <span style="font-size: 16px; font-weight: 800">Rental agreement ends</span>
+        <span style="font-size: 13px; color: #44474E">[date] · from Rental agreement, page 2</span>
+      </span>
+    </div>
+
+    <div>
+      <h2 style="margin: 0 0 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #44474E">Notify me</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <sc-for list="{{options}}" as="o" hint-placeholder-count="4">
+          <button type="button" aria-pressed="{{o.pressed}}" onClick="{{o.toggle}}" style="{{o.style}}">{{o.label}}</button>
+        </sc-for>
+      </div>
+      <p style="margin: 10px 0 0; font-size: 13px; color: #44474E">{{summary}}</p>
+    </div>
+
+    <div>
+      <h2 style="margin: 0 0 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #44474E">Notification preview</h2>
+      <div style="padding: 14px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E2E2E9; box-shadow: 0 4px 14px rgba(16, 24, 40, 0.08); display: flex; gap: 12px">
+        <span style="width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; background: #415F91; display: flex; align-items: center; justify-content: center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/></svg>
+        </span>
+        <span style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <span style="font-size: 12px; color: #44474E">Document Wallet · {{previewWhen}}</span>
+          <span style="font-size: 14px; font-weight: 800">Rental agreement ends {{previewIn}}</span>
+          <span style="font-size: 13px; color: #44474E">Unlock the wallet to view or renew it.</span>
+        </span>
+      </div>
+      <p style="margin: 10px 0 0; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #44474E">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        Notifications never show the document's contents
+      </p>
+    </div>
+  </div>
+
+  <div style="padding: 14px 20px 28px; background: #FFFFFF; border-top: 1px solid #E2E2E9; display: flex; flex-direction: column; gap: 8px">
+    <a href="Review.dc.html" style="height: 56px; border-radius: 16px; background: #415F91; color: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 16px; font-weight: 700">Save reminder</a>
+    <a href="Review.dc.html" style="height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #BA1A1A; font-size: 15px; font-weight: 700">Remove reminder</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { on: { d30: true, d7: true, d1: false, d0: true } };
+  }
+  renderVals() {
+    const on = this.state.on;
+    const defs = [
+      { id: 'd30', label: '30 days before', when: 'in 30 days' },
+      { id: 'd7', label: '7 days before', when: 'in 7 days' },
+      { id: 'd1', label: '1 day before', when: 'tomorrow' },
+      { id: 'd0', label: 'On the day', when: 'today' }
+    ];
+    const options = defs.map((o) => ({
+      label: o.label,
+      pressed: on[o.id] ? 'true' : 'false',
+      toggle: () => this.setState({ on: { ...on, [o.id]: !on[o.id] } }),
+      style: 'height: 40px; padding: 0 14px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; ' +
+        (on[o.id] ? 'background: #191C20; color: #FFFFFF; border: 1px solid #191C20' : 'background: #FFFFFF; color: #44474E; border: 1px solid #C4C6D0')
+    }));
+    const active = defs.filter((o) => on[o.id]);
+    const first = active[0];
+    return {
+      options,
+      summary: active.length === 0 ? 'No notifications. The reminder still shows in the Reminders tab.' : 'You’ll get ' + active.length + (active.length === 1 ? ' notification' : ' notifications') + ' at 9:00.',
+      previewWhen: '9:00',
+      previewIn: first ? first.when : 'today'
+    };
+  }
+}
+</script>
+</body>
+</html>

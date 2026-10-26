@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vigil · Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #F9F9FF; --ink: #191C20; --muted: #44474E; --line: #E2E2E9; --link: #415F91; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #111318; --ink: #E2E2E9; --muted: #C4C6D0; --line: #33353A; --link: #AAC7FF; } }
+  body { margin: 0; padding: 32px 16px 64px; background: var(--bg); color: var(--ink); font-family: Manrope, system-ui, sans-serif; }
+  main { max-width: 1400px; margin: 0 auto; }
+  h1 { margin: 0 0 6px; font-size: 28px; font-weight: 800; }
+  p.lead { margin: 0 0 32px; color: var(--muted); max-width: 70ch; line-height: 1.5; }
+  h2 { margin: 0 0 16px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 18px; font-weight: 800; }
+  section { margin-bottom: 32px; }
+  .row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  .card { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .frame { overflow: hidden; border-radius: 14px; border: 1px solid var(--line); background: #fff; }
+  .frame iframe { border: 0; transform-origin: 0 0; display: block; }
+  figcaption a { color: var(--link); font-size: 13px; font-weight: 700; text-decoration: none; }
+  figcaption a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Vigil · Design</h1>
+  <p class="lead">Every screen as an interactive mock-up, grouped by flow, plus the component state sheets. Click a title to open a screen full size; links inside the screens move between them. Colors, type and component rules are in <a href="../README.md" style="color: var(--link)">docs/design/README.md</a>.</p>
+    <section>
+      <h2>1 · Security — onboarding &amp; unlock</h2>
+      <div class="row">
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="CreatePin.dc.html" title="1.1 · Create PIN" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="CreatePin.dc.html">1.1 · Create PIN</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="ConfirmPin.dc.html" title="1.2 · Confirm PIN" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="ConfirmPin.dc.html">1.2 · Confirm PIN</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="EnableBiometric.dc.html" title="1.3 · Enable fingerprint" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="EnableBiometric.dc.html">1.3 · Enable fingerprint</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="Main.dc.html" title="1.4 · Unlock (returning user)" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="Main.dc.html">1.4 · Unlock (returning user)</a></figcaption>
+      </figure>
+      </div>
+    </section>
+    <section>
+      <h2>2.1 · Documents tab — search filters in place · lock → 1.4 · scan → 3.1 · to-sign item → 3.3</h2>
+      <div class="row">
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="Documents.dc.html" title="2.1 · Tab: Documents" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="Documents.dc.html">2.1 · Tab: Documents</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="DocSigned.dc.html" title="2.1a · Document · signed" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="DocSigned.dc.html">2.1a · Document · signed</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="DocDraft.dc.html" title="2.1b · Document · draft" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="DocDraft.dc.html">2.1b · Document · draft</a></figcaption>
+      </figure>
+      </div>
+    </section>
+    <section>
+      <h2>2.2 · Reminders tab</h2>
+      <div class="row">
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="Reminders.dc.html" title="2.2 · Tab: Reminders" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="Reminders.dc.html">2.2 · Tab: Reminders</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="RemindersFilter.dc.html" title="2.2a · Filter reminders" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="RemindersFilter.dc.html">2.2a · Filter reminders</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="ReminderNew.dc.html" title="2.2b · New reminder" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="ReminderNew.dc.html">2.2b · New reminder</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="ReminderDetail.dc.html" title="2.2c · Reminder details" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="ReminderDetail.dc.html">2.2c · Reminder details</a></figcaption>
+      </figure>
+      </div>
+    </section>
+    <section>
+      <h2>2.3 · Account tab</h2>
+      <div class="row">
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="Account.dc.html" title="2.3 · Tab: Account" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="Account.dc.html">2.3 · Tab: Account</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="EditProfile.dc.html" title="2.3a · Edit profile" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="EditProfile.dc.html">2.3a · Edit profile</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="ChangePin.dc.html" title="2.3b · Change PIN" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="ChangePin.dc.html">2.3b · Change PIN</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="AutoLock.dc.html" title="2.3c · Auto-lock" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="AutoLock.dc.html">2.3c · Auto-lock</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="EmailPassword.dc.html" title="2.3d · Email &amp; password" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="EmailPassword.dc.html">2.3d · Email &amp; password</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="PhoneNumber.dc.html" title="2.3e · Phone number" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="PhoneNumber.dc.html">2.3e · Phone number</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="SignOut.dc.html" title="2.3f · Sign out" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="SignOut.dc.html">2.3f · Sign out</a></figcaption>
+      </figure>
+      </div>
+    </section>
+    <section>
+      <h2>3 · Scan → Review → Sign</h2>
+      <div class="row">
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="Scan.dc.html" title="3.1 · Scan" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="Scan.dc.html">3.1 · Scan</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="Review.dc.html" title="3.2 · Review &amp; approve" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="Review.dc.html">3.2 · Review &amp; approve</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="ReminderFromScan.dc.html" title="3.2a · Reminder added (from Review)" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="ReminderFromScan.dc.html">3.2a · Reminder added (from Review)</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 195px; height: 422px">
+          <iframe src="Sign.dc.html" title="3.3 · Sign digitally" loading="lazy" style="width: 390px; height: 844px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="Sign.dc.html">3.3 · Sign digitally</a></figcaption>
+      </figure>
+      </div>
+    </section>
+    <section>
+      <h2>4 · Components &amp; states</h2>
+      <div class="row">
+      <figure class="card">
+        <div class="frame" style="width: 520px; height: 380px">
+          <iframe src="CompButtons.dc.html" title="4.1 · Buttons &amp; FAB" loading="lazy" style="width: 1040px; height: 760px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="CompButtons.dc.html">4.1 · Buttons &amp; FAB</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 520px; height: 410px">
+          <iframe src="CompInputs.dc.html" title="4.2 · Inputs &amp; selection" loading="lazy" style="width: 1040px; height: 820px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="CompInputs.dc.html">4.2 · Inputs &amp; selection</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 520px; height: 540px">
+          <iframe src="StatusIdeas.dc.html" title="4.5 · Status indicator ideas" loading="lazy" style="width: 1040px; height: 1080px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="StatusIdeas.dc.html">4.5 · Status indicator ideas</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 520px; height: 320px">
+          <iframe src="CompSecurity.dc.html" title="4.3 · Security (dark)" loading="lazy" style="width: 1040px; height: 640px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="CompSecurity.dc.html">4.3 · Security (dark)</a></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="frame" style="width: 520px; height: 350px">
+          <iframe src="CompLists.dc.html" title="4.4 · Lists &amp; navigation" loading="lazy" style="width: 1040px; height: 700px; transform: scale(0.5)"></iframe>
+        </div>
+        <figcaption><a href="CompLists.dc.html">4.4 · Lists &amp; navigation</a></figcaption>
+      </figure>
+      </div>
+    </section>
+</main>
+</body>
+</html>
