@@ -1,7 +1,7 @@
 package app.vigil
 
-import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.fragment.app.FragmentActivity
@@ -15,8 +15,9 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        // The recents thumbnail would show the app's content even while it is locked.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) setRecentsScreenshotEnabled(false)
+        // No screenshots, screen recording or recents thumbnail: the app shows documents and the PIN
+        // pad, and the thumbnail would show them even while the app is locked.
+        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
         setContent {
             AppThemeHost {
                 // light, dark or system, as chosen on the Appearance screen

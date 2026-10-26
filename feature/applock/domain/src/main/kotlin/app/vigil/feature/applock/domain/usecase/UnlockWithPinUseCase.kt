@@ -1,8 +1,9 @@
 package app.vigil.feature.applock.domain.usecase
 
 import app.vigil.common.core.AppResult
+import app.vigil.feature.applock.domain.model.PinCheck
 
-/** Success(true) when the PIN matched and the app is now unlocked. */
+/** Correct unlocks the app; the last wrong attempt erases everything and signs out. */
 public fun interface UnlockWithPinUseCase {
-    public suspend operator fun invoke(pin: String): AppResult<Boolean>
+    public suspend operator fun invoke(pin: CharArray): AppResult<PinCheck>
 }

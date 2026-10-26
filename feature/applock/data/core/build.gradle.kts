@@ -12,5 +12,7 @@ dependencies {
     implementation(projects.feature.applock.data.api)
     implementation(projects.common.core)
     implementation(projects.common.datastore)
+    implementation(projects.common.network) // SessionEvents: too many wrong PINs sign the user out
+    implementation(projects.common.security)
     implementation(libs.androidx.biometric) // BiometricManager: is a strong biometric enrolled?
 }

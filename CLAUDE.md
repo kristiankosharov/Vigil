@@ -66,6 +66,8 @@ More detail loads only when needed:
 :common:network            → Ktor HttpClients, auth plugin, safeApiCall, @BaseUrl / @IsDebugBuild qualifiers
 :common:database           → the single AppDatabase: all entities + DAOs (one package per feature), migrations, safeDbCall
 :common:datastore          → encrypted DataStore factory (Tink, AeadSerializer, JSON serializer), safeStoreCall
+:common:security           → Vault (the PIN-unlocked data key, memory only), AesGcm, PIN key derivation
+                             (Argon2id + Keystore pepper), biometric-bound Keystore key
 :common:ui                 → theme, design system, UiText, BaseViewModel, effects, navigation handler
 :common:testing            → Kotest extensions, main dispatcher, fixtures
 
@@ -94,7 +96,7 @@ read from the build files rather than from memory.
 :feature:x:domain ──► :feature:x:data:api, :common:core         (+ :feature:y:data:api if needed)
 :feature:x:data:api ► :common:core
 :feature:x:data:core ► :feature:x:data:api, :common:network, :common:database, :common:datastore,
-                       :common:core                              (+ :feature:y:data:api if needed)
+                       :common:security, :common:core            (+ :feature:y:data:api if needed)
 ```
 
 - `ui` **never** depends on any `data` module; it sees only domain models and use case interfaces.

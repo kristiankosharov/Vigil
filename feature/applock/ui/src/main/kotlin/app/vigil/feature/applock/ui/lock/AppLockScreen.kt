@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -104,17 +105,29 @@ private fun PinEntry(state: AppLockUiState, onAction: (AppLockAction) -> Unit, m
             textAlign = TextAlign.Center,
         )
         PinDots(
-            length = state.pin.length,
+            length = state.pinLength,
             status = if (state.isPinWrong) PinDotsStatus.Error else PinDotsStatus.Typing,
             modifier = Modifier.padding(top = 40.dp, bottom = 12.dp),
         )
+        val isError = state.isPinWrong || state.retrySeconds > 0
         Text(
             text = when {
                 state.isChecking -> stringResource(R.string.applock_unlocking)
+
+                state.retrySeconds > 0 -> stringResource(R.string.applock_retry_in, formatWait(state.retrySeconds))
+
+                state.isPinWrong && (state.attemptsLeft ?: Int.MAX_VALUE) <= WARN_ATTEMPTS_LEFT ->
+                    pluralStringResource(
+                        R.plurals.applock_pin_wrong_attempts_left,
+                        state.attemptsLeft ?: 0,
+                        state.attemptsLeft ?: 0,
+                    )
+
                 state.isPinWrong -> stringResource(R.string.applock_pin_wrong)
+
                 else -> ""
             },
-            color = with(MaterialTheme.colorScheme) { if (state.isPinWrong) error else onSurfaceVariant },
+            color = with(MaterialTheme.colorScheme) { if (isError) error else onSurfaceVariant },
             style = MaterialTheme.typography.bodySmall,
             textAlign = TextAlign.Center,
             modifier = Modifier
@@ -122,15 +135,22 @@ private fun PinEntry(state: AppLockUiState, onAction: (AppLockAction) -> Unit, m
                 .semantics { liveRegion = LiveRegionMode.Polite },
         )
         PinPad(
-            onDigit = { onAction(AppLockAction.PinChanged(state.pin + it)) },
-            onDelete = { onAction(AppLockAction.PinChanged(state.pin.dropLast(1))) },
-            isDeleteEnabled = state.pin.isNotEmpty(),
-            enabled = !state.isChecking,
+            onDigit = { onAction(AppLockAction.Digit(it)) },
+            onDelete = { onAction(AppLockAction.Delete) },
+            isDeleteEnabled = state.pinLength > 0,
+            enabled = !state.isChecking && state.retrySeconds == 0,
             onBiometric = if (state.isBiometricEnabled) ({ onAction(AppLockAction.UseBiometric) }) else null,
             modifier = Modifier.padding(top = 32.dp),
         )
     }
 }
+
+/** From this many attempts left, a wrong PIN also says the wallet will be erased. */
+private const val WARN_ATTEMPTS_LEFT = 3
+private const val SECONDS_PER_MINUTE = 60
+
+/** "0:30", "14:59": short enough for the line under the dots. */
+private fun formatWait(seconds: Int) = "%d:%02d".format(seconds / SECONDS_PER_MINUTE, seconds % SECONDS_PER_MINUTE)
 
 @Composable
 private fun LockBadge(modifier: Modifier = Modifier) {
@@ -149,10 +169,12 @@ private fun LockBadge(modifier: Modifier = Modifier) {
     }
 }
 
-private fun previewState(isPinWrong: Boolean) = AppLockUiState(
+private fun previewState(isPinWrong: Boolean, retrySeconds: Int = 0) = AppLockUiState(
     status = AppLockStatus.Locked,
-    pin = if (isPinWrong) "" else "12",
+    pinLength = if (isPinWrong) 0 else 2,
     isPinWrong = isPinWrong,
+    attemptsLeft = if (isPinWrong) 2 else null,
+    retrySeconds = retrySeconds,
     isChecking = false,
     isBiometricEnabled = true,
     biometricRequest = null,
@@ -170,4 +192,10 @@ private fun AppLockScreenPreview() {
 @Composable
 private fun AppLockScreenWrongPinPreview() {
     AppLockScreen(state = previewState(isPinWrong = true), onAction = {})
+}
+
+@PreviewLightDark
+@Composable
+private fun AppLockScreenLockedOutPreview() {
+    AppLockScreen(state = previewState(isPinWrong = true, retrySeconds = 30), onAction = {})
 }

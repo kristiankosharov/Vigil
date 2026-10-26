@@ -1,8 +1,7 @@
 package app.vigil.feature.auth.data.di
 
-import androidx.datastore.core.DataStore
 import app.vigil.common.core.UserDataCleaner
-import app.vigil.feature.auth.data.local.AuthSession
+import app.vigil.common.network.TokenStorage
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
@@ -16,8 +15,8 @@ import dagger.multibindings.IntoSet
 internal object AuthDataCleanerModule {
     @Provides
     @IntoSet
-    fun provideAuthDataCleaner(auth: FirebaseAuth, store: DataStore<AuthSession>): UserDataCleaner = UserDataCleaner {
+    fun provideAuthDataCleaner(auth: FirebaseAuth, tokens: TokenStorage): UserDataCleaner = UserDataCleaner {
         auth.signOut()
-        store.updateData { AuthSession() }
+        tokens.clear() // also drops tokens still waiting for the vault
     }
 }

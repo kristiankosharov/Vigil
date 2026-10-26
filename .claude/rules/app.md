@@ -33,8 +33,8 @@ Code: `.claude/reference/app.md`.
   layer: `AppLockHost { AuthSessionHost { NavDisplay } }`, so the lock screen covers everything.
   After login the app opens the create-PIN key, then `MainKey`. Code and rules:
   `.claude/reference/app-lock.md`.
-- `MainActivity` is a `FragmentActivity` (BiometricPrompt needs one) and calls
-  `setRecentsScreenshotEnabled(false)` on API 33+, so the recents thumbnail never shows the app.
+- `MainActivity` is a `FragmentActivity` (BiometricPrompt needs one) and sets `FLAG_SECURE` on its
+  window: no screenshots, screen recording or recents thumbnail anywhere in the app.
 
 ## Main tabs
 

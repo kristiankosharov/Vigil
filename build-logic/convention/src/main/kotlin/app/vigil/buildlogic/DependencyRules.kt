@@ -36,7 +36,7 @@ internal fun dependencyRuleViolation(from: String, to: String): String? {
     val allowedCommon = when (layer) {
         "ui" -> setOf(":common:ui", ":common:core")
         "domain", "data:api" -> setOf(":common:core")
-        else -> setOf(":common:core", ":common:network", ":common:database", ":common:datastore")
+        else -> setOf(":common:core", ":common:network", ":common:database", ":common:datastore", ":common:security")
     }
     val allowedOwn = when (layer) {
         "ui" -> setOf("domain")

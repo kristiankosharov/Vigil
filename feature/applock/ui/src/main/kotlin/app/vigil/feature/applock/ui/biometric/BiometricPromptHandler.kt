@@ -11,8 +11,10 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 
 /**
- * Shows the system biometric prompt for [request] and reports success. Consumes the request before
- * showing it, like NavigationHandler. Cancelling or failing leaves the screen as it is.
+ * Shows the system biometric prompt for [request] and reports success. The prompt authenticates the
+ * request's Keystore cipher (a CryptoObject), so a fingerprint really unlocks a key rather than only
+ * saying "yes". Consumes the request before showing it, like NavigationHandler. Cancelling or failing
+ * leaves the screen as it is.
  */
 @Composable
 internal fun BiometricPromptHandler(
@@ -41,6 +43,7 @@ internal fun BiometricPromptHandler(
                 .setNegativeButtonText(negativeText)
                 .setAllowedAuthenticators(BIOMETRIC_STRONG)
                 .build(),
+            BiometricPrompt.CryptoObject(request.cipher.cipher),
         )
     }
 }

@@ -26,10 +26,12 @@ class AppLockLayerTest {
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
-    private fun state(status: AppLockStatus, pin: String = "") = AppLockUiState(
+    private fun state(status: AppLockStatus, pinLength: Int = 0) = AppLockUiState(
         status = status,
-        pin = pin,
+        pinLength = pinLength,
         isPinWrong = false,
+        attemptsLeft = null,
+        retrySeconds = 0,
         isChecking = false,
         isBiometricEnabled = false,
         biometricRequest = null,
@@ -81,7 +83,7 @@ class AppLockLayerTest {
         val actions = mutableListOf<AppLockAction>()
         composeTestRule.setContent {
             AppTheme(dynamicColor = false) {
-                AppLockLayer(state = state(AppLockStatus.Locked, pin = "1234"), onAction = { actions += it }) {}
+                AppLockLayer(state = state(AppLockStatus.Locked, pinLength = 4), onAction = { actions += it }) {}
             }
         }
 
@@ -91,7 +93,7 @@ class AppLockLayerTest {
             .performScrollTo()
             .performClick()
 
-        assertEquals(listOf(AppLockAction.PinChanged("12345"), AppLockAction.PinChanged("123")), actions)
+        assertEquals(listOf(AppLockAction.Digit(5), AppLockAction.Delete), actions)
     }
 
     @Test
@@ -117,12 +119,30 @@ class AppLockLayerTest {
     fun thePinIsReadOutAsACountOnly() {
         composeTestRule.setContent {
             AppTheme(dynamicColor = false) {
-                AppLockLayer(state = state(AppLockStatus.Locked, pin = "1234"), onAction = {}) {}
+                AppLockLayer(state = state(AppLockStatus.Locked, pinLength = 4), onAction = {}) {}
             }
         }
 
         val progress = context.resources.getQuantityString(R.plurals.applock_pin_progress, 4, 4, 6)
         composeTestRule.onNodeWithContentDescription(progress).assertIsDisplayed()
         composeTestRule.onNodeWithText("1234").assertDoesNotExist()
+    }
+
+    @Test
+    fun afterTooManyWrongPinsTheWaitShowsAndTheKeysAreOff() {
+        val actions = mutableListOf<AppLockAction>()
+        composeTestRule.setContent {
+            AppTheme(dynamicColor = false) {
+                AppLockLayer(
+                    state = state(AppLockStatus.Locked).copy(isPinWrong = true, attemptsLeft = 5, retrySeconds = 75),
+                    onAction = { actions += it },
+                ) {}
+            }
+        }
+
+        composeTestRule.onNodeWithText(context.getString(R.string.applock_retry_in, "1:15")).assertIsDisplayed()
+        composeTestRule.onNodeWithText("5").performScrollTo().performClick()
+
+        assertEquals(emptyList<AppLockAction>(), actions)
     }
 }

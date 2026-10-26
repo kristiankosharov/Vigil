@@ -1,5 +1,6 @@
 package app.vigil.feature.applock.data.session
 
+import app.vigil.common.security.VaultKeyControl
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration
@@ -12,20 +13,26 @@ import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Whether the app is locked right now. Lives only in memory: a new process starts locked. After the
- * app was in the background for [GRACE_PERIOD] or longer it locks again when it comes back.
+ * app was in the background for [GRACE_PERIOD] or longer it locks again when it comes back. Unlocking
+ * opens the vault with its key; locking closes it, wiping the key from memory.
  */
 @Singleton
-internal class AppLockSession @Inject constructor(private val timeSource: TimeSource) {
+internal class AppLockSession @Inject constructor(
+    private val timeSource: TimeSource,
+    private val vault: VaultKeyControl,
+) {
     private val locked = MutableStateFlow(true)
     private var backgroundedAt: TimeMark? = null
 
     val isLocked: StateFlow<Boolean> = locked.asStateFlow()
 
-    fun unlock() {
+    fun unlock(vaultKey: ByteArray) {
+        vault.open(vaultKey)
         locked.value = false
     }
 
     fun lock() {
+        vault.close()
         locked.value = true
     }
 
@@ -36,7 +43,7 @@ internal class AppLockSession @Inject constructor(private val timeSource: TimeSo
     fun onForegrounded() {
         val mark = backgroundedAt ?: return
         backgroundedAt = null
-        if (mark.elapsedNow() >= GRACE_PERIOD) locked.value = true
+        if (mark.elapsedNow() >= GRACE_PERIOD) lock()
     }
 
     companion object {

@@ -14,6 +14,13 @@
     <string name="applock_locked_message">Enter your %1$d-digit PIN to open your wallet</string>
     <string name="applock_unlocking">Unlocking…</string>
     <string name="applock_pin_wrong">Wrong PIN. Try again.</string>
+    <!-- Quantity and %1$d: attempts left before the wallet is erased -->
+    <plurals name="applock_pin_wrong_attempts_left">
+        <item quantity="one">Wrong PIN. %1$d attempt left before your wallet is erased.</item>
+        <item quantity="other">Wrong PIN. %1$d attempts left before your wallet is erased.</item>
+    </plurals>
+    <!-- %1$s is the wait, like 0:30 -->
+    <string name="applock_retry_in">Too many wrong PINs. Try again in %1$s</string>
     <string name="applock_use_biometric">Unlock with fingerprint</string>
     <string name="applock_biometric_title">Unlock Vigil</string>
     <string name="applock_biometric_use_pin">Use PIN</string>
@@ -35,6 +42,7 @@
         <item quantity="one">Enter the same %1$d digit again.</item>
         <item quantity="other">Enter the same %1$d digits again.</item>
     </plurals>
+    <string name="applock_pin_weak">That PIN is easy to guess. Choose another one.</string>
     <string name="applock_pins_match">PINs match</string>
     <string name="applock_pins_mismatch">PINs don\'t match. Try again.</string>
     <string name="applock_biometric_setup_title">Unlock with your fingerprint</string>
