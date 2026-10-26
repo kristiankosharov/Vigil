@@ -3,7 +3,6 @@ paths:
   - "feature/*/data/**"
   - "common/core/**"
   - "common/network/**"
-  - "common/database/**"
   - "common/datastore/**"
 ---
 
@@ -14,7 +13,7 @@ Code: `.claude/reference/core-result.md` (AppResult, AppError, wrappers) and
 
 ## `AppResult` and `AppError` (`:common:core`)
 
-- Every repository function that touches the network, Room or DataStore returns `AppResult<T>` or
+- Every repository function that touches the network, DataStore or files returns `AppResult<T>` or
   `Flow<AppResult<T>>`. Never throw out of a repository; never return a nullable to signal failure.
   Only calls on in-memory state that cannot fail (e.g. the app-lock session) return plain values.
 - `AppResult` has `map`, `onSuccess`, `onFailure`, and `Flow<AppResult<T>>.mapResult`.
@@ -30,8 +29,8 @@ Code: `.claude/reference/core-result.md` (AppResult, AppError, wrappers) and
 
 ## Wrappers
 
-- All network, Room and DataStore access goes through `safeApiCall` (`:common:network`),
-  `safeDbCall` / `asDbResult()` (`:common:database`) and `safeStoreCall` / `asStoreResult()`
+- All network and DataStore access goes through `safeApiCall` (`:common:network`) and
+  `safeStoreCall` / `asStoreResult()`
   (`:common:datastore`).
 - They catch `Exception` (never `Throwable`: `Error`s must crash), map it to an `AppError`, and
   **always rethrow `CancellationException`**. Never use `runCatching` in suspend code.
@@ -56,28 +55,28 @@ Code: `.claude/reference/core-result.md` (AppResult, AppError, wrappers) and
 
 ## `data:core` (internal implementation)
 
-- Layout: `remote/` (`XApi` + `XApiImpl`, DTOs), `local/` (DataStore models), `mapper/`,
-  `repository/`, `di/`. Entities and DAOs come from the feature's package in `:common:database`.
-- Remote and local sources are behind interfaces (`XApi`, `XDao`, `DataStore<T>`) so repositories
-  can be tested with mocks.
-- **Offline-first:** Room is the single source of truth for lists. Observed data comes from Room;
-  network results are written into Room, not returned directly.
-- DTOs, entities and DataStore models never leave `data:core`; map to `*Data` at the repository
-  boundary.
+- Layout: `remote/` (`XApi` + `XApiImpl`, DTOs), `local/` (DataStore models, file stores),
+  `mapper/`, `repository/`, `di/`.
+- Remote and local sources are behind interfaces (`XApi`, `DataStore<T>`) so repositories can be
+  tested with mocks.
+- **Offline-first:** the feature's store is the single source of truth. Observed data comes from it;
+  network results are written into it, not returned directly.
+- DTOs and DataStore models never leave `data:core`; map to `*Data` at the repository boundary.
 - Inject the qualified `CoroutineDispatcher` from `:common:core`; never hardcode `Dispatchers.IO`.
-- Choose Room or DataStore with the table in `.claude/rules/datastore.md`. Never store the same
-  data in both.
+- There is no database right now: `:common:database` (Room) was removed on 2026-10-26 (see the
+  Database row in `CLAUDE.md` to bring it back).
 
 ## Clearing user data on logout
 
-`:common:core` defines `fun interface UserDataCleaner { suspend fun clear() }`. `:common:database`
-contributes one that clears user tables; every feature that keeps user data in DataStore contributes
-one that resets its stores, all with `@IntoSet`. Logout (`:feature:auth`) injects
+`:common:core` defines `fun interface UserDataCleaner { suspend fun clear() }`. Every feature that
+keeps user data contributes one that resets its stores (and deletes its files and keys), all with
+`@IntoSet`. Logout (`:feature:auth`) injects
 `Set<UserDataCleaner>` and runs them all.
 
 ## Paging (data side)
 
-Use Paging 3 only for unbounded lists; small lists keep `Flow<AppResult<List<T>>>`. Full procedure:
+Use Paging 3 only for unbounded lists; small lists keep `Flow<AppResult<List<T>>>`. It needs Room
+back first (see above). Full procedure:
 `.claude/skills/add-paging-list/`.
 - Offline-first: a `RemoteMediator` in `data:core` writes pages into Room; the Room `PagingSource`
   from the feature's DAO is the source of truth.

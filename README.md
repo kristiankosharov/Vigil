@@ -19,7 +19,7 @@ way round: the rules come first, and they are executable.
   detekt bans `!!`, `GlobalScope`, `runCatching` in suspend code and hardcoded dispatchers; ktlint
   formats every file; Android Lint and an R8 release build run in CI.
 - **One way to do each thing.** Every repository returns `AppResult` and never throws; all I/O goes
-  through `safeApiCall` / `safeDbCall` / `safeStoreCall`; every screen is the same MVI shape
+  through `safeApiCall` / `safeStoreCall`; every screen is the same MVI shape
   (`UiState`, `Action`, a ViewModel that builds its state with a `@Composable uiState()`, a
   logic-free `Route` and a stateless `Screen`).
 - **Secure by default.** Small data lives in typed DataStores encrypted with Tink and an Android
@@ -38,7 +38,7 @@ next.
 |---|---|
 | **Login** (`:feature:auth`) | Working with **Firebase Auth**: email + password (sign in, create account, password reset) and phone number with an SMS code (auto-verification included). OpenID Connect is structured (repository, use case, SSO buttons) but has no provider yet: see `TODO(oidc)`. Bearer-token plumbing for the future backend (encrypted token store, refresh, session expiry → back to login) is in place; exchanging the Firebase ID token for backend tokens is a `TODO(auth)`. |
 | **App lock** (`:feature:applock`) | Working. 6-digit PIN with a custom number pad, onboarding (create → confirm → enable fingerprint), unlock with PIN or fingerprint, locks on start and after 30 s in the background, covers the whole app. The PIN is never stored: it unwraps the vault key (Argon2id + a Keystore pepper), which seals the tokens. Easy PINs are refused; 5 free tries, then growing waits, and the 10th wrong PIN erases everything and signs out. No screenshots (`FLAG_SECURE`). |
-| **Documents** (`:feature:documents`) | Documents tab (bottom navigation): on-device search, filters (All / To sign / Signed / Drafts), status icons, lock-now. Stored in Room; empty until the scan flow exists (`TODO(documents)`). |
+| **Documents** (`:feature:documents`) | Documents tab (bottom navigation): on-device search, filters (All / To sign / Signed / Drafts), status icons, lock-now. Envelope-encrypted: each document has its own AES-256 key that encrypts its pages; the key is wrapped by a Keystore RSA key and then by the PIN-unlocked vault key. The index (titles, scanned text) sits in an encrypted DataStore, sealed with the vault key too. Empty until the scan flow exists (`TODO(documents)`). |
 | **Settings** (`:feature:settings`) | Working. Appearance: light, dark or the device setting, stored in an encrypted DataStore and applied to the whole app (the security screens stay dark). Opened from the Account tab. |
 
 Open items are marked in the code as `TODO(auth)`, `TODO(oidc)`, `TODO(documents)`, `TODO(account)`, `TODO(reminders)`, `TODO(applock)`
@@ -52,6 +52,9 @@ developer's debug key and the release key) and, for real SMS, the Blaze plan; te
 **Design:** the design system (colors, type, states, components) and every screen flow are described
 in [`docs/design/README.md`](docs/design/README.md). The theme and shared components are in
 `:common:ui` (`theme/` and `designsystem/`).
+
+**Security:** how the PIN, the tokens and the documents are encrypted (key hierarchy, envelope
+encryption, what erases what) is in [`docs/security/encryption.md`](docs/security/encryption.md).
 
 ## Requirements
 
@@ -183,9 +186,9 @@ The release then appears under **Releases** with `vigil-0.1.0.apk`, `vigil-0.1.0
 
 :common:core                AppResult, AppError, dispatchers, application scope (pure Kotlin)
 :common:network             Ktor clients, bearer auth, safeApiCall
-:common:database            the single Room 3 AppDatabase, one package per feature, safeDbCall
 :common:datastore           encrypted typed DataStore (Tink), safeStoreCall
-:common:security            the vault (PIN-unlocked data key), Argon2id + Keystore pepper, biometric keys
+:common:security            the vault (PIN-unlocked data key), Argon2id + Keystore pepper, biometric and
+                            RSA (envelope) Keystore keys
 :common:ui                  theme, UiText, BaseViewModel, effect and navigation handlers
 :common:testing             test helpers
 
@@ -231,7 +234,6 @@ flowchart TD
 
     subgraph common [":common"]
         network["network"]
-        database["database"]
         datastore["datastore"]
         security["security"]
         commonUi["ui"]
@@ -244,7 +246,7 @@ flowchart TD
     app --> commonUi & network
     authCore --> network & datastore & security
     applockCore --> network & datastore & security
-    documentsCore --> database
+    documentsCore --> datastore & security
     documentsDomain --> applockApi
     settingsCore --> datastore
 ```
@@ -269,9 +271,9 @@ The full rules are in [`CLAUDE.md`](CLAUDE.md) and `.claude/rules/`.
 | Build | AGP 9.4 (built-in Kotlin), Kotlin 2.4, KSP, Gradle 9.8, version catalog, convention plugins |
 | UI | Jetpack Compose (BOM 2026.09), Material 3, Navigation 3, Lifecycle ViewModel |
 | DI | Hilt (KSP), including pure-Kotlin modules |
-| Data | Room 3 with the bundled SQLite driver, DataStore 1.3 + `datastore-tink`, Paging 3 |
+| Data | DataStore 1.3 + `datastore-tink` (one encrypted store per feature), encrypted files; no database |
 | Network | Ktor 3 (OkHttp engine), kotlinx.serialization, bearer auth |
-| Security | Tink, Android Keystore (HMAC pepper, biometric-bound key), Argon2id (Bouncy Castle), `androidx.biometric` |
+| Security | Tink, Android Keystore (HMAC pepper, biometric-bound key, RSA-OAEP for envelope encryption), Argon2id (Bouncy Castle), `androidx.biometric` |
 | Async / logging | Coroutines + Flow, Timber, Firebase Crashlytics (release builds) |
 | Sign-in | Firebase Auth (email/password, phone; OpenID Connect prepared) |
 | Testing | Kotest, MockK, Turbine, Molecule, Compose UI tests, Ktor `MockEngine` |
@@ -284,7 +286,7 @@ the latest stable release.
 
 - [`CLAUDE.md`](CLAUDE.md) holds the rules for every change; `.claude/rules/` adds rules per layer,
   loaded automatically when matching files are edited.
-- `.claude/skills/` has step-by-step procedures: new feature, new screen, Room table, DataStore,
+- `.claude/skills/` has step-by-step procedures: new feature, new screen, DataStore,
   paged list, release check.
 - `.claude/reference/` has the reference code; once the real code exists, the source wins.
 - Hooks in `.claude/settings.json` format every Kotlin file Claude edits with the pinned ktlint and

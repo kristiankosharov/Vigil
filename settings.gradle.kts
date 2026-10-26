@@ -35,7 +35,6 @@ include(":app")
 
 include(":common:core")
 include(":common:network")
-include(":common:database")
 include(":common:datastore")
 include(":common:security")
 include(":common:ui")

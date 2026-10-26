@@ -110,34 +110,9 @@ class LayerRulesTest : FunSpec({
             .assertTrue { it.hasInternalModifier }
     }
 
-    test("Room entities, DAOs and databases live only in :common:database") {
+    test("no Room entities, DAOs or databases while :common:database is gone") {
         scope.classesAndInterfaces()
-            .filter { it.hasAnnotationWithName("Entity", "Dao", "Database") }
-            .assertTrue { "/common/database/" in it.path }
-    }
-
-    test("a feature uses only its own package of :common:database") {
-        scope.files
-            .filter { "/feature/" in it.path && "/data/core/src/main/" in it.path }
-            .assertTrue { file ->
-                val feature = file.path.substringAfter("/feature/").substringBefore("/")
-                file.imports
-                    .map { it.name }
-                    .filter { it.startsWith("app.vigil.common.database.") }
-                    .all { name ->
-                        val rest = name.removePrefix("app.vigil.common.database.")
-                        // own feature package, or a root-level helper such as safeDbCall / asDbResult
-                        rest.substringBefore(".") == feature || ("." !in rest && rest != "AppDatabase")
-                    }
-            }
-    }
-
-    test("only data:core modules and :common:database import entities and DAOs") {
-        scope.files
-            .filter { "/common/database/" !in it.path && "/data/core/src/main/" !in it.path }
-            .assertFalse { file ->
-                file.imports.any { it.name.startsWith("app.vigil.common.database.") }
-            }
+            .assertFalse { it.hasAnnotationWithName("Entity", "Dao", "Database") }
     }
 
     test("DataStores are typed and encrypted; no SharedPreferences") {

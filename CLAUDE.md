@@ -7,7 +7,7 @@ best practice, this file wins.
 More detail loads only when needed:
 - **`.claude/rules/`** — rules for one layer or area. Each file loads automatically when you work
   on files matching its `paths:`.
-- **`.claude/skills/`** — step-by-step procedures (new feature, new screen, Room entity,
+- **`.claude/skills/`** — step-by-step procedures (new feature, new screen,
   DataStore, paged list, release check). Use them for those tasks.
 - **`.claude/reference/`** — full code samples. Rules point to them; read one only when you need
   that code. Once the shared code exists in the project (`BaseViewModel`, wrappers,
@@ -21,10 +21,10 @@ More detail loads only when needed:
 |---|---|
 | Language / build | Kotlin (AGP built-in Kotlin, K2), Gradle Kotlin DSL, version catalog, convention plugins in `build-logic` |
 | Network | Ktor Client (OkHttp engine) + kotlinx.serialization, Ktor `Auth` (bearer) |
-| Database | Room 3 (`androidx.room3`), `BundledSQLiteDriver`, KSP — one `AppDatabase` in `:common:database` |
+| Database | **None right now.** `:common:database` (Room 3) was removed on 2026-10-26; every feature keeps its data in its own encrypted DataStore. To bring Room back, restore `:common:database`, the `vigil.room` plugin, `rules/room.md`, `reference/room.md` and the `add-room-entity` skill from git (commit `0c89b5e`). |
 | Key-value / small data | Typed DataStore + `datastore-tink` (`AeadSerializer`) — one encrypted store per feature |
 | UI | Jetpack Compose (BOM), Material 3, Navigation 3, Lifecycle ViewModel, `kotlinx-collections-immutable` |
-| Paging | Paging 3 with Room + `RemoteMediator` |
+| Paging | Paging 3 with Room + `RemoteMediator` (needs Room back first) |
 | DI | Hilt (KSP) |
 | Async | Kotlin Coroutines + Flow |
 | Logging / crashes | Timber (Android modules only); Firebase Crashlytics in release, only in `:app` |
@@ -64,7 +64,6 @@ More detail loads only when needed:
 
 :common:core               → AppResult, AppError, dispatchers, @ApplicationScope, UserDataCleaner, pure Kotlin utils
 :common:network            → Ktor HttpClients, auth plugin, safeApiCall, @BaseUrl / @IsDebugBuild qualifiers
-:common:database           → the single AppDatabase: all entities + DAOs (one package per feature), migrations, safeDbCall
 :common:datastore          → encrypted DataStore factory (Tink, AeadSerializer, JSON serializer), safeStoreCall
 :common:security           → Vault (the PIN-unlocked data key, memory only), AesGcm, PIN key derivation
                              (Argon2id + Keystore pepper), biometric-bound Keystore key
@@ -95,8 +94,8 @@ read from the build files rather than from memory.
 :feature:x:ui ──────► :feature:x:domain, :common:ui, :common:core
 :feature:x:domain ──► :feature:x:data:api, :common:core         (+ :feature:y:data:api if needed)
 :feature:x:data:api ► :common:core
-:feature:x:data:core ► :feature:x:data:api, :common:network, :common:database, :common:datastore,
-                       :common:security, :common:core            (+ :feature:y:data:api if needed)
+:feature:x:data:core ► :feature:x:data:api, :common:network, :common:datastore, :common:security,
+                       :common:core                              (+ :feature:y:data:api if needed)
 ```
 
 - `ui` **never** depends on any `data` module; it sees only domain models and use case interfaces.
@@ -113,10 +112,6 @@ read from the build files rather than from memory.
 
 - Everything in `data:core` is `internal` (implementations, DTOs, DataStore models, mappers, API
   classes, Hilt modules).
-- In `:common:database`, entities and DAOs are `public` but each package belongs to **one** feature:
-  `:feature:x:data:core` imports only `app.vigil.common.database.x.*` plus root helpers
-  (`safeDbCall`, `asDbResult`). Nothing outside `data:core` modules and `:common:database` imports
-  entities or DAOs; `AppDatabase` is used only inside `:common:database`.
 - In `domain`, use case interfaces and domain models are public; `*UseCaseImpl`, mappers and Hilt
   modules are `internal`.
 - In `ui`, only `<Feature>Route` composables and app-wide wrappers named `*Host` (`AuthSessionHost`,
@@ -143,7 +138,7 @@ read from the build files rather than from memory.
   `XViewModel`, `XUiState`, `XAction`, `XNavigation`, `XRoute`, `XScreen`.
 - **Packages:** `app.vigil.feature.<name>.<layer>`; Hilt modules in `….<layer>.di`.
 - **Errors:** repositories return `AppResult` and never throw. All I/O goes through `safeApiCall` /
-  `safeDbCall` / `safeStoreCall`. Never swallow exceptions elsewhere; always rethrow
+  `safeStoreCall`. Never swallow exceptions elsewhere; always rethrow
   `CancellationException`; never use `runCatching` in suspend code.
 - **Never:** `!!`, `GlobalScope`, Android framework types in `domain` or `data:api`, `StateFlow` /
   `Channel` / `SharedFlow` for UI state or events, lambdas inside actions/effects/navigation,
@@ -177,8 +172,8 @@ read from the build files rather than from memory.
   per step plus, on failure, the failing tests with their messages and the compiler/detekt/lint
   findings (full logs in `build/check-logs/`):
   - `scripts/check.sh tests :feature:users:ui` — unit tests of the modules you changed
-  - `scripts/check.sh android :feature:users:ui` — instrumented tests (Compose UI, Room
-    migrations); needs a running emulator, otherwise it says the tests did **not** run
+  - `scripts/check.sh android :feature:users:ui` — instrumented tests (Compose UI,
+    Keystore); needs a running emulator, otherwise it says the tests did **not** run
   - `scripts/check.sh build` — compile the dev debug app
   - `scripts/check.sh detekt`, `scripts/check.sh release`, `scripts/check.sh all` (CI order)
 - **Automatic (hooks in `.claude/settings.json`):** every Kotlin file you edit is formatted with the
@@ -188,7 +183,7 @@ read from the build files rather than from memory.
   and blocks the stop with the violations — fix the code, not the test. When you add a new
   convention, add a Konsist rule for it (`.claude/reference/konsist-rules.md`).
 - Before finishing: run the unit tests of the modules you changed, and the instrumented tests if
-  you changed Compose UI tests or a Room migration.
+  you changed Compose UI tests or Keystore code.
 - Full CI order and release checks: `.claude/skills/release-check/`.
 
 ---
@@ -198,7 +193,6 @@ read from the build files rather than from memory.
 | Area | Rule (auto-loaded by path) | Skill / reference |
 |---|---|---|
 | Results, errors, wrappers, repositories | `rules/data-layer.md` | `reference/core-result.md`, `reference/data-feature-example.md` |
-| Room | `rules/room.md` | `skills/add-room-entity`, `reference/room.md` |
 | DataStore + encryption | `rules/datastore.md` | `skills/add-datastore`, `reference/datastore.md` |
 | Network, auth, tokens | `rules/network-auth.md` | `reference/network-auth.md` |
 | Use cases | `rules/domain.md` | `reference/data-feature-example.md` |

@@ -11,15 +11,13 @@ module; code to copy is in `.claude/reference/`.
 1. **Modules.** Create `:feature:foo:data:api`, `:feature:foo:data:core`, `:feature:foo:domain`,
    `:feature:foo:ui` and include them in `settings.gradle.kts`. Build files use only convention
    plugins (templates below). The build fails on a forbidden dependency (`enforceDependencyRules()`).
-2. **`data:api`.** `FooRepository` interface + `*Data` models (`explicitApi()`, no Ktor/Room/
+2. **`data:api`.** `FooRepository` interface + `*Data` models (`explicitApi()`, no Ktor/
    serialization annotations).
-3. **Local storage** (choose with the table in `.claude/rules/datastore.md`):
-   - Room → use the `add-room-entity` skill (entities + DAO in `:common:database`, package
-     `...database.foo`, version bump, migration + test).
+3. **Local storage** (`.claude/rules/datastore.md`; there is no database right now):
    - DataStore → use the `add-datastore` skill (`FooPreferences`, `encryptedDataStore("foo_<name>.json", …)`,
      `UserDataCleaner` if it holds user data).
 4. **`data:core`.** DTOs, `FooApi` + `FooApiImpl` (inject `@Authenticated HttpClient`), mappers,
-   `FooRepositoryImpl` using `safeApiCall` / `safeDbCall` / `safeStoreCall`, one Hilt module per
+   `FooRepositoryImpl` using `safeApiCall` / `safeStoreCall`, one Hilt module per
    concern in `di` (`FooApiModule`, `FooRepositoryModule`, …). Everything `internal`.
    Reference: `.claude/reference/data-feature-example.md`.
 5. **`domain`.** Domain models + `internal` mappers from `*Data`; `*UseCase` interfaces — SAM
@@ -64,7 +62,6 @@ dependencies {
     implementation(projects.feature.foo.data.api)
     implementation(projects.common.core)
     implementation(projects.common.network)
-    implementation(projects.common.database)     // only if it uses Room
     implementation(projects.common.datastore)    // only if it uses DataStore
 }
 
