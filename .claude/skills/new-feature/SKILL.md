@@ -34,9 +34,12 @@ module; code to copy is in `.claude/reference/`.
 8. **`:app`.** Add `implementation(projects.feature.foo.ui)` and
    `implementation(projects.feature.foo.data.core)`; add the `NavKey`(s) and `entry<…>` wiring
    (`.claude/reference/app.md`).
-9. **Tests.** Kotest/MockK/Turbine for the repository, every `*UseCaseImpl` and every ViewModel;
+9. **Module graph.** Add the feature to the Mermaid graph in `README.md` ("Module dependencies"):
+   a `subgraph` with `ui → domain → data:api ← data:core`, `:app`'s edges to its `ui` (solid) and
+   `data:core` (dotted), and its `data:core` edges to the `:common` modules it uses.
+10. **Tests.** Kotest/MockK/Turbine for the repository, every `*UseCaseImpl` and every ViewModel;
    Compose UI tests (with accessibility checks) for each screen (`.claude/rules/testing.md`).
-10. **Checks.** `scripts/check.sh tests :feature:foo:data:core :feature:foo:domain :feature:foo:ui`,
+11. **Checks.** `scripts/check.sh tests :feature:foo:data:core :feature:foo:domain :feature:foo:ui`,
     `scripts/check.sh android :feature:foo:ui` (Compose UI tests; needs an emulator),
     `scripts/check.sh detekt`, and `scripts/check.sh release` (R8). Konsist runs automatically.
 

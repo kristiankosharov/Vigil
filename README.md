@@ -196,6 +196,53 @@ The release then appears under **Releases** with `vigil-0.1.0.apk`, `vigil-0.1.0
 build-logic                 vigil.* convention plugins and the dependency-rule check
 ```
 
+### Module dependencies
+
+Who depends on whom, from the `build.gradle.kts` files. Arrows point from a module to what it
+depends on. Not drawn, to keep it readable: every module depends on `:common:core`, every feature
+`ui` (and `:app`) on `:common:ui`, and tests on `:common:testing`. `:app` depends on each
+`data:core` only so Hilt can collect its bindings (dotted).
+
+```mermaid
+flowchart TD
+    app[":app"]
+
+    subgraph auth [":feature:auth"]
+        authUi["ui"] --> authDomain["domain"] --> authApi["data:api"]
+        authCore["data:core"] --> authApi
+    end
+
+    subgraph applock [":feature:applock"]
+        applockUi["ui"] --> applockDomain["domain"] --> applockApi["data:api"]
+        applockCore["data:core"] --> applockApi
+    end
+
+    subgraph home [":feature:home"]
+        homeUi["ui"] --> homeDomain["domain"] --> homeApi["data:api"]
+        homeCore["data:core"] --> homeApi
+    end
+
+    subgraph common [":common"]
+        network["network"]
+        database["database"]
+        datastore["datastore"]
+        commonUi["ui"]
+        core["core"]
+        testing["testing"]
+    end
+
+    app --> authUi & applockUi & homeUi
+    app -.-> authCore & applockCore & homeCore
+    app --> commonUi & network
+    authCore --> network & datastore
+    applockCore --> datastore
+    homeCore --> database
+```
+
+`:konsist` (architecture tests) and `build-logic` (convention plugins, `enforceDependencyRules()`)
+read the other modules but are not part of the app's graph. **Keep this graph in sync:** any change
+that adds, removes or rewires a module updates it in the same commit (rule in `CLAUDE.md`).
+
 - `ui → domain → data:api`; `ui` never sees a `data` module, and features see each other only
   through `:data:api`.
 - Everything crossing a boundary is an interface; implementations are `internal` and bound with
