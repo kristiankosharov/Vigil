@@ -70,8 +70,6 @@ internal class AppLockViewModel @Inject constructor(
         when (action) {
             is AppLockAction.PinChanged -> changePin(action.pin)
 
-            AppLockAction.SubmitPin -> submitPin()
-
             AppLockAction.UseBiometric -> biometricRequest = BiometricRequest()
 
             AppLockAction.BiometricSucceeded -> unlockWithBiometric()
@@ -123,15 +121,15 @@ internal class AppLockViewModel @Inject constructor(
     }
 
     private fun changePin(value: String) {
-        if (value.length <= PinRules.MAX_LENGTH && value.all(Char::isDigit)) {
-            pin = value
-            isPinWrong = false
-        }
+        if (isChecking || value.length > PinRules.LENGTH || !value.all(Char::isDigit)) return
+        pin = value
+        isPinWrong = false
+        if (value.length == PinRules.LENGTH) submitPin()
     }
 
     // TODO(applock): limit wrong attempts (growing delay, then log out).
     private fun submitPin() {
-        if (unlockJob?.isActive == true || pin.length < PinRules.MIN_LENGTH) return
+        if (unlockJob?.isActive == true || pin.length < PinRules.LENGTH) return
         unlockJob = viewModelScope.launch {
             isChecking = true
             try {

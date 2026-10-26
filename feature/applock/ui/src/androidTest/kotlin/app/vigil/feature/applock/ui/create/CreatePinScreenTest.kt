@@ -1,15 +1,16 @@
 package app.vigil.feature.applock.ui.create
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.accessibility.enableAccessibilityChecks
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import app.vigil.common.ui.theme.AppTheme
 import app.vigil.feature.applock.ui.R
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -25,16 +26,26 @@ class CreatePinScreenTest {
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
-    private fun state(step: CreatePinStep, input: String) = CreatePinUiState(
+    private fun state(step: CreatePinStep, inputLength: Int = 0, match: PinMatch = PinMatch.Unknown) = CreatePinUiState(
         step = step,
-        input = input,
-        isBiometricAvailable = true,
-        isBiometricEnabled = true,
-        error = null,
+        stepCount = 3,
+        inputLength = inputLength,
+        match = match,
         isSaving = false,
+        biometricRequest = null,
         effect = null,
         navigation = null,
     )
+
+    private fun setScreen(
+        state: CreatePinUiState,
+        onAction: (CreatePinAction) -> Unit = {},
+        onBackToSignIn: () -> Unit = {},
+    ) {
+        composeTestRule.setContent {
+            CreatePinScreen(state = state, onAction = onAction, onPinCreated = {}, onBackToSignIn = onBackToSignIn)
+        }
+    }
 
     @Before
     fun setUp() {
@@ -42,32 +53,59 @@ class CreatePinScreenTest {
     }
 
     @Test
-    fun enterStepAsksForThePinAndNeedsFourDigits() {
-        composeTestRule.setContent {
-            AppTheme(dynamicColor = false) { CreatePinScreen(state(CreatePinStep.Enter, "123"), {}, {}) }
-        }
+    fun enterStepNeedsAllDigitsBeforeContinue() {
+        setScreen(state(CreatePinStep.Enter, inputLength = 5))
 
         composeTestRule.onNodeWithText(context.getString(R.string.applock_create_title)).assertIsDisplayed()
-        composeTestRule.onNodeWithText(context.getString(R.string.applock_next)).assertIsNotEnabled()
-        composeTestRule.onNodeWithText(context.getString(R.string.applock_enable_biometric)).assertDoesNotExist()
+        composeTestRule.onNodeWithText(context.getString(R.string.applock_continue)).assertIsNotEnabled()
     }
 
     @Test
-    fun repeatStepSavesAndOffersBiometrics() {
+    fun backOnTheFirstStepLeavesOnboarding() {
+        var left = false
         val actions = mutableListOf<CreatePinAction>()
-        composeTestRule.setContent {
-            AppTheme(dynamicColor = false) {
-                CreatePinScreen(state(CreatePinStep.Repeat, "1234"), onAction = { actions += it }, onPinCreated = {})
-            }
-        }
+        setScreen(state(CreatePinStep.Enter), onAction = { actions += it }, onBackToSignIn = { left = true })
 
-        composeTestRule.onNodeWithText(context.getString(R.string.applock_repeat_title)).assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.applock_back)).performClick()
+
+        assertEquals(true, left)
+        assertEquals(emptyList<CreatePinAction>(), actions)
+    }
+
+    @Test
+    fun confirmStepSaysWhenThePinsMatch() {
+        val actions = mutableListOf<CreatePinAction>()
+        setScreen(state(CreatePinStep.Confirm, inputLength = 6, match = PinMatch.Match), onAction = { actions += it })
+
         composeTestRule.onNodeWithText(
-            context.getString(R.string.applock_enable_biometric),
+            context.getString(R.string.applock_pins_match),
         ).performScrollTo().assertIsDisplayed()
-        // Below the pad on small screens: scroll first, or the tap lands off-screen.
-        composeTestRule.onNodeWithText(context.getString(R.string.applock_save)).performScrollTo().performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.applock_continue)).assertIsEnabled().performClick()
 
-        assertEquals(listOf<CreatePinAction>(CreatePinAction.Submit), actions)
+        assertEquals(listOf<CreatePinAction>(CreatePinAction.Continue), actions)
+    }
+
+    @Test
+    fun confirmStepSaysWhenThePinsDiffer() {
+        setScreen(state(CreatePinStep.Confirm, inputLength = 6, match = PinMatch.Mismatch))
+
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.applock_pins_mismatch),
+        ).performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(R.string.applock_continue)).assertIsNotEnabled()
+    }
+
+    @Test
+    fun biometricStepOffersEnableAndNotNow() {
+        val actions = mutableListOf<CreatePinAction>()
+        setScreen(state(CreatePinStep.Biometric), onAction = { actions += it })
+
+        composeTestRule.onNodeWithText(context.getString(R.string.applock_biometric_setup_title))
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(R.string.applock_biometric_enable)).performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.applock_biometric_not_now)).performClick()
+
+        assertEquals(listOf(CreatePinAction.EnableBiometric, CreatePinAction.SkipBiometric), actions)
     }
 }

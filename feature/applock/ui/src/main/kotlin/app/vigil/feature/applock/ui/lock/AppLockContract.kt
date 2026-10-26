@@ -25,9 +25,8 @@ internal data class AppLockUiState(
 ) : UiState
 
 internal sealed interface AppLockAction : UiAction {
+    /** The PIN is checked as soon as it has all its digits. */
     data class PinChanged(val pin: String) : AppLockAction
-
-    data object SubmitPin : AppLockAction
 
     data object UseBiometric : AppLockAction
 

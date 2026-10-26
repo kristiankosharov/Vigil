@@ -49,10 +49,11 @@ every device. Screens read colors only from `MaterialTheme.colorScheme`, never h
 
 **Light and dark.** Everyday screens follow the system theme. The security screens (create and
 confirm PIN, fingerprint setup, unlock, change PIN) and the camera scanner always use the **dark**
-scheme (`AppTheme(darkTheme = true)`), so they read as a separate, protected space.
+scheme through `SecurityTheme { }`, which also makes the system bar icons light, so they read as a
+separate, protected space.
 
-**Status colors (app-specific, not in code yet).** Material has no success or warning roles. Add
-these as a theme extension when the documents feature is built, with light and dark values:
+**Status colors (`MaterialTheme.statusColors`, `theme/StatusColors.kt`).** Material has no success or
+warning roles; `success` and `warning` cover them (Draft and Failed use `outline` and `error`):
 
 | Status | Light | Dark | Shape that goes with it |
 |---|---|---|---|
@@ -67,8 +68,8 @@ Material 3 type scale (`theme/Type.kt`) with heavier weights: titles and headlin
 ExtraBold**, labels **Bold**, body **Regular**. Always use `MaterialTheme.typography`; text is in
 `sp` and must work at 200% font scale.
 
-The design uses **Manrope**. It is not bundled yet (`TODO(design)` in `Type.kt`): add the font files
-to `res/font` and set the family on every style.
+Every style uses **Manrope**, bundled as one variable font (`common/ui/src/main/res/font/manrope.ttf`,
+SIL Open Font License in `common/ui/MANROPE_OFL.txt`).
 
 | Use | Style |
 |---|---|
@@ -124,8 +125,8 @@ previews and tests). They take text as parameters; callers pass string resources
 | `SwitchRow` | Settings toggle ("Unlock with fingerprint") | Reason it can't be on |
 | `CheckboxRow` | Consent before signing | `errorText` under the row |
 
-The PIN pad and PIN dots already exist in `:feature:applock:ui` (`components/PinPad.kt`); keep
-them there and match this spec.
+The PIN pad and PIN dots live in `:feature:applock:ui` (`components/PinPad.kt`). Icons from the
+design are vector drawables in `:common:ui` (`common_ic_*`).
 
 ### Specified, not in code yet
 

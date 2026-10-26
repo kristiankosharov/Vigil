@@ -9,12 +9,11 @@ import app.vigil.common.core.onFailure
 import app.vigil.common.core.onSuccess
 import app.vigil.common.ui.mvi.BaseViewModel
 import app.vigil.common.ui.mvi.UiEffect
-import app.vigil.common.ui.text.UiText
 import app.vigil.common.ui.text.toUiText
 import app.vigil.feature.applock.domain.model.PinRules
 import app.vigil.feature.applock.domain.usecase.CreatePinUseCase
 import app.vigil.feature.applock.domain.usecase.IsBiometricAvailableUseCase
-import app.vigil.feature.applock.ui.R
+import app.vigil.feature.applock.ui.biometric.BiometricRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -26,83 +25,134 @@ internal class CreatePinViewModel @Inject constructor(
     isBiometricAvailable: IsBiometricAvailableUseCase,
 ) : BaseViewModel<CreatePinUiState, CreatePinAction, CreatePinNavigation>() {
 
+    private val isBiometricAvailable = isBiometricAvailable()
     private var step by mutableStateOf(CreatePinStep.Enter)
 
     // Never savedStateHandle: the PIN must not be written to the saved instance state.
     private var pin by mutableStateOf("")
-    private var repeatedPin by mutableStateOf("")
-    private val isBiometricAvailable = isBiometricAvailable()
-    private var isBiometricEnabled by mutableStateOf(this.isBiometricAvailable)
-    private var error by mutableStateOf<UiText?>(null)
+    private var confirmation by mutableStateOf("")
     private var isSaving by mutableStateOf(false)
+    private var biometricRequest by mutableStateOf<BiometricRequest?>(null)
     private var saveJob: Job? = null
 
     @Composable
     override fun uiState() = CreatePinUiState(
         step = step,
-        input = if (step == CreatePinStep.Enter) pin else repeatedPin,
-        isBiometricAvailable = isBiometricAvailable,
-        isBiometricEnabled = isBiometricEnabled,
-        error = error,
+        stepCount = if (isBiometricAvailable) STEPS_WITH_BIOMETRIC else STEPS_WITHOUT_BIOMETRIC,
+        inputLength = if (step == CreatePinStep.Enter) pin.length else confirmation.length,
+        match = when {
+            confirmation.length < PinRules.LENGTH -> PinMatch.Unknown
+            confirmation == pin -> PinMatch.Match
+            else -> PinMatch.Mismatch
+        },
         isSaving = isSaving,
+        biometricRequest = biometricRequest,
         effect = currentEffect,
         navigation = currentNavigation,
     )
 
     override fun onAction(action: CreatePinAction) {
         when (action) {
-            is CreatePinAction.InputChanged -> changeInput(action.input)
-            CreatePinAction.Next -> next()
-            CreatePinAction.Back -> startAgain(error = null)
-            is CreatePinAction.BiometricToggled -> isBiometricEnabled = action.enabled && isBiometricAvailable
-            CreatePinAction.Submit -> submit()
+            is CreatePinAction.Digit -> addDigit(action.digit)
+
+            CreatePinAction.Delete -> deleteDigit()
+
+            CreatePinAction.Continue -> next()
+
+            CreatePinAction.Back -> back()
+
+            CreatePinAction.EnableBiometric -> if (step ==
+                CreatePinStep.Biometric
+            ) {
+                biometricRequest = BiometricRequest()
+            }
+
+            CreatePinAction.BiometricSucceeded -> save(biometricEnabled = true)
+
+            is CreatePinAction.BiometricRequestConsumed ->
+                if (biometricRequest === action.request) biometricRequest = null
+
+            CreatePinAction.SkipBiometric -> save(biometricEnabled = false)
+
             is CreatePinAction.EffectConsumed -> consumeEffect(action.effect)
+
             is CreatePinAction.NavigationConsumed -> consumeNavigation(action.navigation)
         }
     }
 
-    private fun changeInput(input: String) {
-        if (input.length > PinRules.MAX_LENGTH || !input.all(Char::isDigit)) return
-        if (step == CreatePinStep.Enter) pin = input else repeatedPin = input
-        error = null
+    private fun addDigit(digit: Int) {
+        when (step) {
+            CreatePinStep.Enter -> if (pin.length < PinRules.LENGTH) pin += digit
+
+            // After a mismatch the next digit starts a new attempt.
+            CreatePinStep.Confirm -> confirmation = when {
+                confirmation.length < PinRules.LENGTH -> confirmation + digit
+                confirmation != pin -> digit.toString()
+                else -> confirmation
+            }
+
+            CreatePinStep.Biometric -> Unit
+        }
+    }
+
+    private fun deleteDigit() {
+        when (step) {
+            CreatePinStep.Enter -> pin = pin.dropLast(1)
+            CreatePinStep.Confirm -> confirmation = confirmation.dropLast(1)
+            CreatePinStep.Biometric -> Unit
+        }
     }
 
     private fun next() {
-        if (!PinRules.isValid(pin)) {
-            error = UiText.Plural(
-                id = R.plurals.applock_error_pin_format,
-                count = PinRules.MAX_LENGTH,
-                args = listOf(PinRules.MIN_LENGTH, PinRules.MAX_LENGTH),
-            )
-            return
+        when (step) {
+            CreatePinStep.Enter -> if (PinRules.isValid(pin)) {
+                confirmation = ""
+                step = CreatePinStep.Confirm
+            }
+
+            CreatePinStep.Confirm -> if (confirmation == pin && PinRules.isValid(pin)) {
+                if (isBiometricAvailable) step = CreatePinStep.Biometric else save(biometricEnabled = false)
+            }
+
+            CreatePinStep.Biometric -> Unit
         }
-        repeatedPin = ""
-        error = null
-        step = CreatePinStep.Repeat
     }
 
-    private fun startAgain(error: UiText?) {
-        step = CreatePinStep.Enter
-        pin = ""
-        repeatedPin = ""
-        this.error = error
+    private fun back() {
+        if (isSaving) return
+        when (step) {
+            CreatePinStep.Enter -> Unit
+
+            // the screen leaves onboarding
+            CreatePinStep.Confirm -> {
+                pin = ""
+                confirmation = ""
+                step = CreatePinStep.Enter
+            }
+
+            CreatePinStep.Biometric -> {
+                confirmation = ""
+                step = CreatePinStep.Confirm
+            }
+        }
     }
 
-    private fun submit() {
-        if (step != CreatePinStep.Repeat || saveJob?.isActive == true) return
-        if (repeatedPin != pin) {
-            startAgain(error = UiText.Resource(R.string.applock_error_pin_mismatch))
-            return
-        }
+    private fun save(biometricEnabled: Boolean) {
+        if (saveJob?.isActive == true || confirmation != pin || !PinRules.isValid(pin)) return
         saveJob = viewModelScope.launch {
             isSaving = true
             try {
-                createPin(pin, isBiometricEnabled)
+                createPin(pin, biometricEnabled && isBiometricAvailable)
                     .onSuccess { navigate(CreatePinNavigation.PinCreated) }
                     .onFailure { appError -> sendEffect(UiEffect.ShowSnackbar(appError.toUiText())) }
             } finally {
                 isSaving = false
             }
         }
+    }
+
+    private companion object {
+        const val STEPS_WITH_BIOMETRIC = 3
+        const val STEPS_WITHOUT_BIOMETRIC = 2
     }
 }

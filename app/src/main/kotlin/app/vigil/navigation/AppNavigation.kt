@@ -35,7 +35,13 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 ),
                 entryProvider = entryProvider {
                     entry<LoginKey> { LoginRoute(onLoggedIn = { backStack.replaceAllWith(CreatePinKey) }) }
-                    entry<CreatePinKey> { CreatePinRoute(onPinCreated = { backStack.replaceAllWith(HomeKey) }) }
+                    entry<CreatePinKey> {
+                        CreatePinRoute(
+                            onPinCreated = { backStack.replaceAllWith(HomeKey) },
+                            // TODO(auth): sign out here, so going back really ends the session.
+                            onBackToSignIn = { backStack.replaceAllWith(LoginKey) },
+                        )
+                    }
                     entry<HomeKey> { HomeRoute() }
                 },
             )

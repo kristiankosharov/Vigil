@@ -5,11 +5,11 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 class PinRulesTest : FunSpec({
-    test("4 to 8 digits are valid") {
-        listOf("1234", "12345678").forEach { PinRules.isValid(it) shouldBe true }
+    test("exactly 6 digits are valid") {
+        PinRules.isValid("123456") shouldBe true
     }
 
     test("too short, too long or non-digits are invalid") {
-        listOf("", "123", "123456789", "12a4", "12 34").forEach { PinRules.isValid(it) shouldBe false }
+        listOf("", "12345", "1234567", "12a456", "123 56").forEach { PinRules.isValid(it) shouldBe false }
     }
 })

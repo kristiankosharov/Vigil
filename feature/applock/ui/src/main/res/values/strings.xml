@@ -1,30 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="applock_locked_title">Vigil is locked</string>
-    <string name="applock_locked_message">Enter your PIN to continue.</string>
-    <string name="applock_delete_digit">Delete digit</string>
-    <!-- Read out by screen readers for the PIN dots -->
+    <!-- PIN pad -->
+    <string name="applock_delete_digit">Delete last digit</string>
+    <!-- Read out by screen readers for the PIN dots: digits entered, then the PIN length -->
     <plurals name="applock_pin_progress">
-        <item quantity="one">PIN, %1$d digit entered</item>
-        <item quantity="other">PIN, %1$d digits entered</item>
+        <item quantity="one">PIN, %1$d of %2$d digits entered</item>
+        <item quantity="other">PIN, %1$d of %2$d digits entered</item>
     </plurals>
+
+    <!-- Unlock (1.4) -->
+    <string name="applock_locked_title">Welcome back</string>
+    <!-- %1$d is the PIN length -->
+    <string name="applock_locked_message">Enter your %1$d-digit PIN to open your wallet</string>
+    <string name="applock_unlocking">Unlocking…</string>
     <string name="applock_pin_wrong">Wrong PIN. Try again.</string>
-    <string name="applock_unlock">Unlock</string>
-    <string name="applock_use_biometric">Use biometrics</string>
+    <string name="applock_use_biometric">Unlock with fingerprint</string>
     <string name="applock_biometric_title">Unlock Vigil</string>
     <string name="applock_biometric_use_pin">Use PIN</string>
 
-    <string name="applock_create_title">Create a PIN</string>
-    <string name="applock_create_message">You\'ll use it to unlock Vigil.</string>
-    <string name="applock_repeat_title">Repeat your PIN</string>
-    <string name="applock_repeat_message">Enter the same PIN again.</string>
-    <string name="applock_next">Next</string>
-    <string name="applock_enable_biometric">Unlock with biometrics</string>
-    <string name="applock_save">Save PIN</string>
-    <!-- Quantity is the maximum length -->
-    <plurals name="applock_error_pin_format">
-        <item quantity="one">Use %1$d to %2$d digit.</item>
-        <item quantity="other">Use %1$d to %2$d digits.</item>
+    <!-- Onboarding (1.1–1.3) -->
+    <string name="applock_back">Back</string>
+    <string name="applock_step_label">Step %1$d of %2$d</string>
+    <string name="applock_continue">Continue</string>
+    <string name="applock_create_title">Create your PIN</string>
+    <!-- Quantity and %1$d are the PIN length -->
+    <plurals name="applock_create_message">
+        <item quantity="one">You\'ll use this %1$d digit to open the wallet and to confirm every signature.</item>
+        <item quantity="other">You\'ll use these %1$d digits to open the wallet and to confirm every signature.</item>
     </plurals>
-    <string name="applock_error_pin_mismatch">The PINs didn\'t match. Start again.</string>
+    <string name="applock_create_hint">Avoid easy PINs like 123456 or your birth date</string>
+    <string name="applock_confirm_title">Confirm your PIN</string>
+    <!-- Quantity and %1$d are the PIN length -->
+    <plurals name="applock_confirm_message">
+        <item quantity="one">Enter the same %1$d digit again.</item>
+        <item quantity="other">Enter the same %1$d digits again.</item>
+    </plurals>
+    <string name="applock_pins_match">PINs match</string>
+    <string name="applock_pins_mismatch">PINs don\'t match. Try again.</string>
+    <string name="applock_biometric_setup_title">Unlock with your fingerprint</string>
+    <string name="applock_biometric_setup_message">Open your wallet faster. Your fingerprint never leaves this device.</string>
+    <string name="applock_biometric_benefit_touch">Unlock the app and confirm signatures with one touch</string>
+    <string name="applock_biometric_benefit_backup">Your PIN still works as a backup at any time</string>
+    <string name="applock_biometric_benefit_turn_off">Turn it off later in Account › Security</string>
+    <string name="applock_biometric_enable">Enable fingerprint</string>
+    <string name="applock_biometric_not_now">Not now</string>
+    <string name="applock_biometric_confirm_title">Confirm your fingerprint</string>
+    <string name="applock_cancel">Cancel</string>
 </resources>
