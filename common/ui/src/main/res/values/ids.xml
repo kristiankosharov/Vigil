@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- SecurityTheme: how many security screens are showing in a window -->
+    <item name="common_security_screens" type="id" />
+    <!-- AppSystemBars: whether the app's chosen theme is dark -->
+    <item name="common_app_dark_theme" type="id" />
+</resources>

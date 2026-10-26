@@ -6,6 +6,7 @@
  *   - onClick / onInput / onChange handlers bound to functions
  *   - a `class Component extends DCLogic` script with state, setState() and renderVals()
  *   - props with defaults from data-props
+ * It also renders every everyday screen in light or dark (see "Light / dark" below).
  */
 (function () {
   'use strict';
@@ -89,6 +90,101 @@
     return props;
   }
 
+  // ---- Light / dark ---------------------------------------------------------------------------
+  // The mock-ups are written in the light scheme. When the chosen theme is dark, every light role
+  // color is swapped for its dark role (docs/design/README.md, Color) before rendering. The choice
+  // ("system", "light" or "dark") is shared by all screens through localStorage; ?theme= overrides it.
+
+  var THEME_KEY = 'vigil-theme';
+  // Already dark (or showing both themes): never remapped.
+  var FIXED_THEME = ['CreatePin', 'ConfirmPin', 'EnableBiometric', 'Main', 'ChangePin', 'Scan', 'CompSecurity', 'Theme'];
+
+  var BG = {
+    '#F9F9FF': '#111318', '#FFFFFF': '#1D2024', '#F3F3FA': '#191C20', '#EDEDF4': '#282A2F',
+    '#E7E8EE': '#282A2F', '#E2E2E9': '#33353A', '#D9D9E0': '#33353A', '#415F91': '#AAC7FF',
+    '#546F9C': '#9AB8EF', '#D6E3FF': '#284777', '#2E3036': '#E2E2E9', '#191C20': '#E2E2E9',
+    '#FFDAD6': '#93000A', '#FEF0C7': '#7A2E0E', '#DCFAE6': '#074D31', '#BA1A1A': '#FFB4AB',
+    '#B54708': '#FDB022', '#067647': '#47CD89', '#74777F': '#8E9099', '#C4C6D0': '#44474E',
+  };
+  var FG = {
+    '#191C20': '#E2E2E9', '#44474E': '#C4C6D0', '#74777F': '#8E9099', '#415F91': '#AAC7FF',
+    '#284777': '#D6E3FF', '#FFFFFF': '#111318', '#F0F0F7': '#2E3036', '#93370D': '#FEF0C7',
+    '#085D3A': '#DCFAE6', '#93000A': '#FFDAD6', '#BA1A1A': '#FFB4AB', '#B54708': '#FDB022',
+    '#067647': '#47CD89', '#C4C6D0': '#44474E',
+  };
+  var LINE = {
+    '#E2E2E9': '#33353A', '#C4C6D0': '#44474E', '#74777F': '#8E9099', '#EDEDF4': '#282A2F',
+    '#F3F3FA': '#191C20', '#FFFFFF': '#1D2024', '#F9F9FF': '#111318', '#BA1A1A': '#FFB4AB',
+    '#415F91': '#AAC7FF', '#FFDAD6': '#93000A', '#2E3036': '#E2E2E9', '#191C20': '#E2E2E9',
+    '#D6E3FF': '#284777',
+  };
+  // Status colors that live in plain string literals in the screens' logic (corner icons).
+  var LITERALS = { '#B54708': '#FDB022', '#067647': '#47CD89', '#74777F': '#8E9099' };
+
+  function chosenTheme() {
+    var param = new URLSearchParams(location.search).get('theme');
+    if (param === 'light' || param === 'dark' || param === 'system') return param;
+    try {
+      return localStorage.getItem(THEME_KEY) || 'system';
+    } catch (e) {
+      return 'system'; // storage blocked: follow the system
+    }
+  }
+
+  function isDark() {
+    var theme = chosenTheme();
+    if (theme === 'system') return !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    return theme === 'dark';
+  }
+
+  function screenName() {
+    return decodeURIComponent(location.pathname.split('/').pop() || '').replace('.dc.html', '');
+  }
+
+  function mapHex(value, table) {
+    return value
+      .replace(/#[0-9A-Fa-f]{6}\b/g, function (h) { return table[h.toUpperCase()] || h; })
+      .replace(/rgba\(25, 28, 32, (0?\.\d+)\)/g, 'rgba(226, 226, 233, $1)');
+  }
+
+  function toDark(text) {
+    return text
+      // CSS declarations, in style attributes, <style> blocks and style strings in the logic.
+      .replace(
+        /(^|[;{\s"'`])(background(?:-color)?|border(?:-[a-z]+)?|outline(?:-color)?|color|fill|stroke|accent-color)\s*:\s*([^;"'`}]*)/g,
+        function (_, pre, prop, value) {
+          var table = prop.indexOf('background') === 0 ? BG : (/^(border|outline)/.test(prop) ? LINE : FG);
+          return pre + prop + ': ' + mapHex(value, table);
+        })
+      // SVG presentation attributes.
+      .replace(/\b(fill|stroke)="(#[0-9A-Fa-f]{6})"/g, function (_, attr, h) {
+        return attr + '="' + (FG[h.toUpperCase()] || h) + '"';
+      })
+      .replace(/'(#[0-9A-Fa-f]{6})'/g, function (m, h) {
+        var mapped = LITERALS[h.toUpperCase()];
+        return mapped ? "'" + mapped + "'" : m;
+      });
+  }
+
+  var darkActive = isDark() && FIXED_THEME.indexOf(screenName()) < 0;
+
+  window.vigilTheme = chosenTheme;
+  window.vigilSetTheme = function (theme) {
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch (e) { /* storage blocked: the change lasts until reload */ }
+    if (isDark() !== darkActive && FIXED_THEME.indexOf(screenName()) < 0) location.reload();
+  };
+  // Another screen (or the index) changed the theme: re-render this one in it.
+  window.addEventListener('storage', function (e) {
+    if (e.key === THEME_KEY) location.reload();
+  });
+  if (window.matchMedia) {
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+      if (chosenTheme() === 'system') location.reload();
+    });
+  }
+
   function DCLogic(props) {
     this.props = props || {};
     this.state = {};
@@ -106,6 +202,9 @@
     var host = document.querySelector('x-dc');
     if (!host) return;
 
+    if (darkActive) host.innerHTML = toDark(host.innerHTML);
+    document.documentElement.style.background = darkActive ? '#111318' : '';
+
     var helmet = host.querySelector('helmet');
     if (helmet) {
       while (helmet.firstChild) document.head.appendChild(helmet.firstChild);
@@ -118,9 +217,8 @@
     host.replaceWith(root);
 
     var script = document.querySelector('script[data-dc-script]');
-    var Component = script
-      ? new Function('DCLogic', script.textContent + '\nreturn Component;')(DCLogic)
-      : DCLogic;
+    var logic = script ? (darkActive ? toDark(script.textContent) : script.textContent) : '';
+    var Component = script ? new Function('DCLogic', logic + '\nreturn Component;')(DCLogic) : DCLogic;
     var component = new Component(script ? readProps(script) : {});
 
     component.__render = function () {

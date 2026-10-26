@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_back">Back</string>
+
+    <string name="settings_appearance_title">Appearance</string>
+    <string name="settings_appearance_intro">Choose how Vigil looks on this device.</string>
+    <string name="settings_theme_system">Use device setting</string>
+    <string name="settings_theme_system_description">Light or dark, following your phone\'s dark theme setting</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_appearance_security_note">The PIN and unlock screens always stay dark.</string>
+</resources>

@@ -77,7 +77,7 @@ class AppLockLayerTest {
     }
 
     @Test
-    fun padKeysAndUnlockSendActions() {
+    fun padKeysSendActions() {
         val actions = mutableListOf<AppLockAction>()
         composeTestRule.setContent {
             AppTheme(dynamicColor = false) {
@@ -85,15 +85,32 @@ class AppLockLayerTest {
             }
         }
 
-        composeTestRule.onNodeWithText("5").performClick()
-        composeTestRule.onNodeWithContentDescription(context.getString(R.string.applock_delete_digit)).performClick()
-        // Below the pad on small screens: scroll first, or the tap lands off-screen.
-        composeTestRule.onNodeWithText(context.getString(R.string.applock_unlock)).performScrollTo().performClick()
+        composeTestRule.onNodeWithText("5").performScrollTo().performClick()
+        // Below the dots on small screens: scroll first, or the tap lands off-screen.
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.applock_delete_digit))
+            .performScrollTo()
+            .performClick()
 
-        assertEquals(
-            listOf(AppLockAction.PinChanged("12345"), AppLockAction.PinChanged("123"), AppLockAction.SubmitPin),
-            actions,
-        )
+        assertEquals(listOf(AppLockAction.PinChanged("12345"), AppLockAction.PinChanged("123")), actions)
+    }
+
+    @Test
+    fun fingerprintKeyShowsOnlyWithBiometricsEnabled() {
+        val actions = mutableListOf<AppLockAction>()
+        composeTestRule.setContent {
+            AppTheme(dynamicColor = false) {
+                AppLockLayer(
+                    state = state(AppLockStatus.Locked).copy(isBiometricEnabled = true),
+                    onAction = { actions += it },
+                ) {}
+            }
+        }
+
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.applock_use_biometric))
+            .performScrollTo()
+            .performClick()
+
+        assertEquals(listOf<AppLockAction>(AppLockAction.UseBiometric), actions)
     }
 
     @Test
@@ -104,7 +121,7 @@ class AppLockLayerTest {
             }
         }
 
-        val progress = context.resources.getQuantityString(R.plurals.applock_pin_progress, 4, 4)
+        val progress = context.resources.getQuantityString(R.plurals.applock_pin_progress, 4, 4, 6)
         composeTestRule.onNodeWithContentDescription(progress).assertIsDisplayed()
         composeTestRule.onNodeWithText("1234").assertDoesNotExist()
     }

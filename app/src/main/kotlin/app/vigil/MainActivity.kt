@@ -5,7 +5,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.fragment.app.FragmentActivity
-import app.vigil.common.ui.theme.AppTheme
+import app.vigil.feature.settings.ui.theme.AppThemeHost
 import app.vigil.navigation.AppNavigation
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -18,7 +18,8 @@ class MainActivity : FragmentActivity() {
         // The recents thumbnail would show the app's content even while it is locked.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) setRecentsScreenshotEnabled(false)
         setContent {
-            AppTheme {
+            AppThemeHost {
+                // light, dark or system, as chosen on the Appearance screen
                 AppNavigation()
             }
         }

@@ -19,7 +19,7 @@ class AppLockViewModelTest : FunSpec({
     val mainDispatcher = MainDispatcherExtension()
     extension(mainDispatcher)
 
-    /** A fake app lock: correct PIN "1234"; unlocking flips the state flow like the real session. */
+    /** A fake app lock: correct PIN "123456"; unlocking flips the state flow like the real session. */
     class FakeLock(locked: Boolean, biometric: Boolean = false) {
         val state = MutableStateFlow<AppResult<AppLockState>>(AppResult.Success(AppLockState(locked, biometric)))
         var backgrounded = 0
@@ -31,7 +31,7 @@ class AppLockViewModelTest : FunSpec({
 
         fun viewModel() = AppLockViewModel(
             observeLockState = { state },
-            unlockWithPin = { pin -> AppResult.Success(pin == "1234").also { if (pin == "1234") unlock() } },
+            unlockWithPin = { pin -> AppResult.Success(pin == "123456").also { if (pin == "123456") unlock() } },
             unlockWithBiometric = { unlock() },
             markAppBackgrounded = { backgrounded++ },
             markAppForegrounded = { foregrounded++ },
@@ -48,15 +48,14 @@ class AppLockViewModelTest : FunSpec({
         }
     }
 
-    test("a wrong PIN shows the error and clears the field; the right PIN unlocks") {
+    test("a full wrong PIN is checked at once, shows the error and clears the field; the right PIN unlocks") {
         val viewModel = FakeLock(locked = true).viewModel()
 
         moleculeFlow(RecompositionMode.Immediate) { viewModel.uiState() }.test {
             mainDispatcher.scheduler.advanceUntilIdle()
             expectMostRecentItem().status shouldBe AppLockStatus.Locked
 
-            viewModel.onAction(AppLockAction.PinChanged("0000"))
-            viewModel.onAction(AppLockAction.SubmitPin)
+            viewModel.onAction(AppLockAction.PinChanged("000000"))
             mainDispatcher.scheduler.advanceUntilIdle()
             expectMostRecentItem().let {
                 it.isPinWrong shouldBe true
@@ -64,23 +63,25 @@ class AppLockViewModelTest : FunSpec({
                 it.status shouldBe AppLockStatus.Locked
             }
 
-            viewModel.onAction(AppLockAction.PinChanged("1234"))
-            viewModel.onAction(AppLockAction.SubmitPin)
+            viewModel.onAction(AppLockAction.PinChanged("123456"))
             mainDispatcher.scheduler.advanceUntilIdle()
             expectMostRecentItem().status shouldBe AppLockStatus.Unlocked
         }
     }
 
-    test("the PIN field takes only digits, up to the maximum length") {
+    test("the PIN field takes only digits, up to the PIN length, and isn't checked before") {
         val viewModel = FakeLock(locked = true).viewModel()
 
         moleculeFlow(RecompositionMode.Immediate) { viewModel.uiState() }.test {
             mainDispatcher.scheduler.advanceUntilIdle() // locked; locking clears the field
             viewModel.onAction(AppLockAction.PinChanged("12a"))
-            viewModel.onAction(AppLockAction.PinChanged("123456789"))
+            viewModel.onAction(AppLockAction.PinChanged("1234567"))
             viewModel.onAction(AppLockAction.PinChanged("1234"))
             mainDispatcher.scheduler.advanceUntilIdle()
-            expectMostRecentItem().pin shouldBe "1234"
+            expectMostRecentItem().let {
+                it.pin shouldBe "1234"
+                it.isPinWrong shouldBe false
+            }
         }
     }
 

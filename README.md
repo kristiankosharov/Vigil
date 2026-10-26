@@ -37,11 +37,12 @@ next.
 | Feature | Status |
 |---|---|
 | **Login** (`:feature:auth`) | Working with **Firebase Auth**: email + password (sign in, create account, password reset) and phone number with an SMS code (auto-verification included). OpenID Connect is structured (repository, use case, SSO buttons) but has no provider yet: see `TODO(oidc)`. Bearer-token plumbing for the future backend (encrypted token store, refresh, session expiry → back to login) is in place; exchanging the Firebase ID token for backend tokens is a `TODO(auth)`. |
-| **App lock** (`:feature:applock`) | Working. PIN with a custom number pad (create + repeat), biometric unlock, locks on start and after 30 s in the background, covers the whole app. |
+| **App lock** (`:feature:applock`) | Working. 6-digit PIN with a custom number pad, onboarding (create → confirm → enable fingerprint), unlock with PIN or fingerprint, locks on start and after 30 s in the background, covers the whole app. |
 | **Home** (`:feature:home`) | Placeholder screen reading entries from Room (empty for now). |
+| **Settings** (`:feature:settings`) | Working. Appearance: light, dark or the device setting, stored in an encrypted DataStore and applied to the whole app (the security screens stay dark). Opened from the icon on Home. |
 
-Open items are marked in the code as `TODO(auth)`, `TODO(oidc)`, `TODO(home)`, `TODO(applock)`,
-`TODO(env)` and `TODO(design)`.
+Open items are marked in the code as `TODO(auth)`, `TODO(oidc)`, `TODO(home)`, `TODO(applock)`
+and `TODO(env)`.
 
 **Firebase Auth setup:** the Email/Password and Phone providers are enabled in the Firebase project
 `vigil-app-25b0`. Phone sign-in needs the app's SHA-1/SHA-256 registered in Firebase (each
@@ -222,6 +223,11 @@ flowchart TD
         homeCore["data:core"] --> homeApi
     end
 
+    subgraph settings [":feature:settings"]
+        settingsUi["ui"] --> settingsDomain["domain"] --> settingsApi["data:api"]
+        settingsCore["data:core"] --> settingsApi
+    end
+
     subgraph common [":common"]
         network["network"]
         database["database"]
@@ -231,12 +237,13 @@ flowchart TD
         testing["testing"]
     end
 
-    app --> authUi & applockUi & homeUi
-    app -.-> authCore & applockCore & homeCore
+    app --> authUi & applockUi & homeUi & settingsUi
+    app -.-> authCore & applockCore & homeCore & settingsCore
     app --> commonUi & network
     authCore --> network & datastore
     applockCore --> datastore
     homeCore --> database
+    settingsCore --> datastore
 ```
 
 `:konsist` (architecture tests) and `build-logic` (convention plugins, `enforceDependencyRules()`)

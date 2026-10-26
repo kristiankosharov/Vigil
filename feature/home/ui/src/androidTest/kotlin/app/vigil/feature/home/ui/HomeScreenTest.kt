@@ -6,11 +6,13 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.tryPerformAccessibilityChecks
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.vigil.common.ui.theme.AppTheme
 import kotlinx.collections.immutable.persistentListOf
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -29,8 +31,12 @@ class HomeScreenTest {
         composeTestRule.enableAccessibilityChecks()
     }
 
+    private var appearanceClicks = 0
+
     private fun show(state: HomeUiState) = composeTestRule.setContent {
-        AppTheme(dynamicColor = false) { HomeScreen(state = state, onAction = {}) }
+        AppTheme(dynamicColor = false) {
+            HomeScreen(state = state, onAction = {}, onOpenAppearance = { appearanceClicks++ })
+        }
     }
 
     @Test
@@ -55,5 +61,14 @@ class HomeScreenTest {
 
         composeTestRule.onNodeWithText("First").assertIsDisplayed()
         composeTestRule.onRoot().tryPerformAccessibilityChecks()
+    }
+
+    @Test
+    fun theAppearanceButtonOpensAppearance() {
+        show(HomeUiState(isLoading = false, entries = persistentListOf(), effect = null))
+
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.home_open_appearance)).performClick()
+
+        assertEquals(1, appearanceClicks)
     }
 }
