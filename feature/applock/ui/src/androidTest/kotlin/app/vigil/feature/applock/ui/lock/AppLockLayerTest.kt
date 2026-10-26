@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.vigil.common.ui.theme.AppTheme
@@ -86,7 +87,8 @@ class AppLockLayerTest {
 
         composeTestRule.onNodeWithText("5").performClick()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.applock_delete_digit)).performClick()
-        composeTestRule.onNodeWithText(context.getString(R.string.applock_unlock)).performClick()
+        // Below the pad on small screens: scroll first, or the tap lands off-screen.
+        composeTestRule.onNodeWithText(context.getString(R.string.applock_unlock)).performScrollTo().performClick()
 
         assertEquals(
             listOf(AppLockAction.PinChanged("12345"), AppLockAction.PinChanged("123"), AppLockAction.SubmitPin),

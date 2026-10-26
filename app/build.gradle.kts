@@ -4,6 +4,9 @@ plugins {
     alias(libs.plugins.vigil.hilt)
     alias(libs.plugins.vigil.environment)
     alias(libs.plugins.kotlin.serialization)
+    // Firebase: app/google-services.json holds all three flavors' apps (project vigil-app-25b0).
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
@@ -11,8 +14,9 @@ android {
 
     defaultConfig {
         applicationId = "app.vigil"
-        versionCode = 1
-        versionName = "0.1.0"
+        // The release workflow sets these from the git tag (v1.2.3 → 1.2.3 / 1002003); local builds are 1 / dev.
+        versionCode = providers.environmentVariable("VERSION_CODE").map(String::toInt).orElse(1).get()
+        versionName = providers.environmentVariable("VERSION_NAME").orElse("0.1.0-dev").get()
     }
 
     buildFeatures {
@@ -40,7 +44,17 @@ android {
         }
     }
     buildTypes {
-        release { signingConfig = signingConfigs.findByName("release") }
+        debug {
+            manifestPlaceholders["crashlyticsEnabled"] = false // no crash reports from development builds
+        }
+        release {
+            signingConfig = signingConfigs.findByName("release")
+            manifestPlaceholders["crashlyticsEnabled"] = true
+            // Upload the R8 mapping only from CI (release workflow), never from a local check.
+            configure<com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension> {
+                mappingFileUploadEnabled = providers.environmentVariable("CI").isPresent
+            }
+        }
     }
 }
 
@@ -63,4 +77,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.timber)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
 }

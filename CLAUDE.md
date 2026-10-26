@@ -27,7 +27,8 @@ More detail loads only when needed:
 | Paging | Paging 3 with Room + `RemoteMediator` |
 | DI | Hilt (KSP) |
 | Async | Kotlin Coroutines + Flow |
-| Logging | Timber (Android modules only) |
+| Logging / crashes | Timber (Android modules only); Firebase Crashlytics in release, only in `:app` |
+| Sign-in | Firebase Auth (email/password, phone, OpenID Connect via `OAuthProvider`), only in `:feature:auth:data:core` |
 | Testing | Kotest, MockK, Turbine, Molecule (ViewModel state), Compose UI Test, Ktor `MockEngine` |
 | Quality | Konsist (architecture tests), detekt + Compose rules, ktlint CLI (pinned version, the only formatter), Android Lint |
 
@@ -147,7 +148,23 @@ Add a `:common:*` module only for genuinely shared infrastructure, never for fea
 
 ---
 
-## Checks
+## Git workflow (git flow)
+
+| Branch | From | Merges into | For |
+|---|---|---|---|
+| `main` | — | — | Released code only. Every merge is tagged `vX.Y.Z` (that tag runs the release workflow). |
+| `develop` | `main` | — | Integration branch; the base of all regular work. |
+| `feature/<short-name>` | `develop` | `develop` (PR) | New functionality. |
+| `bugfix/<short-name>` | `develop` | `develop` (PR) | Fixes for bugs not yet released. |
+| `release/<X.Y.Z>` | `develop` | `main` (PR), then back into `develop` | Stabilising a release: version-related changes and fixes only, no new features. |
+| `hotfix/<X.Y.Z>` | `main` | `main` (PR), then back into `develop` | Urgent fixes to released code. |
+
+- Never commit straight to `main` or `develop`; start the right branch type first. Names are
+  lowercase with hyphens (`feature/pin-attempt-limit`, `bugfix/home-empty-state`).
+- After a `release/*` or `hotfix/*` PR merges into `main`: tag `main` with `vX.Y.Z`, push the tag,
+  and merge `main` back into `develop`.
+- CI runs on every PR into `main` or `develop` and on pushes to `main`, `develop`, `release/*` and
+  `hotfix/*`; a PR merges only with green CI.
 
 - **Never run raw `./gradlew` builds or tests** — use `scripts/check.sh`, which prints one line
   per step plus, on failure, the failing tests with their messages and the compiler/detekt/lint

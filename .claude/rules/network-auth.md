@@ -25,6 +25,23 @@ Code: `.claude/reference/network-auth.md`.
 - Features never create an `HttpClient`; they inject `@Authenticated` into their internal `*ApiImpl`.
 - Every call goes through `safeApiCall`.
 
+## Sign-in (Firebase Auth)
+
+- Sign-in goes through Firebase Auth, only in `:feature:auth:data:core` (`AuthRepositoryImpl`):
+  email/password (sign in, sign up, password reset), phone (SMS code) and OpenID Connect
+  (`OAuthProvider`, providers listed in `remote/OidcProviders.kt`, empty until one is set up).
+- Every Firebase call goes through the feature's `safeFirebaseCall`, which maps failures to
+  `AppError.Auth.*` (`InvalidCredentials`, `AccountExists`, `WeakPassword`, `InvalidPhoneNumber`,
+  `InvalidCode`, `TooManyRequests`, `Cancelled`, `Unknown`) or `AppError.Network.NoConnection`, and
+  logs them without the throwable (Firebase messages can name the account).
+- Phone verification is a `callbackFlow`: `CodeSent(verificationId)`, then `Verified` if the device
+  verifies by itself. Firebase SDK types never leave `data:core`.
+- Flows that need an `Activity` (phone reCAPTCHA fallback, OpenID Connect) get the resumed one from
+  `CurrentActivityTracker`, held weakly; no activity → `AppError.Auth.Unknown`, never a crash.
+- Logout signs out of Firebase in the auth feature's `UserDataCleaner`.
+- The backend's bearer tokens below are not yet issued: exchanging the Firebase ID token for them
+  after sign-in is `TODO(auth)` in `AuthRepositoryImpl`.
+
 ## Authentication (Ktor `Auth`, bearer tokens)
 
 - `:common:network` owns the mechanism and depends only on interfaces: `TokenStorage` and

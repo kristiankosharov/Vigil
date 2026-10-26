@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.accessibility.enableAccessibilityChecks
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.vigil.common.ui.theme.AppTheme
@@ -61,8 +62,11 @@ class CreatePinScreenTest {
         }
 
         composeTestRule.onNodeWithText(context.getString(R.string.applock_repeat_title)).assertIsDisplayed()
-        composeTestRule.onNodeWithText(context.getString(R.string.applock_enable_biometric)).assertIsDisplayed()
-        composeTestRule.onNodeWithText(context.getString(R.string.applock_save)).performClick()
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.applock_enable_biometric),
+        ).performScrollTo().assertIsDisplayed()
+        // Below the pad on small screens: scroll first, or the tap lands off-screen.
+        composeTestRule.onNodeWithText(context.getString(R.string.applock_save)).performScrollTo().performClick()
 
         assertEquals(listOf<CreatePinAction>(CreatePinAction.Submit), actions)
     }

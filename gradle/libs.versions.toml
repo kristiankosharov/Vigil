@@ -21,6 +21,9 @@ kotlinxSerialization = "1.12.0"
 kotlinxCoroutines = "1.11.0"
 kotlinxCollectionsImmutable = "0.5.2"
 timber = "5.0.1"
+firebaseBom = "35.1.0"
+googleServices = "4.5.0"
+firebaseCrashlyticsPlugin = "3.0.8"
 kotest = "6.2.6"
 junitPlatform = "1.13.4"          # the JUnit Platform version Kotest is built against
 mockk = "1.14.11"
@@ -86,6 +89,7 @@ hilt-lifecycle-viewmodel-compose = { module = "androidx.hilt:hilt-lifecycle-view
 # Kotlin
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
@@ -102,6 +106,11 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 # Security and logging
 tink-android = { module = "com.google.crypto.tink:tink-android", version.ref = "tink" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
+
+# Firebase (versions from the BOM)
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
+firebase-auth = { module = "com.google.firebase:firebase-auth" }
 
 # Testing
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
@@ -126,6 +135,8 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 room3 = { id = "androidx.room3", version.ref = "room3" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
 
 # Convention plugins (build-logic)
 vigil-android-application = { id = "vigil.android.application" }

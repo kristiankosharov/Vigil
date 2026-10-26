@@ -1,0 +1,24 @@
+# Weekly update PRs, so versions stay on the latest stable releases (CLAUDE.md, Versions).
+# Each PR runs CI. ktlint is a CLI, not a Gradle dependency: bump it by hand together with the
+# SHA-256 in .github/actions/setup/action.yml.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      androidx:
+        patterns: ["androidx.*"]
+      kotlin:
+        patterns: ["org.jetbrains.kotlin*", "org.jetbrains.kotlinx*", "com.google.devtools.ksp*"]
+      testing:
+        patterns: ["io.kotest*", "io.mockk*", "app.cash.*", "com.lemonappdev*"]
