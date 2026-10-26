@@ -79,6 +79,11 @@ More detail loads only when needed:
 
 Add a `:common:*` module only for genuinely shared infrastructure, never for feature logic.
 
+**Module graph.** `README.md` → "Module dependencies" has a Mermaid graph of the real module
+dependencies. Any change that adds, removes or renames a module, or adds/removes a `projects.*`
+dependency in a `build.gradle.kts` (including `:app`'s), updates that graph **in the same commit**,
+read from the build files rather than from memory.
+
 ### Dependency rules (strict)
 
 ```
