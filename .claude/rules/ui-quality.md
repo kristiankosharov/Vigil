@@ -19,7 +19,8 @@ paths:
     (`users_title`, `users_empty_message`).
   - Shared strings (OK, Cancel, Retry, generic `AppError` messages, common content descriptions):
     `:common:ui/src/main/res/values/strings.xml`, prefixed `common_`.
-  - `:app` holds only the app name and launcher labels.
+  - `:app` holds only the app name, launcher labels and the labels of the main navigation tabs
+    (`tab_*`, `navigation/MainTabs.kt`).
 - R classes are non-transitive: shared strings are `app.vigil.common.ui.R.string.common_retry`.
 - `UiText.Resource` for simple strings, `UiText.Plural(@PluralsRes id, count, args)` for quantities.
   Never build sentences by concatenation; use format arguments.

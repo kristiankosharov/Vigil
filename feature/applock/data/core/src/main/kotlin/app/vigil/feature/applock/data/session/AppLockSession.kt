@@ -25,6 +25,10 @@ internal class AppLockSession @Inject constructor(private val timeSource: TimeSo
         locked.value = false
     }
 
+    fun lock() {
+        locked.value = true
+    }
+
     fun onBackgrounded() {
         backgroundedAt = timeSource.markNow()
     }

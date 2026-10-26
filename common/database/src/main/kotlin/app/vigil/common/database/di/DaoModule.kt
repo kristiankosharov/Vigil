@@ -1,7 +1,7 @@
 package app.vigil.common.database.di
 
 import app.vigil.common.database.AppDatabase
-import app.vigil.common.database.home.HomeEntryDao
+import app.vigil.common.database.documents.DocumentDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,5 +12,5 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 internal object DaoModule {
     @Provides
-    fun provideHomeEntryDao(database: AppDatabase): HomeEntryDao = database.homeEntryDao()
+    fun provideDocumentDao(database: AppDatabase): DocumentDao = database.documentDao()
 }

@@ -21,6 +21,9 @@ public interface AppLockRepository {
     /** Called after BiometricPrompt reported success. */
     public fun unlockWithBiometric()
 
+    /** Locks the session right away ("Lock wallet now"); a no-op when no PIN exists. */
+    public fun lockNow()
+
     public fun onAppBackgrounded()
 
     public fun onAppForegrounded()
