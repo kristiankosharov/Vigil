@@ -38,7 +38,12 @@ next.
 | **App lock** (`:feature:applock`) | Working. PIN with a custom number pad (create + repeat), biometric unlock, locks on start and after 30 s in the background, covers the whole app. |
 | **Home** (`:feature:home`) | Placeholder screen reading entries from Room (empty for now). |
 
-Open items are marked in the code as `TODO(auth)`, `TODO(home)`, `TODO(applock)` and `TODO(env)`.
+Open items are marked in the code as `TODO(auth)`, `TODO(home)`, `TODO(applock)`, `TODO(env)` and
+`TODO(design)`.
+
+**Design:** the design system (colors, type, states, components) and every screen flow are described
+in [`docs/design/README.md`](docs/design/README.md). The theme and shared components are in
+`:common:ui` (`theme/` and `designsystem/`).
 
 ## Requirements
 

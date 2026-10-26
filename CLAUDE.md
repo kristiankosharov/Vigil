@@ -186,3 +186,4 @@ Add a `:common:*` module only for genuinely shared infrastructure, never for fea
 | Paging | `rules/data-layer.md`, `rules/ui-mvi.md` | `skills/add-paging-list` |
 | Tests, Konsist | `rules/testing.md` | `reference/tests.md`, `reference/konsist-rules.md` |
 | New feature | — | `skills/new-feature` |
+| Design system, screen flows | `rules/ui-quality.md` | `docs/design/README.md`; components in `:common:ui` `designsystem/` |
