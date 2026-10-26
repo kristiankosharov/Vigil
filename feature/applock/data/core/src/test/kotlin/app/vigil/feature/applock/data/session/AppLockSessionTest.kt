@@ -5,54 +5,85 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TestTimeSource
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
 
 private val KEY = ByteArray(32) { 7 }
 
 class AppLockSessionTest : FunSpec({
 
     test("a new session starts locked; unlock unlocks it and opens the vault") {
-        val vault = FakeVault()
-        val session = AppLockSession(TestTimeSource(), vault)
-        session.isLocked.value shouldBe true
+        runTest {
+            val vault = FakeVault()
+            val session = AppLockSession(testScheduler.timeSource, vault, backgroundScope)
+            session.isLocked.value shouldBe true
 
-        session.unlock(KEY)
-        session.isLocked.value shouldBe false
-        vault.isOpen.value shouldBe true
+            session.unlock(KEY)
+            session.isLocked.value shouldBe false
+            vault.isOpen.value shouldBe true
 
-        session.lock()
-        vault.isOpen.value shouldBe false
+            session.lock()
+            vault.isOpen.value shouldBe false
+        }
     }
 
     test("a short trip to the background keeps it unlocked") {
-        val time = TestTimeSource()
-        val vault = FakeVault()
-        val session = AppLockSession(time, vault).apply { unlock(KEY) }
+        runTest {
+            val vault = FakeVault()
+            val session = unlockedSession(vault)
 
-        session.onBackgrounded()
-        time += 29.seconds
-        session.onForegrounded()
+            session.onBackgrounded()
+            advanceTimeBy(4.seconds)
+            session.onForegrounded()
+            advanceTimeBy(AppLockSession.GRACE_PERIOD) // the cancelled timer never fires
+            runCurrent()
 
-        session.isLocked.value shouldBe false
+            session.isLocked.value shouldBe false
+            vault.isOpen.value shouldBe true
+        }
     }
 
-    test("the grace period or longer in the background locks it again") {
-        val time = TestTimeSource()
-        val vault = FakeVault()
-        val session = AppLockSession(time, vault).apply { unlock(KEY) }
+    test("it locks after the grace period while still in the background") {
+        runTest {
+            val vault = FakeVault()
+            val session = unlockedSession(vault)
 
-        session.onBackgrounded()
-        time += AppLockSession.GRACE_PERIOD
-        session.onForegrounded()
+            session.onBackgrounded()
+            advanceTimeBy(AppLockSession.GRACE_PERIOD)
+            runCurrent()
 
-        session.isLocked.value shouldBe true
-        vault.isOpen.value shouldBe false
+            session.isLocked.value shouldBe true
+            vault.isOpen.value shouldBe false
+        }
+    }
+
+    test("a frozen process (the timer didn't run) locks when it comes back after the grace period") {
+        runTest {
+            val time = TestTimeSource()
+            val vault = FakeVault()
+            val session = AppLockSession(time, vault, backgroundScope).apply { unlock(KEY) }
+
+            session.onBackgrounded()
+            time += AppLockSession.GRACE_PERIOD
+            session.onForegrounded()
+
+            session.isLocked.value shouldBe true
+            vault.isOpen.value shouldBe false
+        }
     }
 
     test("coming to the foreground without a background mark changes nothing") {
-        val session = AppLockSession(TestTimeSource(), FakeVault()).apply { unlock(KEY) }
+        runTest {
+            val session = unlockedSession(FakeVault())
 
-        session.onForegrounded()
+            session.onForegrounded()
 
-        session.isLocked.value shouldBe false
+            session.isLocked.value shouldBe false
+        }
     }
 })
+
+private fun TestScope.unlockedSession(vault: FakeVault) =
+    AppLockSession(testScheduler.timeSource, vault, backgroundScope).apply { unlock(KEY) }

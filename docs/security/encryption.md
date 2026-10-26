@@ -4,6 +4,28 @@ How Vigil protects the PIN, the backend tokens and the documents on the device. 
 source of truth: `:common:security`, `:feature:applock:data:core`, `:feature:auth:data:core`
 (`TokenStorageImpl`) and `:feature:documents:data:core`.
 
+> [!WARNING]
+> **TODO: not at fintech level yet.** Everything below runs on the phone alone. These gaps are known
+> and deliberately left for later:
+>
+> **Needs the backend**
+> - **PIN attempts are enforced only by the app.** On a rooted phone an attacker can restore an old
+>   `applock_settings.json` to reset the counter, or hook the app and call the pepper key directly with
+>   no limit (a 6-digit PIN then falls in about a day). Fix: the server holds part of the key and
+>   rate-limits PIN checks, so the phone alone can't check a guess.
+> - **Certificate pinning** for the backend (plus a `network_security_config` that forbids cleartext;
+>   with `minSdk` 26, plain HTTP is still allowed by default on Android 8.x).
+> - **Session tokens bound to the device:** tokens signed with a Keystore key (DPoP-style) with Key
+>   Attestation, server-side revocation, step-up auth for sensitive actions. Also the Firebase refresh
+>   token that still lives outside the vault (`TODO(auth)`, see "Backend tokens").
+>
+> **App side, later**
+> - **Device integrity and root detection:** Play Integrity API, Key Attestation, root, hook (Frida)
+>   and emulator detection, anti-tamper (RASP).
+> - **Overlay and accessibility protection** on the PIN screen and other sensitive screens:
+>   `Window.setHideOverlayWindows(true)` (Android 12+), `View.setAccessibilityDataSensitive` (Android
+>   14+), and ignoring touches while the window is covered (`filterTouchesWhenObscured`).
+
 ## Key hierarchy
 
 ```mermaid
@@ -144,7 +166,7 @@ sequenceDiagram
 
 | Event | Effect |
 |---|---|
-| App locked (start, 30 s in the background, "Lock wallet now") | Vault key wiped from memory: no tokens, no document list, no pages |
+| App locked (start, 5 s in the background, "Lock wallet now") | Vault key wiped from memory: no tokens, no document list, no pages. The 5 s timer runs while the app is in the background, so the key doesn't wait in memory until the user returns; if Android froze the process, it locks on return. |
 | 10th wrong PIN | Every `UserDataCleaner` runs, the biometric key is deleted, the user is signed out |
 | Logout | Every `UserDataCleaner` runs: tokens, PIN wrap, document index, pages and the documents' RSA key |
 | Fingerprints added or removed | Biometric key destroyed; fingerprint unlock turns off, the PIN still works |

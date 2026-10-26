@@ -5,8 +5,9 @@ Rules: `.claude/rules/app.md` (layer order), `.claude/rules/datastore.md` (the s
 
 ## Behaviour
 
-- Locked on every process start and after **30 s or more** in the background (process lifecycle,
-  so a rotation is not a trip to the background). Locked only once a PIN exists.
+- Locked on every process start and after **5 s or more** in the background (process lifecycle,
+  so a rotation is not a trip to the background). A timer locks it while still in the background, so
+  the vault key never waits in memory; the elapsed check on return covers a frozen process. Locked only once a PIN exists.
 - PIN: exactly 6 digits (`PinRules.LENGTH` in `domain`). Created right after the first login
   (`CreatePinRoute`, design 1.1–1.3) in three steps (`CreatePinStep`): **Enter** → **Confirm** →
   **Biometric**. Confirm shows "PINs match" / "PINs don't match" once all digits are in (`PinMatch`);
@@ -73,22 +74,32 @@ Rules: `.claude/rules/app.md` (layer order), `.claude/rules/datastore.md` (the s
 
 ```kotlin
 @Singleton
-internal class AppLockSession @Inject constructor(private val timeSource: TimeSource) {
+internal class AppLockSession @Inject constructor(
+    private val timeSource: TimeSource,
+    private val vault: VaultKeyControl,
+    @ApplicationScope private val scope: CoroutineScope,
+) {
     private val locked = MutableStateFlow(true)               // a new process starts locked
     private var backgroundedAt: TimeMark? = null              // kotlin.time.TimeMark
+    private var backgroundLock: Job? = null
 
     val isLocked: StateFlow<Boolean> = locked.asStateFlow()
 
-    fun unlock(vaultKey: ByteArray) { vault.open(vaultKey); locked.value = false }   // vault: VaultKeyControl
+    fun unlock(vaultKey: ByteArray) { vault.open(vaultKey); locked.value = false }
     fun lock() { vault.close(); locked.value = true }
-    fun onBackgrounded() { backgroundedAt = timeSource.markNow() }
+    fun onBackgrounded() {
+        backgroundedAt = timeSource.markNow()
+        backgroundLock?.cancel()
+        backgroundLock = scope.launch { delay(GRACE_PERIOD); lock() }   // wipe the key while away
+    }
     fun onForegrounded() {
+        backgroundLock?.cancel(); backgroundLock = null
         val mark = backgroundedAt ?: return
         backgroundedAt = null
         if (mark.elapsedNow() >= GRACE_PERIOD) lock()
     }
 
-    companion object { val GRACE_PERIOD = 30.seconds }
+    companion object { val GRACE_PERIOD = 5.seconds }
 }
 
 // repository: locked only when a PIN exists; createPin, a right PIN or a fingerprint open the vault
@@ -97,7 +108,7 @@ override fun observeLockState() = combine(store.data.asStoreResult(), session.is
 }.distinctUntilChanged()
 ```
 
-Test the session with `kotlin.time.TestTimeSource`, the repository with a real encrypted store on a
+Test the session in `runTest` with `testScheduler.timeSource` and `backgroundScope` (one virtual clock for the timer and the marks; a separate `TestTimeSource` simulates a frozen process), the repository with a real encrypted store on a
 temp file (see `reference/datastore.md`).
 
 ## The host (ui)

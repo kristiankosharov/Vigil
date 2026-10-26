@@ -288,7 +288,7 @@ private class Device(
             CoroutineScope(Dispatchers.IO + job),
         )
     val vault = FakeVault()
-    val session = AppLockSession(TestTimeSource(), vault)
+    val session = AppLockSession(TestTimeSource(), vault, CoroutineScope(Dispatchers.IO + job))
     val sessionEvents = FakeSessionEvents()
     var cleaned = 0
     val wrapper = VaultKeyWrapper(FakeKeyDerivation)
