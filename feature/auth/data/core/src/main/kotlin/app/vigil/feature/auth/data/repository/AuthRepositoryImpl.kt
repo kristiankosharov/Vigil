@@ -30,8 +30,9 @@ import kotlinx.coroutines.tasks.await
 private const val PHONE_CODE_TIMEOUT_SECONDS = 60L
 
 // TODO(auth): after every sign-in, exchange the Firebase ID token (`auth.currentUser?.getIdToken(false)`)
-//  for the backend's tokens and TokenStorage.save(...) them, once the backend exists. Until then the
-//  backend calls go out without a token.
+//  for the backend's tokens, TokenStorage.save(...) them (sealed with the vault key once the PIN
+//  exists), then `auth.signOut()`: Firebase keeps its own refresh token outside the vault, so the
+//  PIN can't protect it. Until the backend exists the backend calls go out without a token.
 internal class AuthRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val activityTracker: CurrentActivityTracker,

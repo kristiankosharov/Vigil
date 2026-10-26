@@ -23,8 +23,8 @@ way round: the rules come first, and they are executable.
   (`UiState`, `Action`, a ViewModel that builds its state with a `@Composable uiState()`, a
   logic-free `Route` and a stateless `Screen`).
 - **Secure by default.** Small data lives in typed DataStores encrypted with Tink and an Android
-  Keystore key; the whole app sits under a PIN + biometric lock; nothing sensitive is logged or
-  written to saved state.
+  Keystore key; the whole app sits under a PIN + biometric lock, and the PIN (never stored) is part
+  of the key that decrypts the tokens; nothing sensitive is logged or written to saved state.
 - **Ready for an AI pair programmer.** `CLAUDE.md`, `.claude/rules/`, `.claude/skills/` and
   `.claude/reference/` give Claude Code the same rules a human would follow, loaded only when the
   files being edited need them, and hooks format and check its changes automatically.
@@ -37,7 +37,7 @@ next.
 | Feature | Status |
 |---|---|
 | **Login** (`:feature:auth`) | Working with **Firebase Auth**: email + password (sign in, create account, password reset) and phone number with an SMS code (auto-verification included). OpenID Connect is structured (repository, use case, SSO buttons) but has no provider yet: see `TODO(oidc)`. Bearer-token plumbing for the future backend (encrypted token store, refresh, session expiry → back to login) is in place; exchanging the Firebase ID token for backend tokens is a `TODO(auth)`. |
-| **App lock** (`:feature:applock`) | Working. 6-digit PIN with a custom number pad, onboarding (create → confirm → enable fingerprint), unlock with PIN or fingerprint, locks on start and after 30 s in the background, covers the whole app. |
+| **App lock** (`:feature:applock`) | Working. 6-digit PIN with a custom number pad, onboarding (create → confirm → enable fingerprint), unlock with PIN or fingerprint, locks on start and after 30 s in the background, covers the whole app. The PIN is never stored: it unwraps the vault key (Argon2id + a Keystore pepper), which seals the tokens. Easy PINs are refused; 5 free tries, then growing waits, and the 10th wrong PIN erases everything and signs out. No screenshots (`FLAG_SECURE`). |
 | **Documents** (`:feature:documents`) | Documents tab (bottom navigation): on-device search, filters (All / To sign / Signed / Drafts), status icons, lock-now. Stored in Room; empty until the scan flow exists (`TODO(documents)`). |
 | **Settings** (`:feature:settings`) | Working. Appearance: light, dark or the device setting, stored in an encrypted DataStore and applied to the whole app (the security screens stay dark). Opened from the Account tab. |
 
@@ -185,6 +185,7 @@ The release then appears under **Releases** with `vigil-0.1.0.apk`, `vigil-0.1.0
 :common:network             Ktor clients, bearer auth, safeApiCall
 :common:database            the single Room 3 AppDatabase, one package per feature, safeDbCall
 :common:datastore           encrypted typed DataStore (Tink), safeStoreCall
+:common:security            the vault (PIN-unlocked data key), Argon2id + Keystore pepper, biometric keys
 :common:ui                  theme, UiText, BaseViewModel, effect and navigation handlers
 :common:testing             test helpers
 
@@ -232,6 +233,7 @@ flowchart TD
         network["network"]
         database["database"]
         datastore["datastore"]
+        security["security"]
         commonUi["ui"]
         core["core"]
         testing["testing"]
@@ -240,8 +242,8 @@ flowchart TD
     app --> authUi & applockUi & documentsUi & settingsUi
     app -.-> authCore & applockCore & documentsCore & settingsCore
     app --> commonUi & network
-    authCore --> network & datastore
-    applockCore --> datastore
+    authCore --> network & datastore & security
+    applockCore --> network & datastore & security
     documentsCore --> database
     documentsDomain --> applockApi
     settingsCore --> datastore
@@ -269,7 +271,7 @@ The full rules are in [`CLAUDE.md`](CLAUDE.md) and `.claude/rules/`.
 | DI | Hilt (KSP), including pure-Kotlin modules |
 | Data | Room 3 with the bundled SQLite driver, DataStore 1.3 + `datastore-tink`, Paging 3 |
 | Network | Ktor 3 (OkHttp engine), kotlinx.serialization, bearer auth |
-| Security | Tink, Android Keystore, `androidx.biometric` |
+| Security | Tink, Android Keystore (HMAC pepper, biometric-bound key), Argon2id (Bouncy Castle), `androidx.biometric` |
 | Async / logging | Coroutines + Flow, Timber, Firebase Crashlytics (release builds) |
 | Sign-in | Firebase Auth (email/password, phone; OpenID Connect prepared) |
 | Testing | Kotest, MockK, Turbine, Molecule, Compose UI tests, Ktor `MockEngine` |

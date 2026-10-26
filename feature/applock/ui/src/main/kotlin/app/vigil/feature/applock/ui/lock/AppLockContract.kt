@@ -16,8 +16,13 @@ internal enum class AppLockStatus {
 @Immutable
 internal data class AppLockUiState(
     val status: AppLockStatus,
-    val pin: String,
+    /** How many digits are typed; the PIN itself never leaves the ViewModel. */
+    val pinLength: Int,
     val isPinWrong: Boolean,
+    /** Attempts left before everything is erased, once a wrong PIN told us; null until then. */
+    val attemptsLeft: Int?,
+    /** Seconds until PIN entry opens again after too many wrong PINs; 0 when it is open. */
+    val retrySeconds: Int,
     val isChecking: Boolean,
     val isBiometricEnabled: Boolean,
     val biometricRequest: BiometricRequest?,
@@ -26,7 +31,9 @@ internal data class AppLockUiState(
 
 internal sealed interface AppLockAction : UiAction {
     /** The PIN is checked as soon as it has all its digits. */
-    data class PinChanged(val pin: String) : AppLockAction
+    data class Digit(val digit: Int) : AppLockAction
+
+    data object Delete : AppLockAction
 
     data object UseBiometric : AppLockAction
 

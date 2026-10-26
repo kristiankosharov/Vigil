@@ -7,10 +7,12 @@ import app.vigil.common.core.AppError
 import app.vigil.common.core.AppResult
 import app.vigil.common.testing.MainDispatcherExtension
 import app.vigil.common.ui.mvi.UiEffect
+import app.vigil.feature.applock.domain.model.BiometricCipher
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import javax.crypto.Cipher
 
 class CreatePinViewModelTest : FunSpec({
     val mainDispatcher = MainDispatcherExtension()
@@ -28,17 +30,18 @@ class CreatePinViewModelTest : FunSpec({
         result: AppResult<Unit> = AppResult.Success(Unit),
     ) = CreatePinViewModel(
         createPin = { pin, biometric ->
-            saved.pin = pin
-            saved.biometric = biometric
+            saved.pin = String(pin)
+            saved.biometric = biometric != null
             saved.count++
             result
         },
+        prepareBiometricEnrollment = { AppResult.Success(BiometricCipher(Cipher.getInstance("AES/GCM/NoPadding"))) },
         isBiometricAvailable = { biometricAvailable },
     )
 
     fun CreatePinViewModel.type(digits: String) = digits.forEach { onAction(CreatePinAction.Digit(it.digitToInt())) }
 
-    fun CreatePinViewModel.createAndConfirm(pin: String = "123456") {
+    fun CreatePinViewModel.createAndConfirm(pin: String = "482916") {
         type(pin)
         onAction(CreatePinAction.Continue)
         type(pin)
@@ -49,7 +52,7 @@ class CreatePinViewModelTest : FunSpec({
         val viewModel = viewModel()
 
         moleculeFlow(RecompositionMode.Immediate) { viewModel.uiState() }.test {
-            viewModel.type("12345")
+            viewModel.type("48291")
             viewModel.onAction(CreatePinAction.Continue)
             mainDispatcher.scheduler.advanceUntilIdle()
             expectMostRecentItem().step shouldBe CreatePinStep.Enter
@@ -65,18 +68,37 @@ class CreatePinViewModelTest : FunSpec({
         }
     }
 
-    test("the confirmation reports a match or a mismatch once complete") {
+    test("an easy PIN is refused on Continue and cleared; typing again clears the message") {
         val viewModel = viewModel()
 
         moleculeFlow(RecompositionMode.Immediate) { viewModel.uiState() }.test {
             viewModel.type("123456")
             viewModel.onAction(CreatePinAction.Continue)
-            viewModel.type("123450")
+            mainDispatcher.scheduler.advanceUntilIdle()
+            expectMostRecentItem().let {
+                it.step shouldBe CreatePinStep.Enter
+                it.isPinWeak shouldBe true
+                it.inputLength shouldBe 0
+            }
+
+            viewModel.type("4")
+            mainDispatcher.scheduler.advanceUntilIdle()
+            expectMostRecentItem().isPinWeak shouldBe false
+        }
+    }
+
+    test("the confirmation reports a match or a mismatch once complete") {
+        val viewModel = viewModel()
+
+        moleculeFlow(RecompositionMode.Immediate) { viewModel.uiState() }.test {
+            viewModel.type("482916")
+            viewModel.onAction(CreatePinAction.Continue)
+            viewModel.type("482910")
             mainDispatcher.scheduler.advanceUntilIdle()
             expectMostRecentItem().match shouldBe PinMatch.Mismatch
 
             viewModel.onAction(CreatePinAction.Continue) // not allowed on a mismatch
-            viewModel.type("1") // a new attempt starts with this digit
+            viewModel.type("4") // a new attempt starts with this digit
             mainDispatcher.scheduler.advanceUntilIdle()
             expectMostRecentItem().let {
                 it.step shouldBe CreatePinStep.Confirm
@@ -84,7 +106,7 @@ class CreatePinViewModelTest : FunSpec({
                 it.match shouldBe PinMatch.Unknown
             }
 
-            viewModel.type("23456")
+            viewModel.type("82916")
             mainDispatcher.scheduler.advanceUntilIdle()
             expectMostRecentItem().match shouldBe PinMatch.Match
         }
@@ -130,7 +152,7 @@ class CreatePinViewModelTest : FunSpec({
             mainDispatcher.scheduler.advanceUntilIdle()
             expectMostRecentItem().navigation shouldBe CreatePinNavigation.PinCreated
         }
-        saved.pin shouldBe "123456"
+        saved.pin shouldBe "482916"
         saved.biometric shouldBe true
     }
 

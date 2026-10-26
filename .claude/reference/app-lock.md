@@ -20,28 +20,53 @@ Rules: `.claude/rules/app.md` (layer order), `.claude/rules/datastore.md` (the s
   and delete, pressed keys in `primaryContainer`; an optional fingerprint key left of 0). Unlock
   checks the PIN as soon as all 6 digits are in; onboarding uses Continue.
 - The security screens use `SecurityTheme` from `:common:ui` (dark scheme, light system bar icons).
-- Stored as PBKDF2-HMAC-SHA256 (random 16-byte salt, 120 000 iterations) in the encrypted
-  `applock_settings.json`; never the PIN itself, never in `savedStateHandle`. Compared in constant
-  time (`MessageDigest.isEqual`). A short PIN can't resist offline brute force on its own; the real
-  protection is the Keystore-encrypted store.
+- **The PIN is never stored, not even as a hash.** It unwraps the **vault key** (`:common:security`):
+  - `pinKey = HMAC(Keystore pepper, Argon2id(PIN, salt))` (`PinKeyDerivation`; Argon2id from Bouncy
+    Castle, OWASP baseline 19 MiB / 2 passes / 1 lane, stored per wrapped key as `KdfParams`). The
+    pepper is a non-exportable HMAC key (StrongBox if present, else TEE), so a guess can only be
+    checked on this device; copied files can't be brute-forced elsewhere.
+  - `AppLockSettings.pinKey` holds `AES-GCM(pinKey, vaultKey)` (associated data
+    `vigil.vault-key.pin`). A PIN is right exactly when that opens (no `AEADBadTagException`).
+  - The vault key is random (AES-256), lives in memory only while unlocked (`Vault`, opened and closed
+    by `AppLockSession`), and seals other features' secrets (the backend tokens). A new PIN while
+    unlocked re-wraps the same key.
+- **Fingerprint** wraps a second copy with a Keystore AES-GCM key that needs a strong biometric for
+  every use and is destroyed when fingerprints are added or removed (`BiometricKeys`). BiometricPrompt
+  always gets a `CryptoObject`: enrolment encrypts the vault key with the authenticated cipher, unlock
+  decrypts it. An invalidated key turns fingerprint unlock off (`prepareBiometricUnlock` → null).
+- **Wrong PINs** (`PinAttemptPolicy`): 5 free tries, then 30 s, 1 min, 5 min, 15 min; the 10th wrong
+  PIN erases everything (`Set<UserDataCleaner>`, the biometric key) and signs out
+  (`SessionEvents.notifyExpired()`). The count is written **before** each check; waits use time
+  since boot (`DeviceClock`), and after a reboot the full wait applies again. One check at a time
+  (`Mutex`). The lock screen counts the wait down and warns from 3 attempts left.
+- **Easy PINs are refused** on Create (`PinRules.isWeak`): one repeated digit, runs up/down (wrapping),
+  well-known PINs, and anything that reads as DDMMYY / MMDDYY / YYMMDD.
+- **PINs in memory** are `CharArray`s (`PinBuffer` in the UI, wiped after each check or save and when
+  the lock screen goes to the background), never `String`s and never `savedStateHandle`. The UI
+  state carries only the length.
+- The whole app has `FLAG_SECURE` (`MainActivity`).
 - The lock state is unknown at first: the app stays **covered** until it's known (fail closed). If
   the store can't be read, the lock screen shows with a Retry snackbar.
 - The lock screen is opaque, the content underneath stays composed (navigation state survives) but
   is removed from the semantics tree, and Back sends the app to the background.
 - Logout resets the store (`UserDataCleaner`), so the next user creates their own PIN.
-- TODO in the first version: limit wrong attempts (growing delay, then log out).
 
 ## Layers
 
 ```
-:feature:applock:data:api   AppLockRepository (observeLockState, createPin, unlockWithPin,
-                            unlockWithBiometric, onAppBackgrounded/Foregrounded, isBiometricAvailable)
-:feature:applock:data:core  AppLockSettings (store), PinHasher, AppLockSession (@Singleton, in memory,
-                            injected kotlin.time.TimeSource), BiometricAvailability (BiometricManager)
-:feature:applock:domain     PinRules, AppLockState, SAM use cases (Observe…, CreatePin, UnlockWithPin,
+:common:security            Vault + VaultKeyControl (VaultImpl, @Singleton), AesGcm, PinKeyDerivation
+                            (Argon2id + DevicePepper), BiometricKeys
+:feature:applock:data:api   AppLockRepository (observeLockState, createPin, unlockWithPin → PinCheckData,
+                            prepareBiometricEnrollment/Unlock, unlockWithBiometric, lockNow,
+                            onAppBackgrounded/Foregrounded, isBiometricAvailable), BiometricCipherData
+:feature:applock:data:core  AppLockSettings (store: wrapped keys, attempt count, lockout), PinAttemptPolicy,
+                            AppLockSession (@Singleton, opens/closes the vault), DeviceClock,
+                            BiometricAvailability (BiometricManager)
+:feature:applock:domain     PinRules (isValid, isWeak), AppLockState, PinCheck, BiometricCipher, SAM use
+                            cases (Observe…, CreatePin, UnlockWithPin, PrepareBiometricEnrollment/Unlock,
                             UnlockWithBiometric, MarkAppBackgrounded/Foregrounded, IsBiometricAvailable)
-:feature:applock:ui         AppLockHost (public), AppLockViewModel, AppLockScreen,
-                            BiometricPromptHandler, CreatePinRoute (public)
+:feature:applock:ui         AppLockHost (public), AppLockViewModel, AppLockScreen, PinBuffer,
+                            BiometricPromptHandler (CryptoObject), CreatePinRoute (public)
 ```
 
 ## The session (data:core)
@@ -54,20 +79,21 @@ internal class AppLockSession @Inject constructor(private val timeSource: TimeSo
 
     val isLocked: StateFlow<Boolean> = locked.asStateFlow()
 
-    fun unlock() { locked.value = false }
+    fun unlock(vaultKey: ByteArray) { vault.open(vaultKey); locked.value = false }   // vault: VaultKeyControl
+    fun lock() { vault.close(); locked.value = true }
     fun onBackgrounded() { backgroundedAt = timeSource.markNow() }
     fun onForegrounded() {
         val mark = backgroundedAt ?: return
         backgroundedAt = null
-        if (mark.elapsedNow() >= GRACE_PERIOD) locked.value = true
+        if (mark.elapsedNow() >= GRACE_PERIOD) lock()
     }
 
     companion object { val GRACE_PERIOD = 30.seconds }
 }
 
-// repository: locked only when a PIN exists; createPin and a matching PIN unlock the session
+// repository: locked only when a PIN exists; createPin, a right PIN or a fingerprint open the vault
 override fun observeLockState() = combine(store.data.asStoreResult(), session.isLocked) { settings, locked ->
-    settings.map { AppLockStateData(isLocked = locked && it.hasPin, isBiometricEnabled = it.biometricEnabled && biometric.isAvailable()) }
+    settings.map { AppLockStateData(isLocked = locked && it.hasPin, isBiometricEnabled = it.biometricKey != null && biometric.isAvailable(), retryAfter = it.remainingLockout()) }
 }.distinctUntilChanged()
 ```
 
@@ -102,9 +128,11 @@ internal fun AppLockLayer(state: AppLockUiState, onAction: (AppLockAction) -> Un
 
 ## Biometric prompt as consumable state
 
-The ViewModel sets `biometricRequest = BiometricRequest()` (a plain class: identity) when the app
-locks with biometrics enabled, or on "Use biometrics". `BiometricPromptHandler` consumes it before
-showing the prompt, like `NavigationHandler`:
+The ViewModel asks the repository for a Keystore cipher (`prepareBiometricUnlock` /
+`prepareBiometricEnrollment`) and sets `biometricRequest = BiometricRequest(cipher)` (a plain class:
+identity) when the app locks with biometrics enabled, or on "Use biometrics". `BiometricPromptHandler`
+consumes it before showing the prompt, like `NavigationHandler`; the ViewModel keeps the consumed
+request's cipher and, on success, passes it back (`unlockWithBiometric(cipher)` / `createPin(pin, cipher)`):
 
 ```kotlin
 LaunchedEffect(request) {
@@ -119,6 +147,7 @@ LaunchedEffect(request) {
             .setNegativeButtonText(usePin)
             .setAllowedAuthenticators(BIOMETRIC_STRONG)
             .build(),
+        BiometricPrompt.CryptoObject(request.cipher.cipher),       // never a prompt without a CryptoObject
     )
 }
 ```

@@ -10,10 +10,13 @@ import app.vigil.common.core.onSuccess
 import app.vigil.common.ui.mvi.BaseViewModel
 import app.vigil.common.ui.mvi.UiEffect
 import app.vigil.common.ui.text.toUiText
+import app.vigil.feature.applock.domain.model.BiometricCipher
 import app.vigil.feature.applock.domain.model.PinRules
 import app.vigil.feature.applock.domain.usecase.CreatePinUseCase
 import app.vigil.feature.applock.domain.usecase.IsBiometricAvailableUseCase
+import app.vigil.feature.applock.domain.usecase.PrepareBiometricEnrollmentUseCase
 import app.vigil.feature.applock.ui.biometric.BiometricRequest
+import app.vigil.feature.applock.ui.components.PinBuffer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -22,6 +25,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 internal class CreatePinViewModel @Inject constructor(
     private val createPin: CreatePinUseCase,
+    private val prepareBiometricEnrollment: PrepareBiometricEnrollmentUseCase,
     isBiometricAvailable: IsBiometricAvailableUseCase,
 ) : BaseViewModel<CreatePinUiState, CreatePinAction, CreatePinNavigation>() {
 
@@ -29,10 +33,14 @@ internal class CreatePinViewModel @Inject constructor(
     private var step by mutableStateOf(CreatePinStep.Enter)
 
     // Never savedStateHandle: the PIN must not be written to the saved instance state.
-    private var pin by mutableStateOf("")
-    private var confirmation by mutableStateOf("")
+    private val pin = PinBuffer()
+    private val confirmation = PinBuffer()
+    private var isPinWeak by mutableStateOf(false)
     private var isSaving by mutableStateOf(false)
     private var biometricRequest by mutableStateOf<BiometricRequest?>(null)
+
+    /** The cipher of the fingerprint prompt shown; it wraps the vault key once the prompt succeeds. */
+    private var promptedCipher: BiometricCipher? = null
     private var saveJob: Job? = null
 
     @Composable
@@ -41,10 +49,11 @@ internal class CreatePinViewModel @Inject constructor(
         stepCount = if (isBiometricAvailable) STEPS_WITH_BIOMETRIC else STEPS_WITHOUT_BIOMETRIC,
         inputLength = if (step == CreatePinStep.Enter) pin.length else confirmation.length,
         match = when {
-            confirmation.length < PinRules.LENGTH -> PinMatch.Unknown
-            confirmation == pin -> PinMatch.Match
+            !confirmation.isFull -> PinMatch.Unknown
+            confirmation.contentEquals(pin) -> PinMatch.Match
             else -> PinMatch.Mismatch
         },
+        isPinWeak = isPinWeak,
         isSaving = isSaving,
         biometricRequest = biometricRequest,
         effect = currentEffect,
@@ -61,18 +70,16 @@ internal class CreatePinViewModel @Inject constructor(
 
             CreatePinAction.Back -> back()
 
-            CreatePinAction.EnableBiometric -> if (step ==
-                CreatePinStep.Biometric
-            ) {
-                biometricRequest = BiometricRequest()
+            CreatePinAction.EnableBiometric -> if (step == CreatePinStep.Biometric) requestBiometric()
+
+            CreatePinAction.BiometricSucceeded -> promptedCipher?.let { save(biometric = it) }
+
+            is CreatePinAction.BiometricRequestConsumed -> if (biometricRequest === action.request) {
+                promptedCipher = action.request.cipher
+                biometricRequest = null
             }
 
-            CreatePinAction.BiometricSucceeded -> save(biometricEnabled = true)
-
-            is CreatePinAction.BiometricRequestConsumed ->
-                if (biometricRequest === action.request) biometricRequest = null
-
-            CreatePinAction.SkipBiometric -> save(biometricEnabled = false)
+            CreatePinAction.SkipBiometric -> save(biometric = null)
 
             is CreatePinAction.EffectConsumed -> consumeEffect(action.effect)
 
@@ -80,15 +87,22 @@ internal class CreatePinViewModel @Inject constructor(
         }
     }
 
+    override fun onCleared() {
+        pin.clear()
+        confirmation.clear()
+    }
+
     private fun addDigit(digit: Int) {
         when (step) {
-            CreatePinStep.Enter -> if (pin.length < PinRules.LENGTH) pin += digit
+            CreatePinStep.Enter -> {
+                isPinWeak = false
+                pin.add(digit)
+            }
 
             // After a mismatch the next digit starts a new attempt.
-            CreatePinStep.Confirm -> confirmation = when {
-                confirmation.length < PinRules.LENGTH -> confirmation + digit
-                confirmation != pin -> digit.toString()
-                else -> confirmation
+            CreatePinStep.Confirm -> {
+                if (confirmation.isFull && !confirmation.contentEquals(pin)) confirmation.clear()
+                confirmation.add(digit)
             }
 
             CreatePinStep.Biometric -> Unit
@@ -97,21 +111,29 @@ internal class CreatePinViewModel @Inject constructor(
 
     private fun deleteDigit() {
         when (step) {
-            CreatePinStep.Enter -> pin = pin.dropLast(1)
-            CreatePinStep.Confirm -> confirmation = confirmation.dropLast(1)
+            CreatePinStep.Enter -> pin.delete()
+            CreatePinStep.Confirm -> confirmation.delete()
             CreatePinStep.Biometric -> Unit
         }
     }
 
     private fun next() {
         when (step) {
-            CreatePinStep.Enter -> if (PinRules.isValid(pin)) {
-                confirmation = ""
-                step = CreatePinStep.Confirm
+            CreatePinStep.Enter -> if (pin.isFull) {
+                val digits = pin.copy()
+                val weak = PinRules.isWeak(digits)
+                digits.fill(Char.MIN_VALUE)
+                if (weak) {
+                    isPinWeak = true
+                    pin.clear()
+                } else {
+                    confirmation.clear()
+                    step = CreatePinStep.Confirm
+                }
             }
 
-            CreatePinStep.Confirm -> if (confirmation == pin && PinRules.isValid(pin)) {
-                if (isBiometricAvailable) step = CreatePinStep.Biometric else save(biometricEnabled = false)
+            CreatePinStep.Confirm -> if (confirmation.isFull && confirmation.contentEquals(pin)) {
+                if (isBiometricAvailable) step = CreatePinStep.Biometric else save(biometric = null)
             }
 
             CreatePinStep.Biometric -> Unit
@@ -125,27 +147,40 @@ internal class CreatePinViewModel @Inject constructor(
 
             // the screen leaves onboarding
             CreatePinStep.Confirm -> {
-                pin = ""
-                confirmation = ""
+                pin.clear()
+                confirmation.clear()
                 step = CreatePinStep.Enter
             }
 
             CreatePinStep.Biometric -> {
-                confirmation = ""
+                confirmation.clear()
                 step = CreatePinStep.Confirm
             }
         }
     }
 
-    private fun save(biometricEnabled: Boolean) {
-        if (saveJob?.isActive == true || confirmation != pin || !PinRules.isValid(pin)) return
+    private fun requestBiometric() {
+        prepareBiometricEnrollment()
+            .onSuccess { biometricRequest = BiometricRequest(it) }
+            .onFailure { appError -> sendEffect(UiEffect.ShowSnackbar(appError.toUiText())) }
+    }
+
+    private fun save(biometric: BiometricCipher?) {
+        if (saveJob?.isActive == true || !pin.isFull || !confirmation.contentEquals(pin)) return
+        promptedCipher = null
         saveJob = viewModelScope.launch {
             isSaving = true
+            val digits = pin.copy()
             try {
-                createPin(pin, biometricEnabled && isBiometricAvailable)
-                    .onSuccess { navigate(CreatePinNavigation.PinCreated) }
+                createPin(digits, biometric?.takeIf { isBiometricAvailable })
+                    .onSuccess {
+                        pin.clear()
+                        confirmation.clear()
+                        navigate(CreatePinNavigation.PinCreated)
+                    }
                     .onFailure { appError -> sendEffect(UiEffect.ShowSnackbar(appError.toUiText())) }
             } finally {
+                digits.fill(Char.MIN_VALUE)
                 isSaving = false
             }
         }

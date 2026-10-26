@@ -24,6 +24,8 @@ internal data class CreatePinUiState(
     /** How many digits the current step has (the PIN on Enter, the confirmation on Confirm). */
     val inputLength: Int,
     val match: PinMatch,
+    /** The PIN on Enter was too easy to guess (PinRules.isWeak) and was cleared. */
+    val isPinWeak: Boolean,
     val isSaving: Boolean,
     val biometricRequest: BiometricRequest?,
     val effect: UiEffect<CreatePinAction>?,

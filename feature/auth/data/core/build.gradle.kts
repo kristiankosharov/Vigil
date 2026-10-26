@@ -13,6 +13,7 @@ dependencies {
     implementation(projects.common.core)
     implementation(projects.common.network)
     implementation(projects.common.datastore)
+    implementation(projects.common.security) // the tokens are sealed with the vault key
 
     // Firebase Auth: the only Firebase use outside :app (rules/app.md, Firebase).
     implementation(platform(libs.firebase.bom))

@@ -31,6 +31,7 @@ class CreatePinScreenTest {
         stepCount = 3,
         inputLength = inputLength,
         match = match,
+        isPinWeak = false,
         isSaving = false,
         biometricRequest = null,
         effect = null,

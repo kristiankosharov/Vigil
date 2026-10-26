@@ -141,7 +141,7 @@ private fun PinStepContent(
             },
             modifier = Modifier.padding(top = 36.dp, bottom = 12.dp),
         )
-        PinStatusText(isConfirm = isConfirm, match = state.match)
+        PinStatusText(isConfirm = isConfirm, match = state.match, isPinWeak = state.isPinWeak)
         PinPad(
             onDigit = { onAction(CreatePinAction.Digit(it)) },
             onDelete = { onAction(CreatePinAction.Delete) },
@@ -152,10 +152,14 @@ private fun PinStepContent(
     }
 }
 
-/** The hint under the dots on Create; on Confirm, whether the PINs match (with the color, in words). */
+/**
+ * The hint (or why the PIN was refused) under the dots on Create; on Confirm, whether the PINs match
+ * (with the color, in words).
+ */
 @Composable
-private fun PinStatusText(isConfirm: Boolean, match: PinMatch, modifier: Modifier = Modifier) {
+private fun PinStatusText(isConfirm: Boolean, match: PinMatch, isPinWeak: Boolean, modifier: Modifier = Modifier) {
     val (text, color) = when {
+        !isConfirm && isPinWeak -> stringResource(R.string.applock_pin_weak) to MaterialTheme.colorScheme.error
         !isConfirm -> stringResource(R.string.applock_create_hint) to MaterialTheme.colorScheme.onSurfaceVariant
         match == PinMatch.Match -> stringResource(R.string.applock_pins_match) to MaterialTheme.statusColors.success
         match == PinMatch.Mismatch -> stringResource(R.string.applock_pins_mismatch) to MaterialTheme.colorScheme.error
@@ -212,6 +216,7 @@ private fun previewState(step: CreatePinStep, inputLength: Int = 3, match: PinMa
         stepCount = 3,
         inputLength = inputLength,
         match = match,
+        isPinWeak = false,
         isSaving = false,
         biometricRequest = null,
         effect = null,
