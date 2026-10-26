@@ -13,6 +13,25 @@ public object AuthRules {
     // E.164: "+", country code, up to 15 digits in all.
     private val PhonePattern = Regex("^\\+[1-9]\\d{6,14}$")
 
+    // A number as people type it: an optional "+", then digits with spaces, brackets or dashes.
+    private val PhoneLikePattern = Regex("^\\+?\\d[\\d ()-]*$")
+
+    /**
+     * Which sign-in method a single "email or phone number" field is heading for: anything with an
+     * "@" is an email, a typed number is a phone; anything else (or nothing) is [SignInIdentifierKind.Unknown].
+     */
+    public fun identifierKind(value: String): SignInIdentifierKind {
+        val trimmed = value.trim()
+        return when {
+            '@' in trimmed -> SignInIdentifierKind.Email
+            PhoneLikePattern.matches(trimmed) -> SignInIdentifierKind.Phone
+            else -> SignInIdentifierKind.Unknown
+        }
+    }
+
+    /** Keeps only "+" and digits, the form Firebase expects: "+359 888 123 456" → "+359888123456". */
+    public fun normalizePhoneNumber(value: String): String = value.filter { it == '+' || it.isDigit() }
+
     public fun isValidEmail(email: String): Boolean = EmailPattern.matches(email)
 
     public fun isValidPassword(password: String): Boolean = password.length >= PASSWORD_MIN_LENGTH

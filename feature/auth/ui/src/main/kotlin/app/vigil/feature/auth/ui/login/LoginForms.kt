@@ -31,130 +31,145 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import app.vigil.common.ui.text.UiText
 import app.vigil.common.ui.text.asString
+import app.vigil.feature.auth.domain.model.SignInIdentifierKind
 import app.vigil.feature.auth.ui.R
 import kotlinx.collections.immutable.ImmutableList
 
 // The login screen's forms; LoginScreen.kt puts them together.
 
+/**
+ * One "email or phone number" field. An email shows the password field and signs in (or creates
+ * the account); a phone number sends an SMS code. What was typed decides; there is no method switch.
+ */
 @Composable
-internal fun EmailForm(state: LoginUiState, onAction: (LoginAction) -> Unit, modifier: Modifier = Modifier) {
-    val submit = { onAction(LoginAction.SubmitEmail) }
+internal fun SignInForm(state: LoginUiState, onAction: (LoginAction) -> Unit, modifier: Modifier = Modifier) {
+    val submit = { onAction(LoginAction.Submit) }
+    val isEmail = state.identifierKind == SignInIdentifierKind.Email
+    val isPhone = state.identifierKind == SignInIdentifierKind.Phone
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         OutlinedTextField(
-            value = state.email,
-            onValueChange = { onAction(LoginAction.EmailChanged(it)) },
-            label = { Text(stringResource(R.string.auth_email_label)) },
+            value = state.identifier,
+            onValueChange = { onAction(LoginAction.IdentifierChanged(it)) },
+            label = { Text(stringResource(R.string.auth_identifier_label)) },
+            supportingText = {
+                Text(stringResource(if (isPhone) R.string.auth_phone_hint else R.string.auth_identifier_hint))
+            },
             singleLine = true,
             enabled = !state.isBusy,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
-            modifier = Modifier
-                .fillMaxWidth()
-                .semantics { contentType = ContentType.EmailAddress },
-        )
-        OutlinedTextField(
-            value = state.password,
-            onValueChange = { onAction(LoginAction.PasswordChanged(it)) },
-            label = { Text(stringResource(R.string.auth_password_label)) },
-            singleLine = true,
-            enabled = !state.isBusy,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+            // The email keyboard has both "@" and digits; Next goes on to the password only for an email.
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = if (isEmail) ImeAction.Next else ImeAction.Done,
+            ),
             keyboardActions = KeyboardActions(onDone = { submit() }),
             modifier = Modifier
                 .fillMaxWidth()
-                .semantics {
-                    contentType =
-                        if (state.emailMode == EmailMode.SignUp) ContentType.NewPassword else ContentType.Password
-                },
+                .semantics { contentType = ContentType.Username },
         )
+        if (isEmail) PasswordField(state = state, onAction = onAction, onDone = submit)
         FormError(state.error)
         ProgressButton(
             text = stringResource(
-                if (state.emailMode == EmailMode.SignIn) R.string.auth_sign_in_button else R.string.auth_sign_up_button,
+                when {
+                    isPhone -> R.string.auth_send_code_button
+                    !isEmail -> R.string.auth_continue_button
+                    state.emailMode == EmailMode.SignIn -> R.string.auth_sign_in_button
+                    else -> R.string.auth_sign_up_button
+                },
             ),
             isBusy = state.isBusy,
+            enabled = state.identifier.isNotBlank(),
             onClick = submit,
             modifier = Modifier.fillMaxWidth(),
         )
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            TextButton(onClick = { onAction(LoginAction.EmailModeToggled) }, enabled = !state.isBusy) {
-                Text(
-                    stringResource(
-                        if (state.emailMode == EmailMode.SignIn) {
-                            R.string.auth_switch_to_sign_up
-                        } else {
-                            R.string.auth_switch_to_sign_in
-                        },
-                    ),
-                )
-            }
-            if (state.emailMode == EmailMode.SignIn) {
-                TextButton(onClick = { onAction(LoginAction.ForgotPassword) }, enabled = !state.isBusy) {
-                    Text(stringResource(R.string.auth_forgot_password))
-                }
+        AccountLinks(state = state, showForgotPassword = isEmail, onAction = onAction)
+    }
+}
+
+@Composable
+private fun PasswordField(
+    state: LoginUiState,
+    onAction: (LoginAction) -> Unit,
+    onDone: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedTextField(
+        value = state.password,
+        onValueChange = { onAction(LoginAction.PasswordChanged(it)) },
+        label = { Text(stringResource(R.string.auth_password_label)) },
+        singleLine = true,
+        enabled = !state.isBusy,
+        visualTransformation = PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { onDone() }),
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics {
+                contentType = if (state.emailMode == EmailMode.SignUp) ContentType.NewPassword else ContentType.Password
+            },
+    )
+}
+
+/** "No account? Create one" (or back to sign in), and "Forgot password?" for an email. */
+@Composable
+private fun AccountLinks(
+    state: LoginUiState,
+    showForgotPassword: Boolean,
+    onAction: (LoginAction) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        TextButton(onClick = { onAction(LoginAction.EmailModeToggled) }, enabled = !state.isBusy) {
+            Text(
+                stringResource(
+                    if (state.emailMode == EmailMode.SignIn) {
+                        R.string.auth_switch_to_sign_up
+                    } else {
+                        R.string.auth_switch_to_sign_in
+                    },
+                ),
+            )
+        }
+        if (showForgotPassword && state.emailMode == EmailMode.SignIn) {
+            TextButton(onClick = { onAction(LoginAction.ForgotPassword) }, enabled = !state.isBusy) {
+                Text(stringResource(R.string.auth_forgot_password))
             }
         }
     }
 }
 
+/** After a phone number: the SMS code. */
 @Composable
-internal fun PhoneForm(state: LoginUiState, onAction: (LoginAction) -> Unit, modifier: Modifier = Modifier) {
+internal fun CodeForm(state: LoginUiState, onAction: (LoginAction) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        when (state.phoneStep) {
-            PhoneStep.EnterNumber -> {
-                OutlinedTextField(
-                    value = state.phoneNumber,
-                    onValueChange = { onAction(LoginAction.PhoneNumberChanged(it)) },
-                    label = { Text(stringResource(R.string.auth_phone_label)) },
-                    supportingText = { Text(stringResource(R.string.auth_phone_hint)) },
-                    singleLine = true,
-                    enabled = !state.isBusy,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { onAction(LoginAction.SendCode) }),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .semantics { contentType = ContentType.PhoneNumber },
-                )
-                FormError(state.error)
-                ProgressButton(
-                    text = stringResource(R.string.auth_send_code_button),
-                    isBusy = state.isBusy,
-                    onClick = { onAction(LoginAction.SendCode) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            PhoneStep.EnterCode -> {
-                Text(
-                    text = stringResource(R.string.auth_code_sent, state.phoneNumber),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                OutlinedTextField(
-                    value = state.code,
-                    onValueChange = { onAction(LoginAction.CodeChanged(it)) },
-                    label = { Text(stringResource(R.string.auth_code_label)) },
-                    singleLine = true,
-                    enabled = !state.isBusy,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.NumberPassword,
-                        imeAction = ImeAction.Done,
-                    ),
-                    keyboardActions = KeyboardActions(onDone = { onAction(LoginAction.VerifyCode) }),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .semantics { contentType = ContentType.SmsOtpCode },
-                )
-                FormError(state.error)
-                ProgressButton(
-                    text = stringResource(R.string.auth_verify_button),
-                    isBusy = state.isBusy,
-                    onClick = { onAction(LoginAction.VerifyCode) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                TextButton(onClick = { onAction(LoginAction.ChangePhoneNumber) }, enabled = !state.isBusy) {
-                    Text(stringResource(R.string.auth_change_number))
-                }
-            }
+        Text(
+            text = stringResource(R.string.auth_code_sent, state.phoneNumber),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        OutlinedTextField(
+            value = state.code,
+            onValueChange = { onAction(LoginAction.CodeChanged(it)) },
+            label = { Text(stringResource(R.string.auth_code_label)) },
+            singleLine = true,
+            enabled = !state.isBusy,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.NumberPassword,
+                imeAction = ImeAction.Done,
+            ),
+            keyboardActions = KeyboardActions(onDone = { onAction(LoginAction.VerifyCode) }),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { contentType = ContentType.SmsOtpCode },
+        )
+        FormError(state.error)
+        ProgressButton(
+            text = stringResource(R.string.auth_verify_button),
+            isBusy = state.isBusy,
+            onClick = { onAction(LoginAction.VerifyCode) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        TextButton(onClick = { onAction(LoginAction.ChangePhoneNumber) }, enabled = !state.isBusy) {
+            Text(stringResource(R.string.auth_change_number))
         }
     }
 }
@@ -197,12 +212,18 @@ private fun FormError(error: UiText?, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ProgressButton(text: String, isBusy: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun ProgressButton(
+    text: String,
+    isBusy: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
     // While busy, the button itself says so: the spinner inside it is decorative.
     val inProgress = stringResource(R.string.auth_in_progress)
     Button(
         onClick = onClick,
-        enabled = !isBusy,
+        enabled = enabled && !isBusy,
         modifier = if (isBusy) modifier.semantics { contentDescription = inProgress } else modifier,
     ) {
         if (isBusy) {
