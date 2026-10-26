@@ -223,6 +223,11 @@ flowchart TD
         homeCore["data:core"] --> homeApi
     end
 
+    subgraph settings [":feature:settings"]
+        settingsUi["ui"] --> settingsDomain["domain"] --> settingsApi["data:api"]
+        settingsCore["data:core"] --> settingsApi
+    end
+
     subgraph common [":common"]
         network["network"]
         database["database"]
@@ -232,12 +237,13 @@ flowchart TD
         testing["testing"]
     end
 
-    app --> authUi & applockUi & homeUi
-    app -.-> authCore & applockCore & homeCore
+    app --> authUi & applockUi & homeUi & settingsUi
+    app -.-> authCore & applockCore & homeCore & settingsCore
     app --> commonUi & network
     authCore --> network & datastore
     applockCore --> datastore
     homeCore --> database
+    settingsCore --> datastore
 ```
 
 `:konsist` (architecture tests) and `build-logic` (convention plugins, `enforceDependencyRules()`)
