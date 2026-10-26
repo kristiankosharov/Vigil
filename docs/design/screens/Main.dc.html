@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unlock wallet</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#AAC7FF}a:hover{color:#D6E3FF}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #111318; color: #E2E2E9; font-family: Manrope, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 72px 32px 40px; overflow: hidden">
+  <div style="width: 64px; height: 64px; border-radius: 20px; background: #282A2F; display: flex; align-items: center; justify-content: center">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#AAC7FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><rect x="9" y="10.5" width="6" height="5" rx="1"/><path d="M10.5 10.5V9a1.5 1.5 0 0 1 3 0v1.5"/></svg>
+  </div>
+  <h1 style="margin: 24px 0 8px; font-size: 24px; font-weight: 700; letter-spacing: -0.01em">Welcome back</h1>
+  <p style="margin: 0; font-size: 15px; color: #C4C6D0">Enter your 6-digit PIN to open your wallet</p>
+
+  <div aria-label="PIN entry" style="display: flex; gap: 16px; margin: 40px 0 12px">
+    <sc-for list="{{dots}}" as="dot" hint-placeholder-count="6">
+      <span style="{{dot.style}}"></span>
+    </sc-for>
+  </div>
+  <p style="margin: 0; height: 20px; font-size: 13px; color: #C4C6D0">{{hint}}</p>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 28px; margin-top: 32px">
+    <sc-for list="{{keys}}" as="k" hint-placeholder-count="9">
+      <button type="button" onClick="{{k.press}}" style="width: 76px; height: 76px; border-radius: 38px; border: none; background: #282A2F; color: #E2E2E9; font-size: 28px; font-weight: 600; cursor: pointer">{{k.label}}</button>
+    </sc-for>
+    <a href="Documents.dc.html" aria-label="Unlock with fingerprint" style="width: 76px; height: 76px; border-radius: 38px; display: flex; align-items: center; justify-content: center; text-decoration: none">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#AAC7FF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 11v3a8 8 0 0 1-1.5 4.7"/><path d="M8.5 9.5A3.5 3.5 0 0 1 15.5 11v2a11 11 0 0 1-.8 4"/><path d="M5.5 15.5A12 12 0 0 0 6 12a6 6 0 0 1 10.6-3.8"/><path d="M18.6 11.5a12 12 0 0 1-.3 5"/><path d="M4 9.5A8.5 8.5 0 0 1 19 7"/></svg>
+    </a>
+    <button type="button" onClick="{{pressZero}}" style="width: 76px; height: 76px; border-radius: 38px; border: none; background: #282A2F; color: #E2E2E9; font-size: 28px; font-weight: 600; cursor: pointer">0</button>
+    <button type="button" onClick="{{backspace}}" aria-label="Delete last digit" style="width: 76px; height: 76px; border-radius: 38px; border: none; background: transparent; color: #E2E2E9; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9.5l-5 5M12 9.5l5 5"/></svg>
+    </button>
+  </div>
+
+  <div style="flex-grow: 1"></div>
+  <div style="display: flex; gap: 24px; font-size: 14px; font-weight: 600">
+    <a href="#forgot">Forgot PIN?</a>
+    <a href="#switch">Sign in with password</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { len: 2 };
+  }
+  add() {
+    this.setState({ len: Math.min(6, this.state.len + 1) });
+  }
+  renderVals() {
+    const len = this.state.len;
+    const dots = [0, 1, 2, 3, 4, 5].map((i) => ({
+      style: 'width: 14px; height: 14px; border-radius: 7px; box-sizing: border-box; ' +
+        (i < len ? 'background: #AAC7FF; border: 2px solid #AAC7FF' : 'background: transparent; border: 2px solid #8E9099')
+    }));
+    const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((label) => ({ label, press: () => this.add() }));
+    return {
+      dots,
+      keys,
+      hint: len === 6 ? 'Unlocking…' : 'Locked after 5 wrong attempts',
+      pressZero: () => this.add(),
+      backspace: () => this.setState({ len: Math.max(0, len - 1) })
+    };
+  }
+}
+</script>
+</body>
+</html>

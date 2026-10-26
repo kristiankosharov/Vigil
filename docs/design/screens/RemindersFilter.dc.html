@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Filter reminders</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#415F91}a:hover{color:#284777}
+button,input{font-family:inherit}
+input:focus{outline:none}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #F9F9FF; color: #191C20; font-family: Manrope, system-ui, sans-serif; overflow: hidden">
+  <div aria-hidden="true" style="padding: 20px; display: flex; flex-direction: column; gap: 12px">
+    <span style="font-size: 26px; font-weight: 800">Reminders</span>
+    <span style="height: 84px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9"></span>
+    <span style="height: 84px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9"></span>
+    <span style="height: 84px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9"></span>
+  </div>
+  <a href="Reminders.dc.html" aria-label="Close filters" style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.32)"></a>
+
+  <section aria-label="Filter reminders" style="position: absolute; left: 0; right: 0; bottom: 0; background: #F3F3FA; border-radius: 28px 28px 0 0; padding: 12px 20px 28px; display: flex; flex-direction: column; gap: 18px">
+    <span aria-hidden="true" style="align-self: center; width: 32px; height: 4px; border-radius: 2px; background: #74777F"></span>
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 800">Filter reminders</h2>
+      <button type="button" onClick="{{reset}}" style="height: 40px; padding: 0 12px; border: none; border-radius: 20px; background: transparent; color: #415F91; font-size: 14px; font-weight: 700; cursor: pointer">Reset</button>
+    </div>
+
+    <div>
+      <h2 style="margin: 0 0 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #44474E">Show</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <sc-for list="{{show}}" as="c" hint-placeholder-count="3">
+          <button type="button" aria-pressed="{{c.pressed}}" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div>
+      <h2 style="margin: 0 0 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #44474E">Type</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <sc-for list="{{types}}" as="c" hint-placeholder-count="4">
+          <button type="button" aria-pressed="{{c.pressed}}" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div>
+      <h2 style="margin: 0 0 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #44474E">Sort by</h2>
+      <div role="radiogroup" style="border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9; overflow: hidden">
+        <sc-for list="{{sorts}}" as="s" hint-placeholder-count="2">
+          <button type="button" role="radio" aria-checked="{{s.checked}}" onClick="{{s.pick}}" style="width: 100%; min-height: 52px; padding: 0 16px; border: none; border-bottom: 1px solid #EDEDF4; background: #FFFFFF; display: flex; align-items: center; justify-content: space-between; font-size: 15px; font-weight: 600; color: #191C20; cursor: pointer">
+            {{s.label}}<span style="{{s.dot}}"></span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <a href="Reminders.dc.html" style="height: 56px; border-radius: 16px; background: #415F91; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-size: 16px; font-weight: 700">{{applyLabel}}</a>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { show: 'active', types: { sign: true, expiry: true, renew: false, custom: false }, sort: 'date' };
+  }
+  renderVals() {
+    const st = this.state;
+    const chip = (on) => 'height: 36px; padding: 0 14px; border-radius: 18px; font-size: 14px; font-weight: 600; cursor: pointer; ' +
+      (on ? 'background: #2E3036; color: #F0F0F7; border: 1px solid #2E3036' : 'background: #FFFFFF; color: #44474E; border: 1px solid #C4C6D0');
+    const show = [['all', 'All'], ['active', 'Active'], ['muted', 'Muted']].map(([id, label]) => ({
+      label, pressed: st.show === id ? 'true' : 'false', style: chip(st.show === id), pick: () => this.setState({ show: id })
+    }));
+    const types = [['sign', 'Signing deadline'], ['expiry', 'Expiry'], ['renew', 'Renewal'], ['custom', 'Custom']].map(([id, label]) => ({
+      label, pressed: st.types[id] ? 'true' : 'false', style: chip(st.types[id]),
+      pick: () => this.setState({ types: { ...st.types, [id]: !st.types[id] } })
+    }));
+    const sorts = [['date', 'Due date (soonest first)'], ['doc', 'Document name']].map(([id, label]) => ({
+      label, checked: st.sort === id ? 'true' : 'false', pick: () => this.setState({ sort: id }),
+      dot: 'width: 20px; height: 20px; box-sizing: border-box; border-radius: 10px; flex-shrink: 0; ' +
+        (st.sort === id ? 'border: 6px solid #415F91' : 'border: 2px solid #44474E')
+    }));
+    const n = Object.values(st.types).filter(Boolean).length;
+    return {
+      show, types, sorts,
+      applyLabel: 'Show reminders · ' + n + (n === 1 ? ' type' : ' types'),
+      reset: () => this.setState({ show: 'all', types: { sign: true, expiry: true, renew: true, custom: true }, sort: 'date' })
+    };
+  }
+}
+</script>
+</body>
+</html>

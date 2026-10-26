@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Draft document</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#415F91}a:hover{color:#284777}
+button,input{font-family:inherit}
+input:focus{outline:none}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #F9F9FF; color: #191C20; font-family: Manrope, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">  <header style="display: flex; align-items: center; gap: 8px; padding: 12px 12px; background: #FFFFFF; border-bottom: 1px solid #E2E2E9">
+    <a href="Documents.dc.html" aria-label="Back to documents" style="width: 44px; height: 44px; border-radius: 22px; color: #191C20; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0"><span style="font-size: 16px; font-weight: 700">Passport copy</span><span style="font-size: 12px; color: #44474E">1 page · scanned 14 Sep 2026</span></span>
+    
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; padding: 16px 20px 0">
+    <div style="padding: 14px 0; border-radius: 16px; background: #E2E2E9"><div style="height: 220px; margin: 0 8px; background: #FFFFFF; border-radius: 4px; box-shadow: 0 2px 10px rgba(16, 24, 40, 0.12); box-sizing: border-box; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+      <span style="height: 8px; width: 55%; background: #C4C6D0; border-radius: 2px"></span>
+      <span style="height: 5px; width: 100%; background: #E2E2E9; border-radius: 2px"></span>
+      <span style="height: 5px; width: 94%; background: #E2E2E9; border-radius: 2px"></span>
+      <span style="height: 5px; width: 97%; background: #E2E2E9; border-radius: 2px"></span>
+      <span style="height: 5px; width: 70%; background: #E2E2E9; border-radius: 2px"></span>
+      <span style="flex-grow: 1"></span>
+    </div></div>
+
+    <div style="display: flex; gap: 12px; padding: 14px; border-radius: 16px; background: #EDEDF4; color: #44474E">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+      <span style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 15px; font-weight: 800; color: #191C20">Review not finished</span>
+        <span style="font-size: 13px; line-height: 1.4">You closed the review before approving. Check the details to save it to your wallet.</span>
+      </span>
+    </div>
+
+    <div>
+      <h2 style="margin: 0 0 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #44474E">Detected by AI</h2>
+      <dl style="margin: 0; padding: 4px 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E9; font-size: 14px"><div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #EDEDF4"><dt style="color: #44474E">Type</dt><dd style="margin: 0; font-weight: 700; text-align: right">ID document</dd></div><div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #EDEDF4"><dt style="color: #44474E">Name</dt><dd style="margin: 0; font-weight: 700; text-align: right">[Your name]</dd></div><div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #EDEDF4"><dt style="color: #44474E">Expires</dt><dd style="margin: 0; font-weight: 700; text-align: right">[date]</dd></div><div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; "><dt style="color: #44474E">Signature needed</dt><dd style="margin: 0; font-weight: 700; text-align: right">No</dd></div></dl>
+    </div>
+  </div>
+  <div style="padding: 14px 20px 28px; background: #FFFFFF; border-top: 1px solid #E2E2E9; display: flex; flex-direction: column; gap: 8px">
+    <a href="Review.dc.html" style="height: 56px; border-radius: 16px; background: #415F91; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-size: 16px; font-weight: 700">Continue review</a>
+    <a href="#delete" style="height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #BA1A1A; font-size: 15px; font-weight: 700">Delete draft</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

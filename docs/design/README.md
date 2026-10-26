@@ -4,9 +4,8 @@ The source of truth for how Vigil looks: colors, type, shapes, states, component
 flows. The theme and the shared components live in `:common:ui`; this document explains them and
 lists the parts of the design that are not in code yet.
 
-- **Design canvas:** <https://claude.ai/artifact/CShYPemjcpaoC5RESdtrPZ> (private; ask the owner
-  for access). It holds every screen as an interactive mock-up, grouped by flow, plus component
-  state sheets.
+- **Screens:** [`screens/index.html`](screens/index.html) holds every screen as an interactive
+  mock-up, grouped by flow, plus the component state sheets. See [Viewing the screens](#viewing-the-screens).
 - **Code:** `common/ui/src/main/kotlin/app/vigil/common/ui/theme/` (theme) and
   `common/ui/src/main/kotlin/app/vigil/common/ui/designsystem/` (components).
 
@@ -149,7 +148,7 @@ Build these in the feature that owns them (`:feature:documents:ui`, `:feature:re
 
 ## Screens and flows
 
-Numbers match the board titles on the design canvas.
+Numbers match the screen titles in [`screens/index.html`](screens/index.html).
 
 ### 1 · Security: onboarding and unlock (dark)
 
@@ -194,6 +193,25 @@ The fingerprint switch and "Require PIN to sign: Always on" have no screens of t
 
 State sheets for buttons, inputs, security components and lists, plus the status-indicator
 options that led to the thumbnail corner icon.
+
+## Viewing the screens
+
+`docs/design/screens/` is a self-contained copy of the design: one `*.dc.html` file per screen,
+`index.html` with all of them by flow, and `dc-runtime.js`, a small renderer that fills in the
+templates and makes taps, toggles, search and forms work. Links inside a screen open the next
+screen, so you can click through each flow.
+
+Open `docs/design/screens/index.html` in a browser. If your browser blocks local files, serve the
+folder and open <http://localhost:8765>:
+
+```bash
+python3 -m http.server 8765 --directory docs/design/screens
+```
+ Screens are 390×844 (component sheets 1040 wide). Fonts load
+from Google Fonts; without a network they fall back to the system font.
+
+These files are the design, not app code: they are not built or shipped. When a screen changes,
+update its file here and this README together.
 
 ## Security and privacy in the UI
 

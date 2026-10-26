@@ -2,7 +2,7 @@
 
 An Android app built on a strict, tool-enforced architecture: multi-module Clean Architecture with
 MVI, where every convention is checked by the build rather than by memory. It is also set up to be
-developed together with [Claude Code](https://claude.com/claude-code).
+developed together with Claude Code.
 
 <!-- TODO: one or two sentences on what Vigil does for its users. -->
 
@@ -56,7 +56,7 @@ in [`docs/design/README.md`](docs/design/README.md). The theme and shared compon
 | Device or emulator | Android 8.0 (API 26)+ | For running the app and the instrumented tests. |
 | [ktlint](https://github.com/ktlint/ktlint/releases) | **1.8.0** exactly | The only formatter. The version is pinned in `gradle/libs.versions.toml`; a different version is reported as an error. Homebrew may ship an older one, so install it from the GitHub release if needed. |
 | `jq` | any | Used by the Claude Code hooks (built into macOS 15+). |
-| [Claude Code](https://claude.com/claude-code) | — | Optional. |
+| Claude Code | — | Optional. |
 
 Gradle 9.8.2 comes with the wrapper; you don't need to install it.
 

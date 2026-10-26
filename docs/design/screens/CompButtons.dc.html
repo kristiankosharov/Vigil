@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buttons</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1040px; min-height: 760px; box-sizing: border-box; padding: 40px 40px 32px; background: #F9F9FF; color: #191C20; font-family: Manrope, system-ui, sans-serif">
+  <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em">Buttons</h1>
+  <p style="margin: 6px 0 28px; font-size: 14px; color: #44474E">Light scheme · 16 dp corners · 56 dp primary height · pressed shows the M3 10% state layer</p>
+  <div style="display: grid; grid-template-columns: 210px repeat(4, minmax(0, 1fr)); gap: 20px; padding-bottom: 12px">
+    <span></span><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #44474E">Enabled</span><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #44474E">Pressed</span><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #44474E">Disabled</span><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #44474E">Error</span>
+  </div>
+    <div style="display: grid; grid-template-columns: 210px repeat(4, minmax(0, 1fr)); gap: 20px; align-items: center; padding: 22px 0; border-top: 1px solid #E2E2E9">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 15px; font-weight: 800">Primary button</span>
+        <code style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #44474E">WalletPrimaryButton</code>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="width: 100%; height: 56px; border-radius: 16px; background: #415F91; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 700; white-space: nowrap">Approve &amp; sign</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">primary / onPrimary</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="width: 100%; height: 56px; border-radius: 16px; background: #546F9C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 700; white-space: nowrap">Approve &amp; sign</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">+10% onPrimary state layer</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="width: 100%; height: 56px; border-radius: 16px; background: rgba(25, 28, 32, 0.12); color: rgba(25, 28, 32, 0.38); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 700; white-space: nowrap">Approve &amp; sign</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">onSurface 12% / 38%</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="width: 100%; height: 56px; border-radius: 16px; background: #BA1A1A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 700; white-space: nowrap">Try again</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">isError → error / onError</span></div>
+    </div>
+    <div style="display: grid; grid-template-columns: 210px repeat(4, minmax(0, 1fr)); gap: 20px; align-items: center; padding: 22px 0; border-top: 1px solid #E2E2E9">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 15px; font-weight: 800">Outlined button</span>
+        <code style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #44474E">WalletOutlinedButton</code>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="height: 48px; padding: 0 20px; box-sizing: border-box; border-radius: 16px; border: 1px solid #74777F; background: transparent; color: #415F91; display: flex; align-items: center; font-size: 15px; font-weight: 700; white-space: nowrap">Retake</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">outline border, primary text</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="height: 48px; padding: 0 20px; box-sizing: border-box; border-radius: 16px; border: 1px solid #74777F; background: rgba(65, 95, 145, 0.10); color: #415F91; display: flex; align-items: center; font-size: 15px; font-weight: 700; white-space: nowrap">Retake</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">+10% primary layer</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="height: 48px; padding: 0 20px; box-sizing: border-box; border-radius: 16px; border: 1px solid rgba(25, 28, 32, 0.12); background: transparent; color: rgba(25, 28, 32, 0.38); display: flex; align-items: center; font-size: 15px; font-weight: 700; white-space: nowrap">Retake</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">12% border / 38% text</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="height: 48px; padding: 0 20px; box-sizing: border-box; border-radius: 16px; border: 1px solid #BA1A1A; background: transparent; color: #BA1A1A; display: flex; align-items: center; font-size: 15px; font-weight: 700; white-space: nowrap">Delete</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">error border + text</span></div>
+    </div>
+    <div style="display: grid; grid-template-columns: 210px repeat(4, minmax(0, 1fr)); gap: 20px; align-items: center; padding: 22px 0; border-top: 1px solid #E2E2E9">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 15px; font-weight: 800">Text button</span>
+        <code style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #44474E">WalletTextButton</code>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="height: 48px; padding: 0 14px; border-radius: 16px; background: transparent; color: #415F91; display: flex; align-items: center; font-size: 15px; font-weight: 700; white-space: nowrap">Save without signing</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="height: 48px; padding: 0 14px; border-radius: 16px; background: rgba(65, 95, 145, 0.10); color: #415F91; display: flex; align-items: center; font-size: 15px; font-weight: 700; white-space: nowrap">Save without signing</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">+10% primary layer</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="height: 48px; padding: 0 14px; border-radius: 16px; background: transparent; color: rgba(25, 28, 32, 0.38); display: flex; align-items: center; font-size: 15px; font-weight: 700; white-space: nowrap">Save without signing</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="height: 48px; padding: 0 14px; border-radius: 16px; background: transparent; color: #BA1A1A; display: flex; align-items: center; font-size: 15px; font-weight: 700; white-space: nowrap">Remove reminder</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">destructive action</span></div>
+    </div>
+    <div style="display: grid; grid-template-columns: 210px repeat(4, minmax(0, 1fr)); gap: 20px; align-items: center; padding: 22px 0; border-top: 1px solid #E2E2E9">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 15px; font-weight: 800">Extended FAB</span>
+        <code style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #44474E">ScanFab</code>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="height: 56px; padding: 0 20px 0 16px; border-radius: 16px; background: #415F91; color: #FFFFFF; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; white-space: nowrap; box-shadow: 0 6px 16px rgba(16, 24, 40, 0.18)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M8 12h8"/></svg>Scan document</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="height: 56px; padding: 0 20px 0 16px; border-radius: 16px; background: #546F9C; color: #FFFFFF; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; white-space: nowrap; box-shadow: 0 6px 16px rgba(16, 24, 40, 0.18)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M8 12h8"/></svg>Scan document</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">+10% state layer</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="font-size: 13px; color: #74777F">— not applicable</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">M3 FABs are hidden, never disabled</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="font-size: 13px; color: #74777F">— not applicable</span></div>
+    </div>
+  
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1040,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

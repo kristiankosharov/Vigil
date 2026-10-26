@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inputs &amp; selection</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1040px; min-height: 820px; box-sizing: border-box; padding: 40px 40px 32px; background: #F9F9FF; color: #191C20; font-family: Manrope, system-ui, sans-serif">
+  <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em">Inputs &amp; selection</h1>
+  <p style="margin: 6px 0 28px; font-size: 14px; color: #44474E">Light scheme · text field corners 12 dp · error always pairs color with a message</p>
+  <div style="display: grid; grid-template-columns: 210px repeat(4, minmax(0, 1fr)); gap: 20px; padding-bottom: 12px">
+    <span></span><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #44474E">Enabled</span><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #44474E">Pressed</span><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #44474E">Disabled</span><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #44474E">Error</span>
+  </div>
+    <div style="display: grid; grid-template-columns: 210px repeat(4, minmax(0, 1fr)); gap: 20px; align-items: center; padding: 22px 0; border-top: 1px solid #E2E2E9">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 15px; font-weight: 800">Text field</span>
+        <code style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #44474E">WalletTextField</code>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="display: flex; flex-direction: column; gap: 4px; width: 100%">
+        <span style="position: relative; height: 56px; box-sizing: border-box; border-radius: 12px; border: 1px solid #74777F; background: transparent; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0 12px 0 14px">
+          <span style="position: absolute; top: -9px; left: 10px; padding: 0 4px; background: #F9F9FF; font-size: 12px; font-weight: 600; color: #44474E">Email</span>
+          <span style="font-size: 15px; color: #191C20; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">name@example.com</span>
+        </span>
+      </span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="display: flex; flex-direction: column; gap: 4px; width: 100%">
+        <span style="position: relative; height: 56px; box-sizing: border-box; border-radius: 12px; border: 2px solid #415F91; background: transparent; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0 12px 0 14px">
+          <span style="position: absolute; top: -9px; left: 10px; padding: 0 4px; background: #F9F9FF; font-size: 12px; font-weight: 600; color: #415F91">Email</span>
+          <span style="font-size: 15px; color: #191C20; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">name@example.com|</span>
+        </span>
+      </span><span style="font-size: 11px; color: #44474E; line-height: 1.35">pressed = focused · 2 dp primary</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="display: flex; flex-direction: column; gap: 4px; width: 100%">
+        <span style="position: relative; height: 56px; box-sizing: border-box; border-radius: 12px; border: 1px solid rgba(25, 28, 32, 0.12); background: transparent; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0 12px 0 14px">
+          <span style="position: absolute; top: -9px; left: 10px; padding: 0 4px; background: #F9F9FF; font-size: 12px; font-weight: 600; color: rgba(25, 28, 32, 0.38)">Email</span>
+          <span style="font-size: 15px; color: rgba(25, 28, 32, 0.38); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">name@example.com</span>
+        </span>
+      </span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="display: flex; flex-direction: column; gap: 4px; width: 100%">
+        <span style="position: relative; height: 56px; box-sizing: border-box; border-radius: 12px; border: 2px solid #BA1A1A; background: transparent; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0 12px 0 14px">
+          <span style="position: absolute; top: -9px; left: 10px; padding: 0 4px; background: #F9F9FF; font-size: 12px; font-weight: 600; color: #BA1A1A">Email</span>
+          <span style="font-size: 15px; color: #191C20; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">name@example</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#BA1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        </span><span style="font-size: 12px; color: #BA1A1A; padding-left: 14px">Enter a valid email</span>
+      </span></div>
+    </div>
+    <div style="display: grid; grid-template-columns: 210px repeat(4, minmax(0, 1fr)); gap: 20px; align-items: center; padding: 22px 0; border-top: 1px solid #E2E2E9">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 15px; font-weight: 800">Consent checkbox</span>
+        <code style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #44474E">ConsentCheckbox</code>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="display: flex; flex-direction: column; gap: 2px">
+        <span style="display: flex; align-items: center; gap: 2px">
+          <span style="width: 40px; height: 40px; border-radius: 20px;  display: flex; align-items: center; justify-content: center"><span style="width: 18px; height: 18px; box-sizing: border-box; border-radius: 2px; background: #415F91; border: 2px solid #415F91; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12l5 5 9-10"/></svg></span></span>
+          <span style="font-size: 14px; color: #191C20">I've read all 4 pages</span>
+        </span>
+      </span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="display: flex; flex-direction: column; gap: 2px">
+        <span style="display: flex; align-items: center; gap: 2px">
+          <span style="width: 40px; height: 40px; border-radius: 20px; background: rgba(65, 95, 145, 0.10); display: flex; align-items: center; justify-content: center"><span style="width: 18px; height: 18px; box-sizing: border-box; border-radius: 2px; background: #415F91; border: 2px solid #415F91; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12l5 5 9-10"/></svg></span></span>
+          <span style="font-size: 14px; color: #191C20">I've read all 4 pages</span>
+        </span>
+      </span><span style="font-size: 11px; color: #44474E; line-height: 1.35">+10% layer behind box</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="display: flex; flex-direction: column; gap: 2px">
+        <span style="display: flex; align-items: center; gap: 2px">
+          <span style="width: 40px; height: 40px; border-radius: 20px;  display: flex; align-items: center; justify-content: center"><span style="width: 18px; height: 18px; box-sizing: border-box; border-radius: 2px; background: rgba(25, 28, 32, 0.38); border: 2px solid rgba(25, 28, 32, 0.38); display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12l5 5 9-10"/></svg></span></span>
+          <span style="font-size: 14px; color: rgba(25, 28, 32, 0.38)">I've read all 4 pages</span>
+        </span>
+      </span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="display: flex; flex-direction: column; gap: 2px">
+        <span style="display: flex; align-items: center; gap: 2px">
+          <span style="width: 40px; height: 40px; border-radius: 20px;  display: flex; align-items: center; justify-content: center"><span style="width: 18px; height: 18px; box-sizing: border-box; border-radius: 2px; background: transparent; border: 2px solid #BA1A1A; display: flex; align-items: center; justify-content: center"></span></span>
+          <span style="font-size: 14px; color: #191C20">I've read all 4 pages</span>
+        </span><span style="font-size: 12px; color: #BA1A1A; padding-left: 40px">Confirm to sign</span>
+      </span></div>
+    </div>
+    <div style="display: grid; grid-template-columns: 210px repeat(4, minmax(0, 1fr)); gap: 20px; align-items: center; padding: 22px 0; border-top: 1px solid #E2E2E9">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 15px; font-weight: 800">Switch row</span>
+        <code style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #44474E">WalletSwitchRow</code>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="display: flex; align-items: center; gap: 12px; width: 100%"><span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1"><span style="font-size: 14px; font-weight: 700; color: #191C20">Fingerprint</span></span><span style="position: relative; width: 52px; height: 32px; box-sizing: border-box; border-radius: 16px; background: #415F91;  display: inline-block"><span style="position: absolute; top: 50%; transform: translateY(-50%); right: 4px; width: 24px; height: 24px; border-radius: 50%; background: #FFFFFF"></span></span></span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="display: flex; align-items: center; gap: 12px; width: 100%"><span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1"><span style="font-size: 14px; font-weight: 700; color: #191C20">Fingerprint</span></span><span style="position: relative; width: 52px; height: 32px; box-sizing: border-box; border-radius: 16px; background: #415F91;  display: inline-block"><span style="position: absolute; right: -6px; top: -6px; width: 44px; height: 44px; border-radius: 22px; background: rgba(65, 95, 145, 0.10)"></span><span style="position: absolute; top: 50%; transform: translateY(-50%); right: 2px; width: 28px; height: 28px; border-radius: 50%; background: #FFFFFF"></span></span></span><span style="font-size: 11px; color: #44474E; line-height: 1.35">thumb grows to 28 dp</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="display: flex; align-items: center; gap: 12px; width: 100%"><span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1"><span style="font-size: 14px; font-weight: 700; color: rgba(25, 28, 32, 0.38)">Fingerprint</span></span><span style="position: relative; width: 52px; height: 32px; box-sizing: border-box; border-radius: 16px; background: rgba(25, 28, 32, 0.12);  display: inline-block"><span style="position: absolute; top: 50%; transform: translateY(-50%); right: 4px; width: 24px; height: 24px; border-radius: 50%; background: #F9F9FF"></span></span></span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="display: flex; align-items: center; gap: 12px; width: 100%"><span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1"><span style="font-size: 14px; font-weight: 700; color: #191C20">Fingerprint</span><span style="font-size: 12px; color: #BA1A1A">Not set up on this device</span></span><span style="position: relative; width: 52px; height: 32px; box-sizing: border-box; border-radius: 16px; background: #E2E2E9; border: 2px solid #74777F; display: inline-block"><span style="position: absolute; top: 50%; transform: translateY(-50%); left: 6px; width: 16px; height: 16px; border-radius: 50%; background: #74777F"></span></span></span></div>
+    </div>
+    <div style="display: grid; grid-template-columns: 210px repeat(4, minmax(0, 1fr)); gap: 20px; align-items: center; padding: 22px 0; border-top: 1px solid #E2E2E9">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 15px; font-weight: 800">Filter chip</span>
+        <code style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #44474E">WalletFilterChip</code>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="display: flex; gap: 8px"><span style="height: 36px; padding: 0 16px 0 10px; box-sizing: border-box; border-radius: 18px; background: #2E3036; color: #F0F0F7; border: 1px solid #2E3036; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; white-space: nowrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F0F0F7" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12l5 5 9-10"/></svg>To sign</span><span style="height: 36px; padding: 0 16px 0 16px; box-sizing: border-box; border-radius: 18px; background: transparent; color: #44474E; border: 1px solid #C4C6D0; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; white-space: nowrap">Signed</span></span><span style="font-size: 11px; color: #44474E; line-height: 1.35">selected · unselected</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="height: 36px; padding: 0 16px 0 16px; box-sizing: border-box; border-radius: 18px; background: rgba(68, 71, 78, 0.10); color: #44474E; border: 1px solid #C4C6D0; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; white-space: nowrap">Signed</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">+10% onSurfaceVariant layer</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="height: 36px; padding: 0 16px 0 10px; box-sizing: border-box; border-radius: 18px; background: rgba(25, 28, 32, 0.12); color: rgba(25, 28, 32, 0.38); border: 1px solid transparent; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; white-space: nowrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(25, 28, 32, 0.38)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12l5 5 9-10"/></svg>To sign</span></div><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0"><span style="height: 36px; padding: 0 16px 0 16px; box-sizing: border-box; border-radius: 18px; background: transparent; color: #BA1A1A; border: 1px solid #BA1A1A; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; white-space: nowrap">Pick a type</span><span style="font-size: 11px; color: #44474E; line-height: 1.35">required group left empty</span></div>
+    </div>
+  
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1040,"height":820}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
