@@ -14,7 +14,6 @@ dependencies {
     compileOnly(libs.compose.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
     compileOnly(libs.hilt.gradlePlugin)
-    compileOnly(libs.room3.gradlePlugin)
     compileOnly(libs.detekt.gradlePlugin)
 
     testImplementation(libs.kotest.runner.junit5)
@@ -47,10 +46,6 @@ gradlePlugin {
         register("hilt") {
             id = "vigil.hilt"
             implementationClass = "HiltConventionPlugin"
-        }
-        register("room") {
-            id = "vigil.room"
-            implementationClass = "RoomConventionPlugin"
         }
         register("featureUi") {
             id = "vigil.feature.ui"

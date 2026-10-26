@@ -2,6 +2,9 @@
 
 Rules: `.claude/rules/data-layer.md`, `.claude/rules/domain.md`.
 
+> The `UserDao` / `safeDbCall` parts below need Room, which was removed on 2026-10-26. A DataStore-
+> only feature is `:feature:documents:data:core` (encrypted index + encrypted files).
+
 ## `data:api`
 
 ```kotlin

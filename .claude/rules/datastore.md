@@ -11,18 +11,13 @@ paths:
 
 Code: `.claude/reference/datastore.md`. Procedure for a new store: `.claude/skills/add-datastore/`.
 
-## Room or DataStore?
+## DataStore only (no database)
 
-| Use **Room** (`AppDatabase` in `:common:database`) | Use **DataStore** (encrypted, owned by the feature) |
-|---|---|
-| Lists that can grow (feeds, messages, products, history) | Settings, flags, sort/filter choices |
-| Data that is queried, filtered, sorted or searched | Tokens and session data |
-| Paging 3 (`PagingSource` / `RemoteMediator`) | Drafts, "last selected" values, onboarding state |
-| Relations, partial updates, transactions | One small object, up to a few dozen items |
-| Offline-first cache of network lists | Small caches that are always read whole |
-
-If DataStore data turns into a list that keeps growing, move it to Room. Never store the same data
-in both.
+There is no database right now: `:common:database` (Room) was removed on 2026-10-26 (see the
+Database row in `CLAUDE.md` to bring it back). Lists such as the documents
+index live in the feature's DataStore too, read whole. Large blobs (document pages) are files,
+encrypted with their own keys (`:common:security`), with only their index in DataStore. If a list
+grows past a few hundred items or needs queries, that is the time to bring Room back.
 
 ## How encryption works
 

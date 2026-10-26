@@ -6,6 +6,8 @@ import app.vigil.common.security.DevicePepper
 import app.vigil.common.security.DevicePepperImpl
 import app.vigil.common.security.PinKeyDerivation
 import app.vigil.common.security.PinKeyDerivationImpl
+import app.vigil.common.security.RsaKeyWrapper
+import app.vigil.common.security.RsaKeyWrapperImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -22,4 +24,7 @@ internal interface SecurityKeysModule {
 
     @Binds
     fun bindBiometricKeys(impl: BiometricKeysImpl): BiometricKeys
+
+    @Binds
+    fun bindRsaKeyWrapper(impl: RsaKeyWrapperImpl): RsaKeyWrapper
 }

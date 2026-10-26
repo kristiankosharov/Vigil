@@ -5,6 +5,9 @@ description: Add an offline-first paged list with Paging 3 (Room PagingSource, R
 
 # Add a paged list
 
+> **Needs Room, which was removed on 2026-10-26.** Bring `:common:database` back first (Database
+> row in `CLAUDE.md`).
+
 Use Paging 3 only for lists that can grow without bound. Small, bounded lists keep the normal
 `Flow<AppResult<List<T>>>` pattern.
 
