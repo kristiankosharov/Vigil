@@ -137,6 +137,7 @@ vigil-android-library = { id = "vigil.android.library" }
 vigil-android-compose = { id = "vigil.android.compose" }
 vigil-jvm-library = { id = "vigil.jvm.library" }
 vigil-hilt = { id = "vigil.hilt" }
+vigil-feature = { id = "vigil.feature" }
 vigil-feature-ui = { id = "vigil.feature.ui" }
 vigil-testing = { id = "vigil.testing" }
 vigil-environment = { id = "vigil.environment" }

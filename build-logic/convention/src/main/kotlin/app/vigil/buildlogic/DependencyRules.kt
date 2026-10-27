@@ -28,9 +28,16 @@ internal fun dependencyRuleViolation(from: String, to: String): String? {
     val fromFeature = from.featureName() ?: return when { // :app, :common:*, :konsist
         to == ":app" -> "nothing depends on :app"
 
+        from == ":app" && to.featureName() != null && !to.isFeatureModule() ->
+            ":app depends on a feature only through its feature module (:feature:${to.featureName()})"
+
         from.startsWith(":common:") && to.featureName() != null -> ":common:* never depends on features"
 
         else -> null
+    }
+    if (from.isFeatureModule()) {
+        return "a feature module bundles only its own ui and data:core"
+            .takeUnless { to == "$from:ui" || to == "$from:data:core" }
     }
     val layer = from.substringAfter(":feature:$fromFeature:") // ui, domain, data:api, data:core
     val allowedCommon = when (layer) {
@@ -56,6 +63,9 @@ internal fun dependencyRuleViolation(from: String, to: String): String? {
                 .takeUnless { layer in setOf("domain", "data:core") && to.endsWith(":data:api") }
     }
 }
+
+/** `:feature:foo` itself, the module `:app` depends on (FeatureConventionPlugin). */
+private fun String.isFeatureModule(): Boolean = featureName()?.let { this == ":feature:$it" } == true
 
 private fun String.featureName(): String? =
     if (startsWith(":feature:")) removePrefix(":feature:").substringBefore(":") else null

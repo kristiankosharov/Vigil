@@ -27,6 +27,8 @@ Flavor/BuildConfig/signing code: `.claude/reference/app.md`. Release procedure:
 - `vigil.hilt` — Hilt + KSP compiler. Android modules get the Hilt Gradle plugin and `hilt-android`;
   pure Kotlin modules get **only `hilt-core`** (no Hilt Gradle plugin, no Android components such as
   `ViewModelComponent`).
+- `vigil.feature` — `:feature:foo` itself: an Android library with no code, `api` its `ui`,
+  `runtimeOnly` its `data:core`; the only feature module `:app` depends on
 - `vigil.feature.ui` — library + compose + hilt + lifecycle/hilt-compose deps + `:common:ui`
 - `vigil.testing` — Kotest, MockK, Turbine, `:common:testing`; test logging with
   `exceptionFormat = FULL`. Applied by the three module plugins

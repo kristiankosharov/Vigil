@@ -70,6 +70,7 @@ More detail loads only when needed:
 :common:ui                 → theme, design system, UiText, BaseViewModel, effects, navigation handler
 :common:testing            → Kotest extensions, main dispatcher, fixtures
 
+:feature:<name>            → no code: what :app depends on (its ui + its data:core at runtime)
 :feature:<name>:ui         → Screens, ViewModels, UiState / Action
 :feature:<name>:domain     → domain models, use case interfaces + implementations
 :feature:<name>:data:api   → PUBLIC: repository interfaces + `*Data` models
@@ -88,8 +89,8 @@ read from the build files rather than from memory.
 ### Dependency rules (strict)
 
 ```
-:app ───────────────► :feature:*:ui, :feature:*:data:core,
-                       :common:ui (AppTheme), :common:network (EnvironmentModule's qualifiers)
+:app ───────────────► :feature:* (the feature module: api → its ui, runtimeOnly → its data:core),
+                       :common:ui (tab icons), :common:network (EnvironmentModule's qualifiers)
 
 :feature:x:ui ──────► :feature:x:domain, :common:ui, :common:core
 :feature:x:domain ──► :feature:x:data:api, :common:core         (+ :feature:y:data:api if needed)
@@ -102,7 +103,9 @@ read from the build files rather than from memory.
 - `domain` depends **only** on repository interfaces from `data:api` modules.
 - Cross-feature dependencies go **only** to `:feature:y:data:api`. Shared infrastructure belongs in
   `:common:*`; IDs exchanged between features go through navigation keys.
-- `:app` depends on `data:core` only so Hilt can aggregate bindings; app code never references it.
+- `:app` depends on each feature only through `:feature:x` (`vigil.feature`, no code), never on its
+  `ui`, `domain` or `data` modules. `:feature:x` exposes `ui` and puts `data:core` on the runtime
+  classpath only, so Hilt aggregates its bindings but `:app` can't compile against it.
 - `:common:*` never depends on feature modules.
 - Use `implementation`, not `api`, unless a type is part of the module's public signatures.
 - These rules are enforced when Gradle configures the build (`enforceDependencyRules()` in

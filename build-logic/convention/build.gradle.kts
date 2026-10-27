@@ -47,6 +47,10 @@ gradlePlugin {
             id = "vigil.hilt"
             implementationClass = "HiltConventionPlugin"
         }
+        register("feature") {
+            id = "vigil.feature"
+            implementationClass = "FeatureConventionPlugin"
+        }
         register("featureUi") {
             id = "vigil.feature.ui"
             implementationClass = "FeatureUiConventionPlugin"
