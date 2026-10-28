@@ -16,8 +16,10 @@ source of truth: `:common:security`, `:feature:applock:data:core`, `:feature:aut
 > - **Certificate pinning** for the backend (plus a `network_security_config` that forbids cleartext;
 >   with `minSdk` 26, plain HTTP is still allowed by default on Android 8.x).
 > - **Session tokens bound to the device:** tokens signed with a Keystore key (DPoP-style) with Key
->   Attestation, server-side revocation, step-up auth for sensitive actions. Also the Firebase refresh
->   token that still lives outside the vault (`TODO(auth)`, see "Backend tokens").
+>   Attestation, server-side revocation, step-up auth for sensitive actions. The token exchange itself
+>   talks to a fake backend for now (`AuthApiImpl`, `TODO(auth)`).
+> - **Firebase's refresh token** sits in the Firebase SDK's own storage, outside the vault, so the
+>   PIN doesn't protect it (`TODO(auth)` in `BackendSession`).
 >
 > **App side, later**
 > - **Device integrity and root detection:** Play Integrity API, Key Attestation, root, hook (Frida)
@@ -117,8 +119,11 @@ sequenceDiagram
 app has no tokens while it is locked. Sign-in happens before the PIN exists: tokens from then wait in
 memory and are sealed once the PIN is created. If the app dies first, the user signs in again.
 
-Known gap: Firebase keeps its own refresh token outside the vault. Once the backend exists, the app
-exchanges the Firebase ID token for backend tokens and then signs out of Firebase (`TODO(auth)`).
+Right after a sign-in the app exchanges the Firebase ID token for the backend's tokens
+(`BackendSession`). The backend is a fake for now (`AuthApiImpl` returns random tokens, `TODO(auth)`).
+
+Known gap: the app stays signed in to Firebase, and Firebase keeps its own refresh token outside the
+vault, where the PIN can't protect it (`TODO(auth)` in `BackendSession`).
 
 ## Documents (envelope encryption)
 
