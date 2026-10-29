@@ -20,9 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -52,6 +49,7 @@ import app.vigil.common.ui.mvi.UiEffectHandler
 import app.vigil.common.ui.text.UiText
 import app.vigil.common.ui.text.asString
 import app.vigil.common.ui.theme.AppTheme
+import app.vigil.feature.auth.domain.model.AuthRules
 import app.vigil.feature.auth.ui.R
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -108,15 +106,9 @@ internal fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Header()
-            MethodSelector(
-                method = state.method,
-                enabled = !state.isBusy,
-                onSelected = { onAction(LoginAction.MethodSelected(it)) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            when (state.method) {
-                LoginMethod.Email -> EmailForm(state = state, onAction = onAction)
-                LoginMethod.Phone -> PhoneForm(state = state, onAction = onAction)
+            when (state.phoneStep) {
+                PhoneStep.EnterNumber -> SignInForm(state = state, onAction = onAction)
+                PhoneStep.EnterCode -> CodeForm(state = state, onAction = onAction)
             }
             if (state.oidcProviders.isNotEmpty()) {
                 OidcButtons(
@@ -150,45 +142,16 @@ private fun Header(modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-private fun MethodSelector(
-    method: LoginMethod,
-    enabled: Boolean,
-    onSelected: (LoginMethod) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val methods = LoginMethod.entries
-    SingleChoiceSegmentedButtonRow(modifier = modifier) {
-        methods.forEachIndexed { index, option ->
-            SegmentedButton(
-                selected = option == method,
-                onClick = { onSelected(option) },
-                enabled = enabled,
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = methods.size),
-            ) {
-                Text(
-                    stringResource(
-                        when (option) {
-                            LoginMethod.Email -> R.string.auth_method_email
-                            LoginMethod.Phone -> R.string.auth_method_phone
-                        },
-                    ),
-                )
-            }
-        }
-    }
-}
-
 private fun previewState(
-    method: LoginMethod = LoginMethod.Email,
+    identifier: String = "ana@example.com",
     phoneStep: PhoneStep = PhoneStep.EnterNumber,
     oidcProviders: ImmutableList<OidcProviderItem> = persistentListOf(),
     error: UiText? = null,
     isBusy: Boolean = false,
 ) = LoginUiState(
-    method = method,
+    identifier = identifier,
+    identifierKind = AuthRules.identifierKind(identifier),
     emailMode = EmailMode.SignIn,
-    email = "ana@example.com",
     password = "secret",
     phoneStep = phoneStep,
     phoneNumber = "+359888123456",
@@ -221,10 +184,18 @@ private fun LoginScreenEmailPreview() {
 private fun LoginScreenPhoneCodePreview() {
     AppTheme(dynamicColor = false) {
         LoginScreen(
-            state = previewState(method = LoginMethod.Phone, phoneStep = PhoneStep.EnterCode),
+            state = previewState(identifier = "+359 888 123 456", phoneStep = PhoneStep.EnterCode),
             onAction = {},
             onLoggedIn = {},
         )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun LoginScreenPhoneNumberPreview() {
+    AppTheme(dynamicColor = false) {
+        LoginScreen(state = previewState(identifier = "+359 888 123 456"), onAction = {}, onLoggedIn = {})
     }
 }
 

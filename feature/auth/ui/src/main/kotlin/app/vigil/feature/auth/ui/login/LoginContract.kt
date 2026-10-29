@@ -6,15 +6,18 @@ import app.vigil.common.ui.mvi.UiEffect
 import app.vigil.common.ui.mvi.UiNavigation
 import app.vigil.common.ui.mvi.UiState
 import app.vigil.common.ui.text.UiText
+import app.vigil.feature.auth.domain.model.SignInIdentifierKind
 import kotlinx.collections.immutable.ImmutableList
 
 @Immutable
 internal data class LoginUiState(
-    val method: LoginMethod,
+    /** One "email or phone number" field; [identifierKind] decides what the form asks next. */
+    val identifier: String,
+    val identifierKind: SignInIdentifierKind,
     val emailMode: EmailMode,
-    val email: String,
     val password: String,
     val phoneStep: PhoneStep,
+    /** The normalized number the code was sent to (only meaningful in [PhoneStep.EnterCode]). */
     val phoneNumber: String,
     val code: String,
     val oidcProviders: ImmutableList<OidcProviderItem>,
@@ -25,8 +28,6 @@ internal data class LoginUiState(
     val navigation: LoginNavigation?,
 ) : UiState
 
-internal enum class LoginMethod { Email, Phone }
-
 internal enum class EmailMode { SignIn, SignUp }
 
 internal enum class PhoneStep { EnterNumber, EnterCode }
@@ -35,21 +36,16 @@ internal enum class PhoneStep { EnterNumber, EnterCode }
 internal data class OidcProviderItem(val id: String, val displayName: String)
 
 internal sealed interface LoginAction : UiAction {
-    data class MethodSelected(val method: LoginMethod) : LoginAction
-
-    data class EmailChanged(val email: String) : LoginAction
+    data class IdentifierChanged(val identifier: String) : LoginAction
 
     data class PasswordChanged(val password: String) : LoginAction
 
     data object EmailModeToggled : LoginAction
 
-    data object SubmitEmail : LoginAction
+    /** Sign in / create the account for an email, or send the SMS code for a phone number. */
+    data object Submit : LoginAction
 
     data object ForgotPassword : LoginAction
-
-    data class PhoneNumberChanged(val phoneNumber: String) : LoginAction
-
-    data object SendCode : LoginAction
 
     data class CodeChanged(val code: String) : LoginAction
 

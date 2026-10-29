@@ -159,6 +159,21 @@ Build these in the feature that owns them (`:feature:documents:ui`, `:feature:re
 
 Numbers match the screen titles in [`screens/index.html`](screens/index.html).
 
+### 0 · Sign in / Sign up
+
+Everyday (light/dark) screens before onboarding. Copy matches `feature/auth/ui` strings. Every
+success path continues to 1.1 Create PIN.
+
+| # | Screen | Notes |
+|---|---|---|
+| 0.1 | Sign in · email typed | One **"Email or phone number"** field, no method tabs. An `@` makes it email: the icon turns to an envelope, a password field (show/hide) and Forgot password? → 0.5 appear, and the button is **Sign in**. Errors appear only once the value looks finished. "Continue with [Provider]" (OpenID Connect); No account? → 0.4 |
+| 0.2 | Sign in · phone typed | Same screen with a number typed: phone icon, no password, the button is **Send code** → 0.3. A number without the country code shows "Enter the number with the country code…"; text that is neither shows "Enter an email address or a phone number." Empty: **Continue** stays disabled |
+| 0.3 | Verify SMS code | 6 code boxes with a number pad, wrong/expired code error, Change number, resend timer; Verify enabled at 6 digits |
+| 0.4 | Create account | Email, password with strength meter, Terms and Privacy consent; Create account enabled when the password is at least Fair and consent is given |
+| 0.5 | Reset password | Email → Send reset link → "Check your email" (never says whether the account exists); notes that the PIN and documents don't change |
+
+Unlock's "Sign in with password", Create PIN's back arrow and Sign out's confirm lead to 0.1.
+
 ### 1 · Security: onboarding and unlock (dark)
 
 | # | Screen | Notes |

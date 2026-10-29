@@ -11,7 +11,9 @@ import app.vigil.common.ui.mvi.UiEffect
 import app.vigil.common.ui.text.UiText
 import app.vigil.feature.auth.domain.model.OidcProvider
 import app.vigil.feature.auth.domain.model.PhoneVerification
+import app.vigil.feature.auth.domain.model.SignInIdentifierKind
 import app.vigil.feature.auth.domain.usecase.RequestPhoneCodeUseCase
+import app.vigil.feature.auth.domain.usecase.SendPasswordResetUseCase
 import app.vigil.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.vigil.feature.auth.domain.usecase.SignUpWithEmailUseCase
 import app.vigil.feature.auth.domain.usecase.VerifyPhoneCodeUseCase
@@ -40,11 +42,12 @@ class LoginViewModelTest : FunSpec({
         verifyPhoneCode: VerifyPhoneCodeUseCase = VerifyPhoneCodeUseCase { _, _ -> NoConnection },
         signInWithOidc: (String) -> AppResult<Unit> = { NoConnection },
         oidcProviders: List<OidcProvider> = emptyList(),
+        sendPasswordReset: SendPasswordResetUseCase = SendPasswordResetUseCase { AppResult.Success(Unit) },
     ) = LoginViewModel(
         savedStateHandle = SavedStateHandle(),
         signInWithEmail = signInWithEmail,
         signUpWithEmail = signUpWithEmail,
-        sendPasswordReset = { AppResult.Success(Unit) },
+        sendPasswordReset = sendPasswordReset,
         requestPhoneCode = requestPhoneCode,
         verifyPhoneCode = verifyPhoneCode,
         signInWithOidc = { signInWithOidc(it) },
@@ -52,7 +55,7 @@ class LoginViewModelTest : FunSpec({
     )
 
     fun LoginViewModel.enterEmail(email: String = "ana@example.com", password: String = "secret1") {
-        onAction(LoginAction.EmailChanged(email))
+        onAction(LoginAction.IdentifierChanged(email))
         onAction(LoginAction.PasswordChanged(password))
     }
 
@@ -63,7 +66,7 @@ class LoginViewModelTest : FunSpec({
 
         moleculeFlow(RecompositionMode.Immediate) { vm.uiState() }.test {
             vm.enterEmail(email = " ana@example.com ") // trimmed
-            vm.onAction(LoginAction.SubmitEmail)
+            vm.onAction(LoginAction.Submit)
             mainDispatcher.scheduler.advanceUntilIdle()
             val state = expectMostRecentItem()
             state.navigation shouldBe LoginNavigation.LoggedIn
@@ -80,11 +83,11 @@ class LoginViewModelTest : FunSpec({
 
         moleculeFlow(RecompositionMode.Immediate) { vm.uiState() }.test {
             vm.enterEmail(email = "ana@")
-            vm.onAction(LoginAction.SubmitEmail)
+            vm.onAction(LoginAction.Submit)
             expectMostRecentItem().error shouldBe UiText.Resource(R.string.auth_error_email_format)
 
             vm.enterEmail(password = "12345")
-            vm.onAction(LoginAction.SubmitEmail)
+            vm.onAction(LoginAction.Submit)
             expectMostRecentItem().error.shouldBeInstanceOf<UiText.Plural>().id shouldBe
                 R.plurals.auth_error_password_length
 
@@ -99,7 +102,7 @@ class LoginViewModelTest : FunSpec({
 
         moleculeFlow(RecompositionMode.Immediate) { vm.uiState() }.test {
             vm.enterEmail()
-            vm.onAction(LoginAction.SubmitEmail)
+            vm.onAction(LoginAction.Submit)
             mainDispatcher.scheduler.advanceUntilIdle()
             val state = expectMostRecentItem()
             state.error shouldBe UiText.Resource(R.string.auth_error_invalid_credentials)
@@ -115,7 +118,7 @@ class LoginViewModelTest : FunSpec({
         moleculeFlow(RecompositionMode.Immediate) { vm.uiState() }.test {
             vm.onAction(LoginAction.EmailModeToggled)
             vm.enterEmail()
-            vm.onAction(LoginAction.SubmitEmail)
+            vm.onAction(LoginAction.Submit)
             mainDispatcher.scheduler.advanceUntilIdle()
             val state = expectMostRecentItem()
             state.emailMode shouldBe EmailMode.SignUp
@@ -134,11 +137,11 @@ class LoginViewModelTest : FunSpec({
 
         moleculeFlow(RecompositionMode.Immediate) { vm.uiState() }.test {
             vm.enterEmail()
-            vm.onAction(LoginAction.SubmitEmail)
+            vm.onAction(LoginAction.Submit)
             mainDispatcher.scheduler.runCurrent()
             expectMostRecentItem().isBusy shouldBe true
 
-            vm.onAction(LoginAction.SubmitEmail)
+            vm.onAction(LoginAction.Submit)
             mainDispatcher.scheduler.advanceUntilIdle()
             expectMostRecentItem().isBusy shouldBe false
         }
@@ -165,9 +168,8 @@ class LoginViewModelTest : FunSpec({
         )
 
         moleculeFlow(RecompositionMode.Immediate) { vm.uiState() }.test {
-            vm.onAction(LoginAction.MethodSelected(LoginMethod.Phone))
-            vm.onAction(LoginAction.PhoneNumberChanged("+359 888 123 456"))
-            vm.onAction(LoginAction.SendCode)
+            vm.onAction(LoginAction.IdentifierChanged("+359 888 123 456"))
+            vm.onAction(LoginAction.Submit)
             mainDispatcher.scheduler.advanceUntilIdle()
             expectMostRecentItem().run {
                 phoneNumber shouldBe "+359888123456"
@@ -188,9 +190,8 @@ class LoginViewModelTest : FunSpec({
         val vm = viewModel(requestPhoneCode = request)
 
         moleculeFlow(RecompositionMode.Immediate) { vm.uiState() }.test {
-            vm.onAction(LoginAction.MethodSelected(LoginMethod.Phone))
-            vm.onAction(LoginAction.PhoneNumberChanged("0888123456"))
-            vm.onAction(LoginAction.SendCode)
+            vm.onAction(LoginAction.IdentifierChanged("0888123456"))
+            vm.onAction(LoginAction.Submit)
             expectMostRecentItem().error shouldBe UiText.Resource(R.string.auth_error_phone_format)
         }
         coVerify(exactly = 0) { request(any()) }
@@ -206,9 +207,8 @@ class LoginViewModelTest : FunSpec({
         })
 
         moleculeFlow(RecompositionMode.Immediate) { vm.uiState() }.test {
-            vm.onAction(LoginAction.MethodSelected(LoginMethod.Phone))
-            vm.onAction(LoginAction.PhoneNumberChanged("+359888123456"))
-            vm.onAction(LoginAction.SendCode)
+            vm.onAction(LoginAction.IdentifierChanged("+359888123456"))
+            vm.onAction(LoginAction.Submit)
             mainDispatcher.scheduler.advanceUntilIdle()
             expectMostRecentItem().navigation shouldBe LoginNavigation.LoggedIn
         }
@@ -221,9 +221,8 @@ class LoginViewModelTest : FunSpec({
         )
 
         moleculeFlow(RecompositionMode.Immediate) { vm.uiState() }.test {
-            vm.onAction(LoginAction.MethodSelected(LoginMethod.Phone))
-            vm.onAction(LoginAction.PhoneNumberChanged("+359888123456"))
-            vm.onAction(LoginAction.SendCode)
+            vm.onAction(LoginAction.IdentifierChanged("+359888123456"))
+            vm.onAction(LoginAction.Submit)
             mainDispatcher.scheduler.advanceUntilIdle()
             vm.onAction(LoginAction.CodeChanged("000000"))
             vm.onAction(LoginAction.VerifyCode)
@@ -250,5 +249,48 @@ class LoginViewModelTest : FunSpec({
             state.error shouldBe null
             state.navigation shouldBe null
         }
+    }
+
+    test("the field decides the method: an email needs a password, a number gets a code") {
+        val vm = viewModel()
+
+        moleculeFlow(RecompositionMode.Immediate) { vm.uiState() }.test {
+            awaitItem().identifierKind shouldBe SignInIdentifierKind.Unknown
+
+            vm.onAction(LoginAction.IdentifierChanged("ana@"))
+            expectMostRecentItem().identifierKind shouldBe SignInIdentifierKind.Email
+
+            vm.onAction(LoginAction.IdentifierChanged("+359 888"))
+            expectMostRecentItem().run {
+                identifierKind shouldBe SignInIdentifierKind.Phone
+                identifier shouldBe "+359 888" // kept as typed; normalized only when sending
+            }
+        }
+    }
+
+    test("text that is neither an email nor a number shows an error and calls nothing") {
+        val signIn = mockk<SignInWithEmailUseCase>()
+        val request = mockk<RequestPhoneCodeUseCase>()
+        val vm = viewModel(signInWithEmail = signIn, requestPhoneCode = request)
+
+        moleculeFlow(RecompositionMode.Immediate) { vm.uiState() }.test {
+            vm.onAction(LoginAction.IdentifierChanged("ana"))
+            vm.onAction(LoginAction.Submit)
+            expectMostRecentItem().error shouldBe UiText.Resource(R.string.auth_error_identifier_format)
+        }
+        coVerify(exactly = 0) { signIn(any(), any()) }
+        coVerify(exactly = 0) { request(any()) }
+    }
+
+    test("forgot password with a phone number asks for an email instead") {
+        val reset = mockk<SendPasswordResetUseCase>()
+        val vm = viewModel(sendPasswordReset = reset)
+
+        moleculeFlow(RecompositionMode.Immediate) { vm.uiState() }.test {
+            vm.onAction(LoginAction.IdentifierChanged("+359888123456"))
+            vm.onAction(LoginAction.ForgotPassword)
+            expectMostRecentItem().error shouldBe UiText.Resource(R.string.auth_error_email_format)
+        }
+        coVerify(exactly = 0) { reset(any()) }
     }
 })

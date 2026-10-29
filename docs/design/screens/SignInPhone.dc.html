@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in with phone</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#415F91}a:hover{color:#284777}
+button,input{font-family:inherit}
+input:focus{outline:none}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #F9F9FF; color: #191C20; font-family: Manrope, system-ui, sans-serif; display: flex; flex-direction: column; gap: 22px; padding: 56px 24px 32px; overflow: hidden">
+    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 14px">
+      <span style="width: 56px; height: 56px; border-radius: 18px; background: #D6E3FF; color: #284777; display: flex; align-items: center; justify-content: center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+      <span style="display: flex; flex-direction: column; gap: 6px">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.02em">Welcome to Vigil</h1>
+        <span style="font-size: 15px; color: #44474E">Sign in to continue.</span>
+      </span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <div style="{{idBox}}">
+          <span style="{{idLabelStyle}}">Email or phone number</span>
+          <sc-if value="{{isEmail}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></sc-if>
+          <sc-if value="{{isPhone}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></sc-if>
+          <sc-if value="{{isUnknown}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg></sc-if>
+          <input type="text" inputmode="email" autocomplete="username" aria-label="Email or phone number" placeholder="name@example.com or +359…" value="{{id}}" onInput="{{onId}}" style="flex-grow: 1; min-width: 0; border: none; background: transparent; font-size: 15px; color: #191C20">
+          <sc-if value="{{hasId}}" hint-placeholder-val="{{ true }}">
+            <button type="button" onClick="{{clear}}" aria-label="Clear" style="width: 40px; height: 40px; margin-right: -8px; border-radius: 20px; border: none; background: transparent; color: #44474E; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          </sc-if>
+        </div>
+        <span style="{{hintStyle}}">{{hint}}</span>
+      </div>
+
+      <sc-if value="{{isEmail}}" hint-placeholder-val="{{ true }}">
+        <div style="position: relative; height: 56px; box-sizing: border-box; border-radius: 12px; border: 1px solid #74777F; display: flex; align-items: center; gap: 12px; padding: 0 6px 0 14px">
+          <span style="position: absolute; top: -9px; left: 10px; padding: 0 4px; background: #F9F9FF; font-size: 12px; font-weight: 600; color: #44474E">Password</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <input type="{{pwType}}" aria-label="Password" autocomplete="current-password" value="secret-pass" style="flex-grow: 1; min-width: 0; border: none; background: transparent; font-size: 15px; color: #191C20; letter-spacing: 0.06em">
+          <button type="button" onClick="{{togglePw}}" aria-label="{{pwToggleLabel}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: transparent; color: #44474E; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
+        <a href="ResetPassword.dc.html" style="align-self: flex-end; min-height: 44px; display: flex; align-items: center; text-decoration: none; font-size: 14px; font-weight: 700; margin-top: -10px">Forgot password?</a>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{canSignIn}}" hint-placeholder-val="{{ true }}"><a href="CreatePin.dc.html" style="height: 56px; border-radius: 16px; background: #415F91; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-size: 16px; font-weight: 700">Sign in</a></sc-if>
+    <sc-if value="{{canSendCode}}" hint-placeholder-val="{{ false }}"><a href="VerifyCode.dc.html" style="height: 56px; border-radius: 16px; background: #415F91; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-size: 16px; font-weight: 700">Send code</a></sc-if>
+    <sc-if value="{{blocked}}" hint-placeholder-val="{{ false }}">
+      <span aria-disabled="true" style="height: 56px; border-radius: 16px; background: rgba(25, 28, 32, 0.12); color: rgba(25, 28, 32, 0.38); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700">{{blockedLabel}}</span>
+    </sc-if>
+    <div role="separator" style="display: flex; align-items: center; gap: 12px; color: #74777F; font-size: 13px; font-weight: 600">
+      <span style="flex: 1; height: 1px; background: #E2E2E9"></span>or<span style="flex: 1; height: 1px; background: #E2E2E9"></span>
+    </div>
+    <a href="CreatePin.dc.html" style="height: 52px; border-radius: 16px; border: 1px solid #74777F; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; color: #191C20; font-size: 15px; font-weight: 700"><span style="width: 22px; height: 22px; border-radius: 6px; background: #EDEDF4; color: #44474E; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800">ID</span>Continue with [Provider]</a>
+    <span style="flex-grow: 1"></span>
+    <p style="margin: 0; text-align: center; font-size: 14px; color: #44474E">No account? <a href="SignUp.dc.html" style="font-weight: 700; text-decoration: none">Create one</a></p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { id: '+359 888 123 456', showPw: false };
+  }
+  renderVals() {
+    const { id, showPw } = this.state;
+    const v = id.trim();
+    // Anything with an @ is an email; digits, spaces, +, (, ), - are a phone number.
+    const kind = v.includes('@') ? 'email' : /^[+\d][\d\s()-]*$/.test(v) ? 'phone' : v ? 'unknown' : 'empty';
+    const emailOk = kind === 'email' && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v);
+    const digits = v.replace(/\D/g, '');
+    const phoneOk = kind === 'phone' && v.startsWith('+') && digits.length >= 8;
+    // Show an error only once the value looks finished, not on every keystroke.
+    const emailError = kind === 'email' && !emailOk && /\.[^@\s]{2,}$/.test(v) === false && v.split('@')[1].length > 3;
+    const phoneError = kind === 'phone' && !v.startsWith('+') && digits.length >= 6;
+    const unknownError = kind === 'unknown' && v.length > 2;
+    const error = emailError || phoneError || unknownError;
+    const hints = {
+      empty: 'We\u2019ll ask for your password or text you a code.',
+      email: 'Signing in with email',
+      phone: 'We\u2019ll text a 6-digit code to this number.',
+      unknown: ''
+    };
+    const errors = {
+      email: 'Enter a valid email address.',
+      phone: 'Enter the number with the country code, e.g. +359888123456.',
+      unknown: 'Enter an email address or a phone number.'
+    };
+    return {
+      id,
+      onId: (e) => this.setState({ id: e.target.value }),
+      clear: () => this.setState({ id: '' }),
+      hasId: id.length > 0,
+      isEmail: kind === 'email',
+      isPhone: kind === 'phone',
+      isUnknown: kind === 'empty' || kind === 'unknown',
+      idBox: 'position: relative; height: 56px; box-sizing: border-box; border-radius: 12px; display: flex; align-items: center; gap: 12px; padding: 0 14px; ' +
+        (error ? 'border: 2px solid #BA1A1A' : 'border: 2px solid #415F91'),
+      idLabelStyle: 'position: absolute; top: -9px; left: 10px; padding: 0 4px; background: #F9F9FF; font-size: 12px; font-weight: 600; ' +
+        (error ? 'color: #BA1A1A' : 'color: #415F91'),
+      hint: error ? errors[kind] : hints[kind],
+      hintStyle: 'min-height: 16px; padding-left: 16px; font-size: 12px; ' + (error ? 'color: #BA1A1A' : 'color: #44474E'),
+      pwType: showPw ? 'text' : 'password',
+      pwToggleLabel: showPw ? 'Hide password' : 'Show password',
+      togglePw: () => this.setState({ showPw: !showPw }),
+      canSignIn: emailOk,
+      canSendCode: phoneOk,
+      blocked: !emailOk && !phoneOk,
+      blockedLabel: kind === 'phone' ? 'Send code' : kind === 'email' ? 'Sign in' : 'Continue'
+    };
+  }
+}
+</script>
+</body>
+</html>

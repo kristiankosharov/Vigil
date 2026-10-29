@@ -21,6 +21,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.vigil.common.ui.text.UiText
 import app.vigil.common.ui.theme.AppTheme
+import app.vigil.feature.auth.domain.model.AuthRules
 import app.vigil.feature.auth.ui.R
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -44,16 +45,16 @@ class LoginScreenTest {
     }
 
     private fun state(
-        method: LoginMethod = LoginMethod.Email,
+        identifier: String = "",
         phoneStep: PhoneStep = PhoneStep.EnterNumber,
         oidcProviders: ImmutableList<OidcProviderItem> = persistentListOf(),
         error: UiText? = null,
         isBusy: Boolean = false,
         navigation: LoginNavigation? = null,
     ) = LoginUiState(
-        method = method,
+        identifier = identifier,
+        identifierKind = AuthRules.identifierKind(identifier),
         emailMode = EmailMode.SignIn,
-        email = "",
         password = "",
         phoneStep = phoneStep,
         phoneNumber = "+359888123456",
@@ -75,11 +76,11 @@ class LoginScreenTest {
 
     private fun text(id: Int) = context.getString(id)
 
-    // "Email" is also the method selector's label: match only the text field.
+    // Match only the editable field, not other text with the same words.
     private fun field(labelId: Int) = composeTestRule.onNode(hasSetTextAction() and hasText(text(labelId)))
 
     @Test
-    fun emailFormSendsTypedValuesAndSubmit() {
+    fun anEmailShowsThePasswordAndSubmitsBoth() {
         val actions = mutableListOf<LoginAction>()
         // Keeps the typed text like the ViewModel would; a fixed state would reset the fields.
         composeTestRule.setContent {
@@ -90,8 +91,13 @@ class LoginScreenTest {
                     onAction = { action ->
                         actions += action
                         current = when (action) {
-                            is LoginAction.EmailChanged -> current.copy(email = action.email)
+                            is LoginAction.IdentifierChanged -> current.copy(
+                                identifier = action.identifier,
+                                identifierKind = AuthRules.identifierKind(action.identifier),
+                            )
+
                             is LoginAction.PasswordChanged -> current.copy(password = action.password)
+
                             else -> current
                         }
                     },
@@ -101,18 +107,39 @@ class LoginScreenTest {
         }
 
         composeTestRule.onNodeWithText(text(R.string.auth_login_title)).assertIsDisplayed()
-        field(R.string.auth_email_label).performTextInput("ana@example.com")
+        field(R.string.auth_password_label).assertDoesNotExist() // nothing typed yet
+        field(R.string.auth_identifier_label).performTextInput("ana@example.com")
         field(R.string.auth_password_label).performTextInput("secret1")
         composeTestRule.onNodeWithText(text(R.string.auth_sign_in_button)).performScrollTo().performClick()
 
         assertEquals(
             listOf(
-                LoginAction.EmailChanged("ana@example.com"),
+                LoginAction.IdentifierChanged("ana@example.com"),
                 LoginAction.PasswordChanged("secret1"),
-                LoginAction.SubmitEmail,
+                LoginAction.Submit,
             ),
             actions,
         )
+    }
+
+    @Test
+    fun aPhoneNumberSendsACodeWithoutAPassword() {
+        val actions = mutableListOf<LoginAction>()
+        setContent(state(identifier = "+359 888 123 456"), onAction = { actions += it })
+
+        field(R.string.auth_password_label).assertDoesNotExist()
+        composeTestRule.onNodeWithText(text(R.string.auth_phone_hint)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(text(R.string.auth_send_code_button)).performScrollTo().performClick()
+
+        assertEquals(listOf<LoginAction>(LoginAction.Submit), actions)
+    }
+
+    @Test
+    fun withNothingTypedContinueIsDisabled() {
+        setContent(state())
+
+        composeTestRule.onNodeWithText(text(R.string.auth_continue_button)).assertIsNotEnabled()
+        composeTestRule.onNodeWithText(text(R.string.auth_identifier_hint)).assertIsDisplayed()
     }
 
     @Test
@@ -125,7 +152,7 @@ class LoginScreenTest {
     @Test
     fun phoneCodeStepVerifiesAndCanChangeTheNumber() {
         val actions = mutableListOf<LoginAction>()
-        setContent(state(method = LoginMethod.Phone, phoneStep = PhoneStep.EnterCode), onAction = { actions += it })
+        setContent(state(identifier = "+359888123456", phoneStep = PhoneStep.EnterCode), onAction = { actions += it })
 
         composeTestRule.onNodeWithText(context.getString(R.string.auth_code_sent, "+359888123456")).assertIsDisplayed()
         composeTestRule.onNodeWithText(text(R.string.auth_verify_button)).performScrollTo().performClick()
@@ -164,7 +191,7 @@ class LoginScreenTest {
 
     @Test
     fun whileBusyTheButtonIsDisabledAndShowsProgress() {
-        setContent(state(isBusy = true))
+        setContent(state(identifier = "ana@example.com", isBusy = true))
 
         composeTestRule.onNodeWithText(text(R.string.auth_sign_in_button)).assertDoesNotExist()
         composeTestRule.onNode(hasClickAction() and hasContentDescription(text(R.string.auth_in_progress)))

@@ -16,6 +16,7 @@ import app.vigil.common.ui.text.UiText
 import app.vigil.common.ui.text.toUiText
 import app.vigil.feature.auth.domain.model.AuthRules
 import app.vigil.feature.auth.domain.model.PhoneVerification
+import app.vigil.feature.auth.domain.model.SignInIdentifierKind
 import app.vigil.feature.auth.domain.usecase.GetOidcProvidersUseCase
 import app.vigil.feature.auth.domain.usecase.RequestPhoneCodeUseCase
 import app.vigil.feature.auth.domain.usecase.SendPasswordResetUseCase
@@ -46,10 +47,12 @@ internal class LoginViewModel @Inject constructor(
     getOidcProviders: GetOidcProvidersUseCase,
 ) : BaseViewModel<LoginUiState, LoginAction, LoginNavigation>() {
 
-    private var method by savedStateHandle.saveable { mutableStateOf(LoginMethod.Email) }
     private var emailMode by savedStateHandle.saveable { mutableStateOf(EmailMode.SignIn) }
-    private var email by savedStateHandle.saveable { mutableStateOf("") }
-    private var phoneNumber by savedStateHandle.saveable { mutableStateOf("") }
+
+    /** Email or phone number, as typed; [email] and [phoneNumber] are the cleaned-up forms. */
+    private var identifier by savedStateHandle.saveable { mutableStateOf("") }
+    private val email get() = identifier.trim()
+    private val phoneNumber get() = AuthRules.normalizePhoneNumber(identifier)
 
     // Never savedStateHandle: secrets must not be written to the saved instance state. After process
     // death the phone flow starts again from the number.
@@ -64,9 +67,9 @@ internal class LoginViewModel @Inject constructor(
 
     @Composable
     override fun uiState() = LoginUiState(
-        method = method,
+        identifier = identifier,
+        identifierKind = AuthRules.identifierKind(identifier),
         emailMode = emailMode,
-        email = email,
         password = password,
         phoneStep = if (verificationId == null) PhoneStep.EnterNumber else PhoneStep.EnterCode,
         phoneNumber = phoneNumber,
@@ -80,19 +83,31 @@ internal class LoginViewModel @Inject constructor(
 
     override fun onAction(action: LoginAction) {
         when (action) {
-            is LoginAction.MethodSelected -> edit { method = action.method }
-            is LoginAction.EmailChanged -> edit { email = action.email.trim() }
+            is LoginAction.IdentifierChanged -> edit { identifier = action.identifier }
+
             is LoginAction.PasswordChanged -> edit { password = action.password }
+
             LoginAction.EmailModeToggled -> edit { emailMode = emailMode.toggled() }
-            LoginAction.SubmitEmail -> submitEmail()
+
+            // What was typed decides: an email signs in (or up), a phone number gets a code.
+            LoginAction.Submit -> when (AuthRules.identifierKind(identifier)) {
+                SignInIdentifierKind.Email -> submitEmail()
+                SignInIdentifierKind.Phone -> sendCode()
+                SignInIdentifierKind.Unknown -> error = UiText.Resource(R.string.auth_error_identifier_format)
+            }
+
             LoginAction.ForgotPassword -> resetPassword()
-            is LoginAction.PhoneNumberChanged -> edit { phoneNumber = action.phoneNumber.filter(::isPhoneChar) }
-            LoginAction.SendCode -> sendCode()
+
             is LoginAction.CodeChanged -> changeCode(action.code)
+
             LoginAction.VerifyCode -> verifyCode()
+
             LoginAction.ChangePhoneNumber -> edit { verificationId = null }
+
             is LoginAction.OidcSelected -> launchRequest { signInWithOidc(action.providerId) }
+
             is LoginAction.EffectConsumed -> consumeEffect(action.effect)
+
             is LoginAction.NavigationConsumed -> consumeNavigation(action.navigation)
         }
     }
@@ -206,8 +221,6 @@ internal class LoginViewModel @Inject constructor(
         error = appError.toLoginText()
     }
 }
-
-private fun isPhoneChar(char: Char) = char == '+' || char.isDigit()
 
 private fun EmailMode.toggled() = if (this == EmailMode.SignIn) EmailMode.SignUp else EmailMode.SignIn
 

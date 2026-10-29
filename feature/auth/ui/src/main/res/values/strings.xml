@@ -4,12 +4,12 @@
     <string name="auth_login_message">Sign in to continue.</string>
     <string name="auth_in_progress">Please wait</string>
 
-    <!-- Method selector -->
-    <string name="auth_method_email">Email</string>
-    <string name="auth_method_phone">Phone</string>
+    <!-- One field for both methods: an email signs in with a password, a phone number gets a code -->
+    <string name="auth_identifier_label">Email or phone number</string>
+    <string name="auth_identifier_hint">We\'ll ask for your password or text you a code.</string>
+    <string name="auth_continue_button">Continue</string>
 
     <!-- Email -->
-    <string name="auth_email_label">Email</string>
     <string name="auth_password_label">Password</string>
     <string name="auth_sign_in_button">Sign in</string>
     <string name="auth_sign_up_button">Create account</string>
@@ -19,7 +19,6 @@
     <string name="auth_reset_sent">If an account exists for this email, a reset link is on its way.</string>
 
     <!-- Phone -->
-    <string name="auth_phone_label">Phone number</string>
     <string name="auth_phone_hint">With the country code, e.g. +359888123456</string>
     <string name="auth_send_code_button">Send code</string>
     <string name="auth_code_label">SMS code</string>
@@ -32,6 +31,7 @@
     <string name="auth_oidc_button">Continue with %1$s</string>
 
     <!-- Errors -->
+    <string name="auth_error_identifier_format">Enter an email address or a phone number.</string>
     <string name="auth_error_email_format">Enter a valid email address.</string>
     <plurals name="auth_error_password_length">
         <item quantity="one">The password needs at least %1$d character.</item>

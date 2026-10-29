@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create account</title>
+<script src="./dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#415F91}a:hover{color:#284777}
+button,input{font-family:inherit}
+input:focus{outline:none}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #F9F9FF; color: #191C20; font-family: Manrope, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">  <header style="display: flex; align-items: center; gap: 8px; padding: 12px 12px; background: #FFFFFF; border-bottom: 1px solid #E2E2E9">
+    <a href="SignIn.dc.html" aria-label="Back to sign in" style="width: 44px; height: 44px; border-radius: 22px; color: #191C20; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0"><span style="font-size: 16px; font-weight: 700">Create account</span></span>
+    
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 18px; padding: 24px 24px 0">
+    <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #44474E">Your documents stay encrypted on this phone. The account lets you sign in and restore access.</p>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+        <div style="position: relative; height: 56px; box-sizing: border-box; border-radius: 12px; border: 1px solid #74777F; display: flex; align-items: center; gap: 12px; padding: 0 12px 0 14px">
+          <span style="position: absolute; top: -9px; left: 10px; padding: 0 4px; background: #F9F9FF; font-size: 12px; font-weight: 600; color: #44474E">Email</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span style="flex-grow: 1; font-size: 15px; color: #191C20; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">name@example.com</span>
+        </div>
+      </div>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="position: relative; height: 56px; box-sizing: border-box; border-radius: 12px; border: 2px solid #415F91; display: flex; align-items: center; gap: 12px; padding: 0 14px">
+        <span style="position: absolute; top: -9px; left: 10px; padding: 0 4px; background: #F9F9FF; font-size: 12px; font-weight: 600; color: #415F91">Password</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <input type="password" aria-label="Password" value="{{pw}}" onInput="{{onPw}}" style="flex-grow: 1; min-width: 0; border: none; background: transparent; font-size: 15px; color: #191C20; letter-spacing: 0.06em">
+      </div>
+      <div aria-hidden="true" style="display: flex; gap: 6px">
+        <sc-for list="{{bars}}" as="b" hint-placeholder-count="4"><span style="{{b}}"></span></sc-for>
+      </div>
+      <span style="{{strengthStyle}}">{{strengthText}}</span>
+    </div>
+    <label style="display: flex; align-items: flex-start; gap: 12px; min-height: 44px; font-size: 14px; line-height: 1.45; cursor: pointer">
+      <input type="checkbox" checked="{{agreed}}" onChange="{{toggleAgree}}" style="width: 20px; height: 20px; margin: 1px 0 0; accent-color: #415F91; flex-shrink: 0">
+      <span>I agree to the <a href="#terms" style="font-weight: 700">Terms</a> and the <a href="#privacy" style="font-weight: 700">Privacy policy</a></span>
+    </label>
+  </div>
+  <div style="padding: 14px 20px 28px; background: #FFFFFF; border-top: 1px solid #E2E2E9; display: flex; flex-direction: column; gap: 8px">
+    <sc-if value="{{canCreate}}" hint-placeholder-val="{{ true }}"><a href="CreatePin.dc.html" style="height: 56px; border-radius: 16px; background: #415F91; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-size: 16px; font-weight: 700">Create account</a></sc-if><sc-if value="{{cannotCreate}}" hint-placeholder-val="{{ false }}"><span aria-disabled="true" style="height: 56px; border-radius: 16px; background: rgba(25, 28, 32, 0.12); color: rgba(25, 28, 32, 0.38); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700">Create account</span></sc-if>
+    <p style="margin: 0; text-align: center; font-size: 14px; color: #44474E">Have an account? <a href="SignIn.dc.html" style="font-weight: 700; text-decoration: none">Sign in</a></p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { pw: 'vigil-2026', agreed: true };
+  }
+  renderVals() {
+    const { pw, agreed } = this.state;
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (pw.length >= 12) score++;
+    if (/[0-9]/.test(pw) && /[a-z]/i.test(pw)) score++;
+    if (/[^a-z0-9]/i.test(pw)) score++;
+    // Full declarations, not bare hex values, so the design copy can remap them for dark mode.
+    const levels = [
+      ['Too short · use at least 8 characters', 'color: #BA1A1A', 'background: #BA1A1A'],
+      ['Weak · add length or symbols', 'color: #BA1A1A', 'background: #BA1A1A'],
+      ['Fair · 12+ characters is better', 'color: #B54708', 'background: #B54708'],
+      ['Good', 'color: #067647', 'background: #067647'],
+      ['Strong', 'color: #067647', 'background: #067647']
+    ];
+    const [text, color, fill] = levels[score];
+    return {
+      pw,
+      onPw: (e) => this.setState({ pw: e.target.value }),
+      bars: [0, 1, 2, 3].map((i) => 'flex: 1; height: 4px; border-radius: 2px; ' + (i < score ? fill : 'background: #E2E2E9')),
+      strengthText: text,
+      strengthStyle: 'font-size: 12px; font-weight: 700; ' + color,
+      agreed,
+      toggleAgree: () => this.setState({ agreed: !agreed }),
+      canCreate: agreed && score >= 2,
+      cannotCreate: !(agreed && score >= 2)
+    };
+  }
+}
+</script>
+</body>
+</html>
