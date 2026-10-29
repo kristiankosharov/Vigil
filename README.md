@@ -36,7 +36,7 @@ next.
 
 | Feature | Status |
 |---|---|
-| **Login** (`:feature:auth`) | Working with **Firebase Auth**: email + password (sign in, create account, password reset) and phone number with an SMS code (auto-verification included). OpenID Connect is structured (repository, use case, SSO buttons) but has no provider yet: see `TODO(oidc)`. Bearer-token plumbing for the future backend (encrypted token store, refresh, session expiry → back to login) is in place; exchanging the Firebase ID token for backend tokens is a `TODO(auth)`. |
+| **Login** (`:feature:auth`) | Working with **Firebase Auth**: email + password (sign in, create account, password reset) and phone number with an SMS code (auto-verification included). OpenID Connect is structured (repository, use case, SSO buttons) but has no provider yet: see `TODO(oidc)`. Bearer-token plumbing for the future backend (encrypted token store, refresh, session expiry → back to login) is in place. After sign-in the Firebase ID token is exchanged for backend tokens; the backend is a **fake** for now (`AuthApiImpl`, `TODO(auth)`). |
 | **App lock** (`:feature:applock`) | Working. 6-digit PIN with a custom number pad, onboarding (create → confirm → enable fingerprint), unlock with PIN or fingerprint, locks on start and after 5 s in the background, covers the whole app. The PIN is never stored: it unwraps the vault key (Argon2id + a Keystore pepper), which seals the tokens. Easy PINs are refused; 5 free tries, then growing waits, and the 10th wrong PIN erases everything and signs out. No screenshots (`FLAG_SECURE`). |
 | **Documents** (`:feature:documents`) | Documents tab (bottom navigation): on-device search, filters (All / To sign / Signed / Drafts), status icons, lock-now. Envelope-encrypted: each document has its own AES-256 key that encrypts its pages; the key is wrapped by a Keystore RSA key and then by the PIN-unlocked vault key. The index (titles, scanned text) sits in an encrypted DataStore, sealed with the vault key too. Empty until the scan flow exists (`TODO(documents)`). |
 | **Settings** (`:feature:settings`) | Working. Appearance: light, dark or the device setting, stored in an encrypted DataStore and applied to the whole app (the security screens stay dark). Opened from the Account tab. |
@@ -205,30 +205,35 @@ build-logic                 vigil.* convention plugins and the dependency-rule c
 
 Who depends on whom, from the `build.gradle.kts` files. Arrows point from a module to what it
 depends on. Not drawn, to keep it readable: every module depends on `:common:core`, every feature
-`ui` (and `:app`) on `:common:ui`, and tests on `:common:testing`. `:app` depends on each
-`data:core` only so Hilt can collect its bindings (dotted).
+`ui` (and `:app`) on `:common:ui`, and tests on `:common:testing`. `:app` depends only on each
+feature's `ui`, which brings in its own `data:core` at runtime only, so Hilt can collect its
+bindings (dotted).
 
 ```mermaid
 flowchart TD
     app[":app"]
 
-    subgraph auth [":feature:auth"]
+    subgraph authGroup [":feature:auth"]
         authUi["ui"] --> authDomain["domain"] --> authApi["data:api"]
+        authUi -.-> authCore
         authCore["data:core"] --> authApi
     end
 
-    subgraph applock [":feature:applock"]
+    subgraph applockGroup [":feature:applock"]
         applockUi["ui"] --> applockDomain["domain"] --> applockApi["data:api"]
+        applockUi -.-> applockCore
         applockCore["data:core"] --> applockApi
     end
 
-    subgraph documents [":feature:documents"]
+    subgraph documentsGroup [":feature:documents"]
         documentsUi["ui"] --> documentsDomain["domain"] --> documentsApi["data:api"]
+        documentsUi -.-> documentsCore
         documentsCore["data:core"] --> documentsApi
     end
 
-    subgraph settings [":feature:settings"]
+    subgraph settingsGroup [":feature:settings"]
         settingsUi["ui"] --> settingsDomain["domain"] --> settingsApi["data:api"]
+        settingsUi -.-> settingsCore
         settingsCore["data:core"] --> settingsApi
     end
 
@@ -242,7 +247,6 @@ flowchart TD
     end
 
     app --> authUi & applockUi & documentsUi & settingsUi
-    app -.-> authCore & applockCore & documentsCore & settingsCore
     app --> commonUi & network
     authCore --> network & datastore & security
     applockCore --> network & datastore & security

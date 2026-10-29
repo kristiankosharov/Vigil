@@ -69,3 +69,8 @@ as a pass.
 - Upload the R8 `mapping.txt` of every release build with the release.
 - Release signing config comes only from environment variables (`RELEASE_KEYSTORE_PATH`, …; see
   `.claude/reference/app.md`).
+
+## After the release or hotfix PR merges into `main`
+
+Tag `main` with `vX.Y.Z` (the tag runs the release workflow), push the tag, and merge `main` back
+into `develop`.

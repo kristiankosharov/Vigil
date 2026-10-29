@@ -29,12 +29,11 @@ module; code to copy is in `.claude/reference/`.
 7. **Strings and accessibility.** Strings in `:feature:foo:ui` resources prefixed `foo_`; content
    descriptions, 48dp touch targets, headings, `@PreviewLightDark` + `@PreviewFontScale`
    (`.claude/rules/ui-quality.md`).
-8. **`:app`.** Add `implementation(projects.feature.foo.ui)` and
-   `implementation(projects.feature.foo.data.core)`; add the `NavKey`(s) and `entry<…>` wiring
+8. **`:app`.** Add only `implementation(projects.feature.foo.ui)` (never its `domain` or `data` modules; the `ui` brings `data:core` for Hilt); add the `NavKey`(s) and `entry<…>` wiring
    (`.claude/reference/app.md`).
 9. **Module graph.** Add the feature to the Mermaid graph in `README.md` ("Module dependencies"):
-   a `subgraph` with `ui → domain → data:api ← data:core`, `:app`'s edges to its `ui` (solid) and
-   `data:core` (dotted), and its `data:core` edges to the `:common` modules it uses.
+   a `subgraph` with `ui → domain → data:api ← data:core` and `ui -.-> data:core` (dotted, runtime only),
+   `:app`'s edge to its `ui`, and its `data:core` edges to the `:common` modules it uses.
 10. **Tests.** Kotest/MockK/Turbine for the repository, every `*UseCaseImpl` and every ViewModel;
    Compose UI tests (with accessibility checks) for each screen (`.claude/rules/testing.md`).
 11. **Checks.** `scripts/check.sh tests :feature:foo:data:core :feature:foo:domain :feature:foo:ui`,
@@ -76,7 +75,7 @@ dependencies {
 }
 
 // feature/foo/ui/build.gradle.kts
-plugins { alias(libs.plugins.vigil.feature.ui) }  // adds :common:ui
+plugins { alias(libs.plugins.vigil.feature.ui) }  // adds :common:ui, runtimeOnly(:data:core)
 android { namespace = "app.vigil.feature.foo.ui" }
 dependencies {
     implementation(projects.feature.foo.domain)

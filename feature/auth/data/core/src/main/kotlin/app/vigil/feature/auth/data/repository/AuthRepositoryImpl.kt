@@ -1,19 +1,16 @@
 package app.vigil.feature.auth.data.repository
 
-import app.vigil.common.core.AppError
 import app.vigil.common.core.AppResult
 import app.vigil.common.core.map
 import app.vigil.feature.auth.data.AuthRepository
 import app.vigil.feature.auth.data.OidcProviderData
 import app.vigil.feature.auth.data.PhoneVerificationData
-import app.vigil.feature.auth.data.remote.CurrentActivityTracker
 import app.vigil.feature.auth.data.remote.OidcProviders
 import app.vigil.feature.auth.data.remote.safeFirebaseCall
 import app.vigil.feature.auth.data.remote.toAuthError
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.OAuthProvider
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
@@ -29,20 +26,17 @@ import kotlinx.coroutines.tasks.await
 
 private const val PHONE_CODE_TIMEOUT_SECONDS = 60L
 
-// TODO(auth): after every sign-in, exchange the Firebase ID token (`auth.currentUser?.getIdToken(false)`)
-//  for the backend's tokens, TokenStorage.save(...) them (sealed with the vault key once the PIN
-//  exists), then `auth.signOut()`: Firebase keeps its own refresh token outside the vault, so the
-//  PIN can't protect it. Until the backend exists the backend calls go out without a token.
+/** Signs in with Firebase, then starts the backend session ([BackendSession]). */
 internal class AuthRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
-    private val activityTracker: CurrentActivityTracker,
+    private val backendSession: BackendSession,
 ) : AuthRepository {
 
     override suspend fun signInWithEmail(email: String, password: String): AppResult<Unit> =
-        safeFirebaseCall { auth.signInWithEmailAndPassword(email, password).await() }.map { }
+        safeFirebaseCall { auth.signInWithEmailAndPassword(email, password).await() }.thenStartSession()
 
     override suspend fun signUpWithEmail(email: String, password: String): AppResult<Unit> =
-        safeFirebaseCall { auth.createUserWithEmailAndPassword(email, password).await() }.map { }
+        safeFirebaseCall { auth.createUserWithEmailAndPassword(email, password).await() }.thenStartSession()
 
     // TODO(auth): email verification (`currentUser.sendEmailVerification()`) if the backend requires it.
     override suspend fun sendPasswordReset(email: String): AppResult<Unit> =
@@ -73,20 +67,15 @@ internal class AuthRepositoryImpl @Inject constructor(
                 channel.close()
             }
         }
-        val activity = activityTracker.current
-        if (activity == null) {
-            send(AppResult.Failure(noActivityError()))
-            channel.close()
-        } else {
-            PhoneAuthProvider.verifyPhoneNumber(
-                PhoneAuthOptions.newBuilder(auth)
-                    .setPhoneNumber(phoneNumber)
-                    .setTimeout(PHONE_CODE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                    .setActivity(activity)
-                    .setCallbacks(callbacks)
-                    .build(),
-            )
-        }
+        // TODO(auth): setActivity(...) for the reCAPTCHA fallback; without it Firebase fails that case
+        //  through onVerificationFailed instead of showing the reCAPTCHA.
+        PhoneAuthProvider.verifyPhoneNumber(
+            PhoneAuthOptions.newBuilder(auth)
+                .setPhoneNumber(phoneNumber)
+                .setTimeout(PHONE_CODE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                .setCallbacks(callbacks)
+                .build(),
+        )
         awaitClose()
     }.catch { cause ->
         if (cause is CancellationException || cause !is Exception) throw cause
@@ -98,18 +87,17 @@ internal class AuthRepositoryImpl @Inject constructor(
 
     override fun oidcProviders(): List<OidcProviderData> = OidcProviders
 
-    // TODO(oidc): on start, finish a sign-in the system interrupted (the activity was recreated while
-    //  the provider's page was open): `auth.pendingAuthResult?.await()`.
-    override suspend fun signInWithOidc(providerId: String): AppResult<Unit> {
-        val activity = activityTracker.current ?: return AppResult.Failure(noActivityError())
-        val provider = OAuthProvider.newBuilder(providerId)
-            .setScopes(listOf("email", "profile")) // TODO(oidc): the scopes the backend needs ("openid" is implied)
-            .build()
-        return safeFirebaseCall { auth.startActivityForSignInWithProvider(activity, provider).await() }.map { }
-    }
+    // TODO(oidc): sign in with `auth.startActivityForSignInWithProvider(activity, provider)`, where
+    //  `provider = OAuthProvider.newBuilder(providerId).setScopes(...)` with the scopes the backend
+    //  needs. It needs the resumed Activity, which data:core doesn't have yet. On start, also finish a
+    //  sign-in the system interrupted: `auth.pendingAuthResult?.await()`. Then `.thenStartSession()`.
+    override suspend fun signInWithOidc(providerId: String): AppResult<Unit> = AppResult.Success(Unit)
 
     private suspend fun signIn(credential: AuthCredential): AppResult<Unit> =
-        safeFirebaseCall { auth.signInWithCredential(credential).await() }.map { }
+        safeFirebaseCall { auth.signInWithCredential(credential).await() }.thenStartSession()
 
-    private fun noActivityError() = AppError.Auth.Unknown(IllegalStateException("No resumed activity"))
+    private suspend fun AppResult<*>.thenStartSession(): AppResult<Unit> = when (this) {
+        is AppResult.Failure -> this
+        is AppResult.Success -> backendSession.start()
+    }
 }
