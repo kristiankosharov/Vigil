@@ -36,11 +36,16 @@ Code: `.claude/reference/network-auth.md`.
   logs them without the throwable (Firebase messages can name the account).
 - Phone verification is a `callbackFlow`: `CodeSent(verificationId)`, then `Verified` if the device
   verifies by itself. Firebase SDK types never leave `data:core`.
-- Flows that need an `Activity` (phone reCAPTCHA fallback, OpenID Connect) get the resumed one from
-  `CurrentActivityTracker`, held weakly; no activity → `AppError.Auth.Unknown`, never a crash.
+- Nothing in data:core holds an `Activity` yet. OpenID Connect sign-in is a stub that returns
+  success (`TODO(oidc)` in `AuthRepositoryImpl.signInWithOidc`), and phone verification has no
+  reCAPTCHA fallback, which needs an `Activity` too.
 - Logout signs out of Firebase in the auth feature's `UserDataCleaner`.
-- The backend's bearer tokens below are not yet issued: exchanging the Firebase ID token for them
-  after sign-in is `TODO(auth)` in `AuthRepositoryImpl`.
+- After every Firebase sign-in, `BackendSession` exchanges the Firebase ID token for the backend's
+  bearer tokens (`AuthApi.exchangeFirebaseToken`) and saves them in `TokenStorage`. `AuthApiImpl`
+  is a **fake** backend (random tokens) until the real one exists (`TODO(auth)`);
+  `TokenRefresherImpl` still calls a placeholder endpoint.
+- The app stays signed in to Firebase, whose refresh token lives outside the vault. Securing it
+  is `TODO(auth)` in `BackendSession`.
 
 ## Authentication (Ktor `Auth`, bearer tokens)
 
