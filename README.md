@@ -205,30 +205,35 @@ build-logic                 vigil.* convention plugins and the dependency-rule c
 
 Who depends on whom, from the `build.gradle.kts` files. Arrows point from a module to what it
 depends on. Not drawn, to keep it readable: every module depends on `:common:core`, every feature
-`ui` (and `:app`) on `:common:ui`, and tests on `:common:testing`. `:app` depends on each
-`data:core` only so Hilt can collect its bindings (dotted).
+`ui` (and `:app`) on `:common:ui`, and tests on `:common:testing`. `:app` depends only on each
+feature's `ui`, which brings in its own `data:core` at runtime only, so Hilt can collect its
+bindings (dotted).
 
 ```mermaid
 flowchart TD
     app[":app"]
 
-    subgraph auth [":feature:auth"]
+    subgraph authGroup [":feature:auth"]
         authUi["ui"] --> authDomain["domain"] --> authApi["data:api"]
+        authUi -.-> authCore
         authCore["data:core"] --> authApi
     end
 
-    subgraph applock [":feature:applock"]
+    subgraph applockGroup [":feature:applock"]
         applockUi["ui"] --> applockDomain["domain"] --> applockApi["data:api"]
+        applockUi -.-> applockCore
         applockCore["data:core"] --> applockApi
     end
 
-    subgraph documents [":feature:documents"]
+    subgraph documentsGroup [":feature:documents"]
         documentsUi["ui"] --> documentsDomain["domain"] --> documentsApi["data:api"]
+        documentsUi -.-> documentsCore
         documentsCore["data:core"] --> documentsApi
     end
 
-    subgraph settings [":feature:settings"]
+    subgraph settingsGroup [":feature:settings"]
         settingsUi["ui"] --> settingsDomain["domain"] --> settingsApi["data:api"]
+        settingsUi -.-> settingsCore
         settingsCore["data:core"] --> settingsApi
     end
 
@@ -242,7 +247,6 @@ flowchart TD
     end
 
     app --> authUi & applockUi & documentsUi & settingsUi
-    app -.-> authCore & applockCore & documentsCore & settingsCore
     app --> commonUi & network
     authCore --> network & datastore & security
     applockCore --> network & datastore & security

@@ -59,16 +59,14 @@ android {
 }
 
 dependencies {
+    // Only the features' ui; each ui puts its own data:core on the runtime classpath for Hilt
+    // (FeatureUiConventionPlugin), so :app can't compile against any data module.
     implementation(projects.feature.applock.ui)
-    implementation(projects.feature.applock.data.core) // Hilt aggregation only; never referenced in code
     implementation(projects.feature.auth.ui)
-    implementation(projects.feature.auth.data.core) // Hilt aggregation only; never referenced in code
     implementation(projects.feature.documents.ui)
-    implementation(projects.feature.documents.data.core) // Hilt aggregation only; never referenced in code
     implementation(projects.feature.settings.ui)
-    implementation(projects.feature.settings.data.core) // Hilt aggregation only; never referenced in code
 
-    implementation(projects.common.ui) // AppTheme
+    implementation(projects.common.ui) // tab icons (MainTabs)
     implementation(projects.common.network) // @BaseUrl / @IsDebugBuild, provided by EnvironmentModule
 
     implementation(libs.androidx.core.ktx)

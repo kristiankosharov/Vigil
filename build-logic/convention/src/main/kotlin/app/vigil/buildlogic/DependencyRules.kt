@@ -13,20 +13,27 @@ import org.gradle.kotlin.dsl.withType
 internal fun Project.enforceDependencyRules() {
     val from = path
     configurations.configureEach {
+        val runtimeOnly = name.isRuntimeOnly()
         dependencies.withType<ProjectDependency>().configureEach {
-            dependencyRuleViolation(from, to = path)?.let { reason ->
+            dependencyRuleViolation(from, to = path, runtimeOnly)?.let { reason ->
                 throw GradleException("Forbidden dependency $from → $path: $reason (CLAUDE.md, Dependency rules)")
             }
         }
     }
 }
 
-/** Why `from` may not depend on `to`, or null when the dependency is allowed. */
-internal fun dependencyRuleViolation(from: String, to: String): String? {
+/**
+ * Why `from` may not depend on `to`, or null when the dependency is allowed. [runtimeOnly]: declared
+ * in a `runtimeOnly` configuration, so `from` can't compile against `to`.
+ */
+internal fun dependencyRuleViolation(from: String, to: String, runtimeOnly: Boolean = false): String? {
     if (to == ":common:testing") return null // test helpers, any module
     if (to == from) return null // AGP adds a module's own project (e.g. :app for its test APK)
     val fromFeature = from.featureName() ?: return when { // :app, :common:*, :konsist
         to == ":app" -> "nothing depends on :app"
+
+        from == ":app" && to.featureName() != null && !to.endsWith(":ui") ->
+            ":app depends only on a feature's ui (which brings its data:core for Hilt)"
 
         from.startsWith(":common:") && to.featureName() != null -> ":common:* never depends on features"
 
@@ -44,6 +51,8 @@ internal fun dependencyRuleViolation(from: String, to: String): String? {
         else -> emptySet()
     }
     val toFeature = to.featureName()
+    // Only so Hilt in :app aggregates the bindings (FeatureUiConventionPlugin); ui code can't see it.
+    if (layer == "ui" && to == ":feature:$fromFeature:data:core" && runtimeOnly) return null
     return when (toFeature) {
         null -> "$layer may use only ${allowedCommon.joinToString()}".takeIf { to !in allowedCommon }
 
@@ -56,6 +65,9 @@ internal fun dependencyRuleViolation(from: String, to: String): String? {
                 .takeUnless { layer in setOf("domain", "data:core") && to.endsWith(":data:api") }
     }
 }
+
+/** `runtimeOnly`, or a variant's (`debugRuntimeOnly`, …). */
+private fun String.isRuntimeOnly(): Boolean = this == "runtimeOnly" || endsWith("RuntimeOnly")
 
 private fun String.featureName(): String? =
     if (startsWith(":feature:")) removePrefix(":feature:").substringBefore(":") else null

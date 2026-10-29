@@ -54,6 +54,7 @@ include(":feature:documents:data:api")
 include(":feature:documents:data:core")
 include(":feature:documents:domain")
 include(":feature:documents:ui")
+
 include(":feature:settings:data:api")
 include(":feature:settings:data:core")
 include(":feature:settings:domain")
