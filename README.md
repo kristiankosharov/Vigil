@@ -206,38 +206,34 @@ build-logic                 vigil.* convention plugins and the dependency-rule c
 Who depends on whom, from the `build.gradle.kts` files. Arrows point from a module to what it
 depends on. Not drawn, to keep it readable: every module depends on `:common:core`, every feature
 `ui` (and `:app`) on `:common:ui`, and tests on `:common:testing`. `:app` depends only on each
-feature module (`:feature:auth` …), which exposes its `ui` and brings in its `data:core` at runtime
-only, so Hilt can collect its bindings (dotted).
+feature's `ui`, which brings in its own `data:core` at runtime only, so Hilt can collect its
+bindings (dotted).
 
 ```mermaid
 flowchart TD
     app[":app"]
 
     subgraph authGroup [":feature:auth"]
-        auth["auth"] --> authUi
-        auth -.-> authCore
         authUi["ui"] --> authDomain["domain"] --> authApi["data:api"]
+        authUi -.-> authCore
         authCore["data:core"] --> authApi
     end
 
     subgraph applockGroup [":feature:applock"]
-        applock["applock"] --> applockUi
-        applock -.-> applockCore
         applockUi["ui"] --> applockDomain["domain"] --> applockApi["data:api"]
+        applockUi -.-> applockCore
         applockCore["data:core"] --> applockApi
     end
 
     subgraph documentsGroup [":feature:documents"]
-        documents["documents"] --> documentsUi
-        documents -.-> documentsCore
         documentsUi["ui"] --> documentsDomain["domain"] --> documentsApi["data:api"]
+        documentsUi -.-> documentsCore
         documentsCore["data:core"] --> documentsApi
     end
 
     subgraph settingsGroup [":feature:settings"]
-        settings["settings"] --> settingsUi
-        settings -.-> settingsCore
         settingsUi["ui"] --> settingsDomain["domain"] --> settingsApi["data:api"]
+        settingsUi -.-> settingsCore
         settingsCore["data:core"] --> settingsApi
     end
 
@@ -250,7 +246,7 @@ flowchart TD
         testing["testing"]
     end
 
-    app --> auth & applock & documents & settings
+    app --> authUi & applockUi & documentsUi & settingsUi
     app --> commonUi & network
     authCore --> network & datastore & security
     applockCore --> network & datastore & security

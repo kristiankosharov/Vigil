@@ -8,9 +8,7 @@ class DependencyRulesTest : FunSpec({
 
     test("allowed dependencies") {
         listOf(
-            ":app" to ":feature:home",
-            ":feature:home" to ":feature:home:ui",
-            ":feature:home" to ":feature:home:data:core",
+            ":app" to ":feature:home:ui",
             ":feature:home:ui" to ":feature:home:domain",
             ":feature:home:ui" to ":common:ui",
             ":feature:home:ui" to ":common:core",
@@ -28,10 +26,22 @@ class DependencyRulesTest : FunSpec({
         }
     }
 
+    test("runtimeOnly lets a ui bring its own data:core for Hilt, and nothing else") {
+        dependencyRuleViolation(":feature:home:ui", ":feature:home:data:core", runtimeOnly = true).shouldBeNull()
+        listOf(
+            ":feature:home:ui" to ":feature:auth:data:core",
+            ":feature:home:ui" to ":feature:home:data:api",
+            ":feature:home:domain" to ":feature:home:data:core",
+            ":app" to ":feature:home:data:core",
+        ).forEach { (from, to) ->
+            withClue(from, to) { dependencyRuleViolation(from, to, runtimeOnly = true).shouldNotBeNull() }
+        }
+    }
+
     test("forbidden dependencies") {
         listOf(
             ":feature:home:ui" to ":feature:home:data:api",
-            ":feature:home:ui" to ":feature:home:data:core",
+            ":feature:home:ui" to ":feature:home:data:core", // allowed only as runtimeOnly
             ":feature:home:ui" to ":common:network",
             ":feature:home:ui" to ":feature:auth:ui",
             ":feature:home:ui" to ":feature:auth:domain",
@@ -43,15 +53,9 @@ class DependencyRulesTest : FunSpec({
             ":feature:home:data:core" to ":feature:auth:data:core",
             ":common:ui" to ":feature:home:ui",
             ":feature:home:ui" to ":app",
-            ":app" to ":feature:home:ui",
             ":app" to ":feature:home:data:core",
+            ":app" to ":feature:home:data:api",
             ":app" to ":feature:home:domain",
-            ":feature:home" to ":feature:home:domain",
-            ":feature:home" to ":feature:auth:ui",
-            ":feature:home" to ":common:core",
-            ":feature:home:ui" to ":feature:home",
-            ":feature:auth:domain" to ":feature:home",
-            ":common:ui" to ":feature:home",
         ).forEach { (from, to) ->
             withClue(from, to) { dependencyRuleViolation(from, to).shouldNotBeNull() }
         }

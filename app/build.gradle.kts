@@ -59,10 +59,12 @@ android {
 }
 
 dependencies {
-    implementation(projects.feature.applock)
-    implementation(projects.feature.auth)
-    implementation(projects.feature.documents)
-    implementation(projects.feature.settings)
+    // Only the features' ui; each ui puts its own data:core on the runtime classpath for Hilt
+    // (FeatureUiConventionPlugin), so :app can't compile against any data module.
+    implementation(projects.feature.applock.ui)
+    implementation(projects.feature.auth.ui)
+    implementation(projects.feature.documents.ui)
+    implementation(projects.feature.settings.ui)
 
     implementation(projects.common.ui) // tab icons (MainTabs)
     implementation(projects.common.network) // @BaseUrl / @IsDebugBuild, provided by EnvironmentModule

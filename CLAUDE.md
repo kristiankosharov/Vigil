@@ -20,16 +20,11 @@ More detail loads only when needed:
 | Area | Library |
 |---|---|
 | Language / build | Kotlin (AGP built-in Kotlin, K2), Gradle Kotlin DSL, version catalog, convention plugins in `build-logic` |
-| Network | Ktor Client (OkHttp engine) + kotlinx.serialization, Ktor `Auth` (bearer) |
 | Database | **None right now.** `:common:database` (Room 3) was removed on 2026-10-26; every feature keeps its data in its own encrypted DataStore. To bring Room back, restore `:common:database`, the `vigil.room` plugin, `rules/room.md`, `reference/room.md` and the `add-room-entity` skill from git (commit `0c89b5e`). |
 | Key-value / small data | Typed DataStore + `datastore-tink` (`AeadSerializer`) — one encrypted store per feature |
-| UI | Jetpack Compose (BOM), Material 3, Navigation 3, Lifecycle ViewModel, `kotlinx-collections-immutable` |
 | Paging | Paging 3 with Room + `RemoteMediator` (needs Room back first) |
-| DI | Hilt (KSP) |
-| Async | Kotlin Coroutines + Flow |
 | Logging / crashes | Timber (Android modules only); Firebase Crashlytics in release, only in `:app` |
 | Sign-in | Firebase Auth (email/password, phone, OpenID Connect via `OAuthProvider`), only in `:feature:auth:data:core` |
-| Testing | Kotest, MockK, Turbine, Molecule (ViewModel state), Compose UI Test, Ktor `MockEngine` |
 | Quality | Konsist (architecture tests), detekt + Compose rules, ktlint CLI (pinned version, the only formatter), Android Lint |
 
 ### Versions
@@ -81,31 +76,26 @@ More detail loads only when needed:
 
 Add a `:common:*` module only for genuinely shared infrastructure, never for feature logic.
 
-**Module graph.** `README.md` → "Module dependencies" has a Mermaid graph of the real module
-dependencies. Any change that adds, removes or renames a module, or adds/removes a `projects.*`
-dependency in a `build.gradle.kts` (including `:app`'s), updates that graph **in the same commit**,
-read from the build files rather than from memory.
-
 ### Dependency rules (strict)
 
 ```
-:app ───────────────► :feature:* (the feature module: api → its ui, runtimeOnly → its data:core),
-                       :common:ui (tab icons), :common:network (EnvironmentModule's qualifiers)
+:app ───────────────► :feature:*:ui, :common:ui (tab icons), :common:network (EnvironmentModule's qualifiers)
 
-:feature:x:ui ──────► :feature:x:domain, :common:ui, :common:core
+:feature:x:ui ──────► :feature:x:domain, :common:ui, :common:core   (+ runtimeOnly :feature:x:data:core)
 :feature:x:domain ──► :feature:x:data:api, :common:core         (+ :feature:y:data:api if needed)
 :feature:x:data:api ► :common:core
 :feature:x:data:core ► :feature:x:data:api, :common:network, :common:datastore, :common:security,
                        :common:core                              (+ :feature:y:data:api if needed)
 ```
 
-- `ui` **never** depends on any `data` module; it sees only domain models and use case interfaces.
+- `ui` **never** compiles against any `data` module; it sees only domain models and use case
+  interfaces. Its one exception is `runtimeOnly` its own `data:core` (added by `vigil.feature.ui`),
+  so Hilt in `:app` aggregates the bindings.
 - `domain` depends **only** on repository interfaces from `data:api` modules.
 - Cross-feature dependencies go **only** to `:feature:y:data:api`. Shared infrastructure belongs in
   `:common:*`; IDs exchanged between features go through navigation keys.
-- `:app` depends on each feature only through `:feature:x` (`vigil.feature`, no code), never on its
-  `ui`, `domain` or `data` modules. `:feature:x` exposes `ui` and puts `data:core` on the runtime
-  classpath only, so Hilt aggregates its bindings but `:app` can't compile against it.
+- `:app` depends only on each feature's `ui`, never on its `domain` or `data` modules. It gets the
+  `data:core` bindings through the `ui`'s `runtimeOnly`, so it can't compile against them.
 - `:common:*` never depends on feature modules.
 - Use `implementation`, not `api`, unless a type is part of the module's public signatures.
 - These rules are enforced when Gradle configures the build (`enforceDependencyRules()` in
@@ -120,16 +110,6 @@ read from the build files rather than from memory.
 - In `ui`, only `<Feature>Route` composables and app-wide wrappers named `*Host` (`AuthSessionHost`,
   `AppLockHost`) are public.
 - `explicitApi()` is on in `data:api` and `domain`.
-
-### Hilt modules
-
-- Every `@Module` lives in a `di` package, **one module per file, one concern per module**, named
-  `<Feature><Concern>Module` (`UsersRepositoryModule`, `UsersDataStoreModule`, …).
-- `@Binds` in an `interface`/`abstract class` module; `@Provides` in an `object` module; never both
-  in one module.
-- Pure Kotlin modules (`domain`, `data:api`, `:common:core`) see only `hilt-core`, so their modules
-  are installed in `SingletonComponent`, unscoped. `ViewModelComponent` and other Android
-  components exist only in Android modules.
 
 ---
 
@@ -166,8 +146,7 @@ read from the build files rather than from memory.
 
 - Never commit straight to `main` or `develop`; start the right branch type first. Names are
   lowercase with hyphens (`feature/pin-attempt-limit`, `bugfix/home-empty-state`).
-- After a `release/*` or `hotfix/*` PR merges into `main`: tag `main` with `vX.Y.Z`, push the tag,
-  and merge `main` back into `develop`.
+- After a `release/*` or `hotfix/*` PR merges into `main`, follow `skills/release-check/` (tagging).
 - CI runs on every PR into `main` or `develop` and on pushes to `main`, `develop`, `release/*` and
   `hotfix/*`; a PR merges only with green CI.
 
@@ -198,6 +177,8 @@ read from the build files rather than from memory.
 | Results, errors, wrappers, repositories | `rules/data-layer.md` | `reference/core-result.md`, `reference/data-feature-example.md` |
 | DataStore + encryption | `rules/datastore.md` | `skills/add-datastore`, `reference/datastore.md` |
 | Network, auth, tokens | `rules/network-auth.md` | `reference/network-auth.md` |
+| Hilt modules (`di` packages) | `rules/hilt.md` | — |
+| Module graph (README) | `rules/build.md` | — |
 | Use cases | `rules/domain.md` | `reference/data-feature-example.md` |
 | MVI, ViewModel, effects, Compose | `rules/ui-mvi.md` | `skills/new-screen`, `reference/mvi-base.md`, `reference/screen-example.md` |
 | Strings, accessibility | `rules/ui-quality.md` | — |

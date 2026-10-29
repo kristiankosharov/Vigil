@@ -12,10 +12,9 @@ Code: `.claude/reference/app.md`.
 
 - `:app` contains `Application` (`@HiltAndroidApp`), `MainActivity` (`@AndroidEntryPoint`), the theme
   host, **all navigation**, the flavors and the only `BuildConfig` in the project.
-- `:app` depends only on the feature modules `:feature:*` (never `:feature:*:ui`, `domain` or
-  `data:*`; each one exposes its `ui` and brings its `data:core` in at runtime for Hilt), `:common:ui`
-  (tab icons) and `:common:network` (the qualifiers
-  `EnvironmentModule` provides).
+- `:app` depends only on the features' `ui` modules (never `domain` or `data:*`; each `ui` brings its
+  own `data:core` in at runtime for Hilt), `:common:ui` (tab icons) and `:common:network` (the
+  qualifiers `EnvironmentModule` provides).
 
 ## Navigation 3
 

@@ -27,9 +27,9 @@ Flavor/BuildConfig/signing code: `.claude/reference/app.md`. Release procedure:
 - `vigil.hilt` — Hilt + KSP compiler. Android modules get the Hilt Gradle plugin and `hilt-android`;
   pure Kotlin modules get **only `hilt-core`** (no Hilt Gradle plugin, no Android components such as
   `ViewModelComponent`).
-- `vigil.feature` — `:feature:foo` itself: an Android library with no code, `api` its `ui`,
-  `runtimeOnly` its `data:core`; the only feature module `:app` depends on
-- `vigil.feature.ui` — library + compose + hilt + lifecycle/hilt-compose deps + `:common:ui`
+- `vigil.feature.ui` — library + compose + hilt + lifecycle/hilt-compose deps + `:common:ui`, and
+  `runtimeOnly` its own `data:core` (so Hilt in `:app`, which depends only on `ui` modules, sees the
+  bindings)
 - `vigil.testing` — Kotest, MockK, Turbine, `:common:testing`; test logging with
   `exceptionFormat = FULL`. Applied by the three module plugins
 - `vigil.environment` — `dev`/`staging`/`prod` flavors, **only** for `:app`
@@ -89,3 +89,10 @@ accessors (`projects.feature.users.data.api`). All versions live in `gradle/libs
   the dispatcher provider in `:common:core` (`InjectDispatcher`).
 - Android Lint on `:app` with `checkDependencies = true`, `warningsAsErrors = true` for release;
   `lint-baseline.xml` only for issues that predate the rule.
+
+## Module graph
+
+`README.md` → "Module dependencies" has a Mermaid graph of the real module
+dependencies. Any change that adds, removes or renames a module, or adds/removes a `projects.*`
+dependency in a `build.gradle.kts` (including `:app`'s), updates that graph **in the same commit**,
+read from the build files rather than from memory.
